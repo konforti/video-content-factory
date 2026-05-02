@@ -4238,6 +4238,28 @@
   }
 
   /**
+   * Walk every transformation block on the primary (first-segment) path leading to an
+   * output node and collect the SDK-style transformation pieces. Splice branches that
+   * aren't the first segment stay out of the base chain — their transforms are inlined
+   * inside the splice layer by `nodeTransformationPieces`.
+   *
+   * Returns the working list (callers may push playback / image-terminal tails) plus the
+   * `idsOnPath` used to filter (handy for `pipelineHasVideoStillFrame`).
+   */
+  function collectPrimaryChainTransformationPieces(outputNodeId) {
+    const ids = orderedPipelineNodes(outputNodeId);
+    const primaryPath = nodesOnPrimaryPath(outputNodeId);
+    const idsOnPath = ids.filter((id) => primaryPath.has(id));
+    const pieces = [];
+    for (const id of idsOnPath) {
+      const node = nodes.find((n) => n.id === id);
+      if (!node?.def?.cldKind) continue;
+      pieces.push(...nodeTransformationPieces(node));
+    }
+    return { pieces, idsOnPath };
+  }
+
+  /**
    * Full HTTPS delivery URL: …/{image|video|raw}/upload/[chain]/public_id.ext
    *
    * Video terminal blocks (Output · video, Output · video player) deliver the chain as-is:
@@ -4249,18 +4271,8 @@
   function buildDeliveryUrlForOutput(outputNodeId) {
     const outNode = nodes.find((n) => n.id === outputNodeId);
     const imageTerminal = outNode && isImageOutputBlockType(outNode.def.type);
-    const ids = orderedPipelineNodes(outputNodeId);
     const { cloudName, publicId, resourceType } = deliveryInputContextFromOutput(outputNodeId);
-    const primaryPath = nodesOnPrimaryPath(outputNodeId);
-    /* Only nodes on the primary (first-segment) path participate in the base chain; transforms
-     * that live on a non-first splice branch are skipped here (and ignored by helpers below). */
-    const idsOnPath = ids.filter((id) => primaryPath.has(id));
-    const pieces = [];
-    for (const id of idsOnPath) {
-      const node = nodes.find((n) => n.id === id);
-      if (!node?.def?.cldKind) continue;
-      pieces.push(...nodeTransformationPieces(node));
-    }
+    const { pieces, idsOnPath } = collectPrimaryChainTransformationPieces(outputNodeId);
     if (pipelineHasVideoStillFrame(idsOnPath)) {
       pieces.push(...stillFramePlaybackTail());
     } else if (imageTerminal) {
@@ -4293,9 +4305,41 @@
   }
 
   /**
-   * Embed-player URL for the Output · video player block. Adds `&profile=<name>` when the
-   * block is in "Profile settings" mode so the cloud-hosted player applies that saved
-   * configuration (transformations + UI) instead of the chain.
+   * The Cloudinary URL transformation chain for an output node — shares the primary-path
+   * walk + per-block serialization with `buildDeliveryUrlForOutput`, just without the
+   * delivery-side image / still-frame tail. Returns "" when no upstream transformation
+   * blocks are wired. Output looks like:
+   *   "c_scale,h_720/fl_splice:transition_(name_fade),l_video:samples:elephants/fl_layer_apply"
+   */
+  function buildRawTransformationChainForOutput(outputNodeId) {
+    const { pieces } = collectPrimaryChainTransformationPieces(outputNodeId);
+    return pieces.map(transformationPieceToUrlSegment).filter(Boolean).join("/");
+  }
+
+  /**
+   * Make a Cloudinary URL transformation chain safe to embed inside a query-string value.
+   * Cloudinary syntax characters (`,` `/` `:` `(` `)` `[` `]` `_` `-` `.` `*` `~`) are all
+   * RFC-3986-legal in query values and stay literal so the URL stays human-readable; only
+   * chars that would terminate or pollute the query (` `, `&`, `#`, `?`, `+`) get
+   * percent-encoded. Existing %XX escapes (e.g. the `%2C` that `escUrlVal` emits for commas
+   * inside text values) pass through unchanged — we don't run encodeURIComponent over the
+   * whole chain because that would double-encode them to `%252C`.
+   */
+  function encodeRawTransformationForQuery(chain) {
+    return String(chain)
+      .replace(/ /g, "%20")
+      .replace(/&/g, "%26")
+      .replace(/#/g, "%23")
+      .replace(/\?/g, "%3F")
+      .replace(/\+/g, "%2B");
+  }
+
+  /**
+   * Embed-player URL for the Output · video player block. Adds `&profile=<name>` in
+   * "Profile settings" mode (the cloud-hosted player applies that saved configuration), and
+   * mirrors the upstream chain into a single `&raw_transformation=<chain>` param so all
+   * Cloudinary URL features — splice, text/image overlays, layer_apply, named transition
+   * qualifiers — work without per-piece structural conversion.
    */
   function buildCloudinaryEmbedPlayerUrlForPlayerBlock(outputNodeId) {
     const node = nodes.find((n) => n.id === outputNodeId);
@@ -4307,11 +4351,15 @@
     const pubPath = String(publicId).trim().split("/").filter(Boolean).join("/");
     const cn = String(cloudName || "").trim();
     if (!pubPath || !cn) return "";
-    const q = new URLSearchParams();
-    q.set("cloud_name", cn);
-    q.set("public_id", pubPath);
-    if (useProfile) q.set("profile", profile);
-    return "https://player.cloudinary.com/embed/?" + q.toString();
+    const params = [];
+    params.push("cloud_name=" + encodeURIComponent(cn));
+    params.push("public_id=" + encodeURIComponent(pubPath));
+    if (useProfile) params.push("profile=" + encodeURIComponent(profile));
+    const chain = buildRawTransformationChainForOutput(outputNodeId);
+    if (chain) {
+      params.push("raw_transformation=" + encodeRawTransformationForQuery(chain));
+    }
+    return "https://player.cloudinary.com/embed/?" + params.join("&");
   }
 
   function effectiveCldEffectSettings(node) {
