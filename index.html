@@ -1776,8 +1776,24 @@
           </svg>
           Load flow
         </button>
+        <button type="button" class="btn-flow" id="btn-export-flow" title="Download this flow as a JSON file you can share">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Export
+        </button>
+        <button type="button" class="btn-flow" id="btn-import-flow" title="Load a flow from a JSON file (replaces the current canvas)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          Import
+        </button>
+        <input type="file" id="flow-import-input" accept="application/json,.json" hidden />
         <span class="toolbar-divider" aria-hidden="true"></span>
-        <button type="button" class="btn" id="btn-clear">Clear</button>
         <button
           type="button"
           class="btn-applet"
@@ -5391,15 +5407,6 @@
 
   document.getElementById("btn-fit").addEventListener("click", fitView);
   document.getElementById("btn-run-flow").addEventListener("click", runFlow);
-  document.getElementById("btn-clear").addEventListener("click", () => {
-    nodes = [];
-    edges = [];
-    selectedNodeId = null;
-    selectedEdgeId = null;
-    setFlowIdInUrl("");
-    renderNodes();
-    fitView();
-  });
 
   document.getElementById("zoom-in").addEventListener("click", () => {
     zoom = Math.min(MAX_Z, zoom * 1.15);
@@ -5901,6 +5908,106 @@
     }
   }
 
+  /** Best-effort filesystem-safe filename from a flow name. Falls back to "flow". */
+  function flowDownloadFilename(name) {
+    const safe = String(name || "")
+      .trim()
+      .replace(/[\\/:*?"<>|]+/g, "-")
+      .replace(/\s+/g, "_")
+      .replace(/^[.\-_]+|[.\-_]+$/g, "")
+      .slice(0, 80);
+    return (safe || "flow") + ".flow.json";
+  }
+
+  /** Triggers a browser download of `doc` as JSON, using a filename derived from `name`. */
+  function downloadFlowDocument(doc, name) {
+    try {
+      const blob = new Blob([JSON.stringify(doc, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = flowDownloadFilename(name);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+      return true;
+    } catch (err) {
+      showFlowToast("Could not export flow.");
+      return false;
+    }
+  }
+
+  /** Export the live canvas (whatever is currently on screen, regardless of save state). */
+  function exportCurrentFlow() {
+    const doc = serializeFlowDocument();
+    if (!doc.nodes.length && !doc.edges.length) {
+      showFlowToast("Canvas is empty — nothing to export.");
+      return;
+    }
+    const name = getActiveSavedFlowName() || "flow";
+    if (downloadFlowDocument(doc, name)) {
+      showFlowToast('Exported "' + name + '" as JSON.');
+    }
+  }
+
+  /** Export a named flow straight from the saved store (without loading it onto the canvas). */
+  function exportSavedFlowByName(name) {
+    const store = readFlowStore();
+    const doc = store.flows[name];
+    if (!doc) {
+      showFlowToast("That saved flow was not found.");
+      return;
+    }
+    if (downloadFlowDocument(doc, name)) {
+      showFlowToast('Exported "' + name + '" as JSON.');
+    }
+  }
+
+  /** Read a JSON flow file, validate, and apply it to the canvas (replaces current). */
+  function importFlowFromFile(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      let doc;
+      try {
+        doc = JSON.parse(String(reader.result || ""));
+      } catch (e) {
+        showFlowToast("Import failed: file is not valid JSON.");
+        return;
+      }
+      if (!doc || doc.v !== FLOW_DOC_VERSION) {
+        showFlowToast(
+          "Import failed: not a flow file (expected v" + FLOW_DOC_VERSION + ")."
+        );
+        return;
+      }
+      try {
+        const { unknownTypes } = applyFlowDocument(doc);
+        /* Imported flow is "untitled" until the user explicitly saves it under a name —
+           clear the URL flow id so they don't accidentally overwrite a previous save. */
+        setFlowIdInUrl("");
+        let msg = "Imported flow.";
+        if (unknownTypes.length) {
+          msg +=
+            " Skipped unknown block type(s): " +
+            Array.from(new Set(unknownTypes)).join(", ") +
+            ".";
+        }
+        msg += " Use Save flow to keep it in this browser.";
+        showFlowToast(msg);
+      } catch (err) {
+        showFlowToast(err.message || String(err));
+      }
+    };
+    reader.onerror = () => {
+      showFlowToast("Could not read the selected file.");
+    };
+    reader.readAsText(file);
+  }
+
   function renderSavedFlowsList() {
     const container = document.getElementById("flow-load-list");
     if (!container) return;
@@ -5930,6 +6037,7 @@
           "</div>" +
           '<div class="flow-load-row-actions">' +
           '<button type="button" class="btn flow-load-open">Load</button>' +
+          '<button type="button" class="btn flow-load-export" title="Download this flow as JSON">Export</button>' +
           '<button type="button" class="btn flow-load-delete">Delete</button>' +
           "</div>" +
           "</div>"
@@ -6829,6 +6937,7 @@
   document.getElementById("flow-load-list").addEventListener("click", (e) => {
     const loadBtn = e.target.closest(".flow-load-open");
     const delBtn = e.target.closest(".flow-load-delete");
+    const exportBtn = e.target.closest(".flow-load-export");
     const row = e.target.closest(".flow-load-row");
     if (!row) return;
     const enc = row.getAttribute("data-flow-name");
@@ -6838,10 +6947,31 @@
       const dlgLoad = document.getElementById("flow-load-dialog");
       const loaded = loadFlowByName(name);
       if (loaded && dlgLoad && dlgLoad.open) dlgLoad.close();
+    } else if (exportBtn) {
+      e.preventDefault();
+      exportSavedFlowByName(name);
     } else if (delBtn) {
       e.preventDefault();
       void deleteSavedFlowByName(name);
     }
+  });
+
+  document.getElementById("btn-export-flow").addEventListener("click", () => {
+    exportCurrentFlow();
+  });
+
+  document.getElementById("btn-import-flow").addEventListener("click", () => {
+    const inp = document.getElementById("flow-import-input");
+    if (!inp) return;
+    inp.value = "";
+    inp.click();
+  });
+
+  document.getElementById("flow-import-input").addEventListener("change", (e) => {
+    const inp = e.currentTarget;
+    const file = inp && inp.files && inp.files[0];
+    if (file) importFlowFromFile(file);
+    inp.value = "";
   });
 
   document.getElementById("btn-applets").addEventListener("click", () => {
