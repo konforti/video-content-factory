@@ -856,6 +856,56 @@
       color: var(--text);
     }
 
+    .output-player-mode {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin: 6px 0 4px;
+    }
+
+    .output-player-radio {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text);
+      cursor: pointer;
+      user-select: none;
+      min-width: 0;
+    }
+
+    .output-player-radio input[type="radio"] {
+      width: 13px;
+      height: 13px;
+      margin: 0;
+      cursor: pointer;
+      accent-color: var(--accent-focus);
+      flex-shrink: 0;
+    }
+
+    .output-player-radio span {
+      flex-shrink: 0;
+    }
+
+    .output-player-profile {
+      flex: 1;
+      min-width: 0;
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 11px;
+      padding: 2px 4px;
+      border-radius: 5px;
+      border: 1px solid var(--border-hair);
+      background: #fff;
+      color: var(--text);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .output-player-profile:focus {
+      border-color: rgba(56, 189, 248, 0.6);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
+    }
+
     #nodes-layer .node.is-preview {
       border-style: dashed;
       border-color: rgba(245, 158, 11, 0.55);
@@ -1929,6 +1979,19 @@
 
   /** Video Factory Cloudinary cloud — delivery uses res.cloudinary.com/<cloud>/(image|video|raw)/upload/… */
   const VIDEOFACTORY_CLOUD_NAME = "videofactory";
+  /** Cloudinary Video Player profiles offered by the Output · video player block. These are
+   * the built-in `cld-*` profiles every cloud ships with — the source of truth for the live
+   * list (including any custom profiles created in Player Studio) is the Admin API:
+   *   GET https://api.cloudinary.com/v2/video/<cloud_name>/player/profiles/
+   *   (Basic auth: API_KEY:API_SECRET — can't be called from the browser without leaking
+   *   credentials, so we keep this short curated set.)
+   * Docs: https://cloudinary.com/documentation/video_player_profiles_reference
+   * `cld-default` is the implicit default and stays first. */
+  const CLOUDINARY_PLAYER_PROFILES = [
+    "cld-default",
+    "cld-looping",
+    "cld-adaptive-stream",
+  ];
   /** Mock AI generators always preview these account assets (no real generation API yet). */
   const MOCK_AI_VIDEO_PUBLIC_ID = "samples/dance-2";
   const MOCK_AI_IMAGE_PUBLIC_ID = "samples/woman";
@@ -2257,6 +2320,22 @@
       ins: [{ id: "in", label: "" }],
       outs: [],
       defaultSettings: {},
+    },
+    {
+      /* Cloudinary embed-player view of the same pipeline. `mode: "video"` keeps the chain
+       * transformations (matching Output · video); `mode: "profile"` swaps in a saved Video
+       * Player profile (`&profile=<name>` on the embed URL, `profile:` option on the JS SDK)
+       * which delivers its own transformations + UI presets server-side. */
+      type: "output_video_player",
+      title: "Output · video player",
+      iconBg: "#e0f2fe",
+      glyphColor: "#0369a1",
+      wireColor: "#bae6fd",
+      dotColor: "#38bdf8",
+      placeholder: "",
+      ins: [{ id: "in", label: "" }],
+      outs: [],
+      defaultSettings: { mode: "video", profile: "cld-default" },
     },
     {
       type: "output_image",
@@ -2898,6 +2977,8 @@
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="2"/><circle cx="8" cy="16" r="2"/><circle cx="16" cy="12" r="2"/><path d="M10 8h4"/><path d="M10 16h4"/><path d="M18 12h3.5"/></svg>',
     output:
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4.5" width="19" height="13" rx="2"/><polygon points="10 10.5 14 12.5 10 14.5"/><path d="M8 21h8"/></svg>',
+    output_video_player:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4.5" width="19" height="13" rx="2"/><polygon points="10 9 14 12 10 15"/><line x1="5" y1="20" x2="19" y2="20"/><circle cx="6.25" cy="20" r="0.9"/></svg>',
     output_image:
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.75"/><path d="m21 16-4.5-4.5L11 17"/></svg>',
     cld_raw:
@@ -3113,7 +3194,7 @@
 
   let cldVideoPlayerLoadPromise = null;
   function ensureCloudinaryVideoPlayerLib() {
-    if (typeof window.cloudinary !== "undefined" && window.cloudinary.videoPlayer) {
+    if (typeof window.cloudinary !== "undefined" && window.cloudinary.player) {
       return Promise.resolve();
     }
     if (cldVideoPlayerLoadPromise) return cldVideoPlayerLoadPromise;
@@ -3121,7 +3202,7 @@
       if (document.querySelector('script[data-cld-video-player="1"]')) {
         const t0 = Date.now();
         const poll = setInterval(() => {
-          if (typeof window.cloudinary !== "undefined" && window.cloudinary.videoPlayer) {
+          if (typeof window.cloudinary !== "undefined" && window.cloudinary.player) {
             clearInterval(poll);
             resolve();
           } else if (Date.now() - t0 > 20000) {
@@ -3134,14 +3215,14 @@
       const link = document.createElement("link");
       link.rel = "stylesheet";
       link.href =
-        "https://cdn.jsdelivr.net/npm/cloudinary-video-player@3.10.0/dist/cld-video-player.min.css";
+        "https://cdn.jsdelivr.net/npm/cloudinary-video-player/dist/cld-video-player.min.css";
       link.crossOrigin = "anonymous";
       link.referrerPolicy = "no-referrer";
       document.head.appendChild(link);
 
       const s = document.createElement("script");
       s.src =
-        "https://cdn.jsdelivr.net/npm/cloudinary-video-player@3.10.0/dist/cld-video-player.min.js";
+        "https://cdn.jsdelivr.net/npm/cloudinary-video-player/dist/cld-video-player.min.js";
       s.async = true;
       s.crossOrigin = "anonymous";
       s.referrerPolicy = "no-referrer";
@@ -3156,6 +3237,11 @@
   /**
    * @param {string} nodeId output node id
    * @param {number} gen render generation (must match current outputPlayerRenderGen)
+   *
+   * Output · video uses the chain delivery URL; Output · video player switches to a
+   * Cloudinary Player profile when its block is in "Profile settings" mode (the player is
+   * constructed with `{ profile }` and sourced by public_id, so the cloud applies the
+   * profile's transformations + UI).
    */
   function mountOutputCloudinaryPlayer(nodeId, gen) {
     const sid = sanitizeDomIdForPlayer(nodeId);
@@ -3163,12 +3249,20 @@
     const el = document.getElementById(elId);
     if (!el || gen !== outputPlayerRenderGen) return;
 
-    const node = nodes.find((n) => n.id === nodeId && n.def.type === "output");
+    const node = nodes.find((n) => n.id === nodeId && isAnyVideoOutputBlockType(n.def.type));
     if (!node) return;
 
-    const computed = buildDeliveryUrlForOutput(nodeId);
-    const src = computed;
+    const useProfile =
+      isVideoPlayerOutputBlockType(node.def.type) &&
+      (node.settings || {}).mode === "profile";
+    const profileName = useProfile
+      ? String((node.settings || {}).profile || "cld-default").trim() || "cld-default"
+      : "";
     const cloudName = getPlayerCloudNameForOutput(nodeId);
+    const { publicId } = deliveryInputContextFromOutput(nodeId);
+    const pubPath = String(publicId || "").trim().split("/").filter(Boolean).join("/");
+    const computed = buildDeliveryUrlForOutput(nodeId);
+    const src = useProfile ? pubPath : computed;
 
     try {
       const existing = outputCldPlayers.get(nodeId);
@@ -3184,25 +3278,29 @@
       .then(() => {
         if (gen !== outputPlayerRenderGen || !document.getElementById(elId)) return;
         const C = window.cloudinary;
-        if (!C || !C.videoPlayer) return;
+        if (!C || !C.player) return;
 
-        const player = C.videoPlayer(elId, {
-          cloudName: cloudName,
-          fluid: true,
-          controls: true,
+        const opts = { cloudName: cloudName, fluid: true, controls: true };
+        if (useProfile && profileName) opts.profile = profileName;
+        return Promise.resolve(C.player(elId, opts)).then((player) => {
+          if (!player) return;
+          if (gen !== outputPlayerRenderGen || !document.getElementById(elId)) {
+            try { if (typeof player.dispose === "function") player.dispose(); } catch (e) {}
+            return;
+          }
+          player.source(src);
+          outputCldPlayers.set(nodeId, player);
         });
-        player.source(src);
-        outputCldPlayers.set(nodeId, player);
       })
       .catch(() => {
         if (gen !== outputPlayerRenderGen || !document.getElementById(elId)) return;
-        el.src = src;
+        if (!useProfile) el.src = src;
       });
   }
 
   function mountAllOutputCloudinaryPlayers(gen) {
     nodes
-      .filter((n) => isVideoOutputBlockType(n.def.type))
+      .filter((n) => isAnyVideoOutputBlockType(n.def.type))
       .forEach((n) => mountOutputCloudinaryPlayer(n.id, gen));
   }
 
@@ -3238,9 +3336,7 @@
 
   function renderOutputSheet(node) {
     const computed = buildDeliveryUrlForOutput(node.id);
-    const embed = buildCloudinaryEmbedPlayerUrl(node.id);
     const safeComputed = escapeHtml(computed);
-    const safeEmbed = escapeHtml(embed);
     const vidId = "cld-output-" + sanitizeDomIdForPlayer(node.id);
     return `<div class="node-sheet output-sheet" data-node-id="${node.id}">
       <video id="${vidId}" class="output-video cld-video-player cld-fluid" playsinline preload="metadata"></video>
@@ -3248,6 +3344,42 @@
         <label for="out-computed-${node.id}">Delivery URL (from blocks)</label>
         <input id="out-computed-${node.id}" type="text" readonly class="output-url-readonly" value="${safeComputed}" tabindex="-1" />
       </div>
+      ${renderOutputPreviewToggle(node)}
+    </div>`;
+  }
+
+  /** Output · video player sheet — toggle between chain transformations ("Video settings") and a
+   * saved Cloudinary Player profile ("Profile settings"). The block emits an embed-player URL
+   * accordingly (`&profile=<name>` is appended in profile mode). */
+  function renderOutputVideoPlayerSheet(node) {
+    const s = node.settings || {};
+    const mode = s.mode === "profile" ? "profile" : "video";
+    const profile = String(s.profile || "cld-default").trim() || "cld-default";
+    const embed = buildCloudinaryEmbedPlayerUrlForPlayerBlock(node.id);
+    const safeEmbed = escapeHtml(embed);
+    const sid = sanitizeDomIdForPlayer(node.id);
+    const vidId = "cld-output-" + sid;
+    const radioName = "out-player-mode-" + sid;
+    const profileOptions = CLOUDINARY_PLAYER_PROFILES.map((p) => {
+      const sel = p === profile ? " selected" : "";
+      return `<option value="${escapeHtml(p)}"${sel}>${escapeHtml(p)}</option>`;
+    }).join("");
+    const profileSelectHtml = mode === "profile"
+      ? `<select class="output-player-profile" data-output-player-profile="${escapeHtml(node.id)}">${profileOptions}</select>`
+      : "";
+    return `<div class="node-sheet output-sheet output-video-player-sheet" data-node-id="${node.id}">
+      <div class="output-player-mode" role="radiogroup" aria-label="Player source">
+        <label class="output-player-radio">
+          <input type="radio" name="${radioName}" value="video" data-output-player-mode="${escapeHtml(node.id)}"${mode === "video" ? " checked" : ""} />
+          <span>Video settings</span>
+        </label>
+        <label class="output-player-radio">
+          <input type="radio" name="${radioName}" value="profile" data-output-player-mode="${escapeHtml(node.id)}"${mode === "profile" ? " checked" : ""} />
+          <span>Profile settings</span>
+          ${profileSelectHtml}
+        </label>
+      </div>
+      <video id="${vidId}" class="output-video cld-video-player cld-fluid" playsinline preload="metadata"></video>
       <div class="output-url-field">
         <label for="out-embed-${node.id}">Cloudinary embed player URL (share)</label>
         <input id="out-embed-${node.id}" type="text" readonly class="output-url-readonly output-embed-readonly" value="${safeEmbed}" tabindex="-1" />
@@ -3888,6 +4020,15 @@
     return t === "output";
   }
 
+  function isVideoPlayerOutputBlockType(t) {
+    return t === "output_video_player";
+  }
+
+  /** Either Output · video or Output · video player — both render a Cloudinary video preview. */
+  function isAnyVideoOutputBlockType(t) {
+    return isVideoOutputBlockType(t) || isVideoPlayerOutputBlockType(t);
+  }
+
   function isImageOutputBlockType(t) {
     return t === "output_image";
   }
@@ -3898,7 +4039,7 @@
 
   function isTerminalOutputBlockType(t) {
     return (
-      isVideoOutputBlockType(t) ||
+      isAnyVideoOutputBlockType(t) ||
       isImageOutputBlockType(t) ||
       isTextOutputBlockType(t)
     );
@@ -4087,26 +4228,6 @@
     return Object.keys(p).length ? [p] : [];
   }
 
-  /**
-   * Always append f_auto / q_auto for the player; for non-video sources, derive MP4 first (chain segment before auto).
-   */
-  function playbackNormalizationPieces(resourceType) {
-    const rt = (resourceType || "video").toLowerCase();
-    if (rt === "video") {
-      return [prune({ fetch_format: "auto", quality: "auto" })];
-    }
-    return [
-      prune({
-        duration: "6",
-        effect: "loop",
-        fetch_format: "mp4",
-        video_codec: "h264",
-        quality: "auto",
-      }),
-      prune({ fetch_format: "auto", quality: "auto" }),
-    ].filter((p) => Object.keys(p).length > 0);
-  }
-
   /** Tail for image terminal blocks (still expects image-friendly fetch_format). */
   function imageTerminalPlaybackPieces(resourceType) {
     const rt = (resourceType || "video").toLowerCase();
@@ -4118,6 +4239,12 @@
 
   /**
    * Full HTTPS delivery URL: …/{image|video|raw}/upload/[chain]/public_id.ext
+   *
+   * Video terminal blocks (Output · video, Output · video player) deliver the chain as-is:
+   * no implicit `f_auto/q_auto` tail. Add an explicit Delivery block to override format /
+   * quality — that way the URL faithfully represents what the user wired. Image / still-frame
+   * terminals still get their format-friendly tail (`f_auto`/`f_jpg` etc.) since browsers
+   * need a concrete image format.
    */
   function buildDeliveryUrlForOutput(outputNodeId) {
     const outNode = nodes.find((n) => n.id === outputNodeId);
@@ -4138,8 +4265,6 @@
       pieces.push(...stillFramePlaybackTail());
     } else if (imageTerminal) {
       pieces.push(...imageTerminalPlaybackPieces(resourceType));
-    } else {
-      pieces.push(...playbackNormalizationPieces(resourceType));
     }
     const segments = pieces.map(transformationPieceToUrlSegment).filter(Boolean);
     const ext = inferDeliveryFileExtension(idsOnPath, resourceType, imageTerminal);
@@ -4164,6 +4289,28 @@
     const q = new URLSearchParams();
     q.set("cloud_name", cn);
     q.set("public_id", pubPath);
+    return "https://player.cloudinary.com/embed/?" + q.toString();
+  }
+
+  /**
+   * Embed-player URL for the Output · video player block. Adds `&profile=<name>` when the
+   * block is in "Profile settings" mode so the cloud-hosted player applies that saved
+   * configuration (transformations + UI) instead of the chain.
+   */
+  function buildCloudinaryEmbedPlayerUrlForPlayerBlock(outputNodeId) {
+    const node = nodes.find((n) => n.id === outputNodeId);
+    if (!node) return "";
+    const s = node.settings || {};
+    const useProfile = s.mode === "profile";
+    const profile = String(s.profile || "cld-default").trim() || "cld-default";
+    const { cloudName, publicId } = deliveryInputContextFromOutput(outputNodeId);
+    const pubPath = String(publicId).trim().split("/").filter(Boolean).join("/");
+    const cn = String(cloudName || "").trim();
+    if (!pubPath || !cn) return "";
+    const q = new URLSearchParams();
+    q.set("cloud_name", cn);
+    q.set("public_id", pubPath);
+    if (useProfile) q.set("profile", profile);
     return "https://player.cloudinary.com/embed/?" + q.toString();
   }
 
@@ -4485,12 +4632,14 @@
     const inputHintExtra = isMediaInputNodeType(node.def.type) ? 48 : 0;
     const sheetBoost = (nf ? Math.min(nf, 9) * 15 + 14 : 0) + inputHintExtra;
     const outputExtra = isVideoOutputBlockType(node.def.type)
-      ? 128
-      : isImageOutputBlockType(node.def.type)
-        ? 110
-        : isTextOutputBlockType(node.def.type)
-          ? 132
-          : 0;
+      ? 100
+      : isVideoPlayerOutputBlockType(node.def.type)
+        ? 174
+        : isImageOutputBlockType(node.def.type)
+          ? 110
+          : isTextOutputBlockType(node.def.type)
+            ? 132
+            : 0;
     /* Splice sheet: one row per incoming wire + a transition select between rows. The sheet
      * itself scrolls when it overflows, but estimating height keeps short lists tightly fit. */
     let spliceExtra = 0;
@@ -4661,6 +4810,8 @@
       let sheetHtml;
       if (isVideoOutputBlockType(def.type)) {
         sheetHtml = renderOutputSheet(node);
+      } else if (isVideoPlayerOutputBlockType(def.type)) {
+        sheetHtml = renderOutputVideoPlayerSheet(node);
       } else if (isImageOutputBlockType(def.type)) {
         sheetHtml = renderOutputImageSheet(node);
       } else if (isTextOutputBlockType(def.type)) {
@@ -4710,6 +4861,7 @@
     bindSettingsEvents();
     bindSpliceEvents();
     bindOutputPreviewToggle();
+    bindOutputVideoPlayerControls();
     bindInputAssetPicker();
     mountAllOutputCloudinaryPlayers(gen);
     syncOutputImageThumbnails();
@@ -4746,8 +4898,22 @@
       const ro = sheet.querySelector(".output-url-readonly:not(.output-embed-readonly)");
       if (ro) ro.value = computed;
       const emb = sheet.querySelector(".output-embed-readonly");
-      if (emb) emb.value = buildCloudinaryEmbedPlayerUrl(out.id);
-      if (!isVideoOutputBlockType(out.def.type)) continue;
+      if (emb) {
+        emb.value = isVideoPlayerOutputBlockType(out.def.type)
+          ? buildCloudinaryEmbedPlayerUrlForPlayerBlock(out.id)
+          : buildCloudinaryEmbedPlayerUrl(out.id);
+      }
+      if (!isAnyVideoOutputBlockType(out.def.type)) continue;
+      const useProfile =
+        isVideoPlayerOutputBlockType(out.def.type) &&
+        (out.settings || {}).mode === "profile";
+      /* Profile mode pins the source to the bare public_id (the Cloudinary profile defines
+       * its own transformations) — `source(deliveryUrl)` would overrule the profile, so
+       * always re-mount when the player is in profile mode. */
+      if (useProfile) {
+        mountOutputCloudinaryPlayer(out.id, outputPlayerRenderGen);
+        continue;
+      }
       const src = computed;
       const player = outputCldPlayers.get(out.id);
       if (player && typeof player.source === "function" && src) {
@@ -5013,6 +5179,38 @@
     });
   }
 
+  /** Mode radio + profile select on Output · video player sheets — flip `node.settings.mode`
+   * / `node.settings.profile` and re-render so the embed URL, JS-player options, and node
+   * height all sync. */
+  function bindOutputVideoPlayerControls() {
+    nodesLayer.querySelectorAll('input[data-output-player-mode]').forEach((inp) => {
+      inp.addEventListener("mousedown", (ev) => ev.stopPropagation());
+      inp.addEventListener("change", () => {
+        if (!inp.checked) return;
+        const nid = inp.getAttribute("data-output-player-mode");
+        const node = nodes.find((n) => n.id === nid);
+        if (!node) return;
+        node.settings = node.settings || {};
+        node.settings.mode = String(inp.value).trim() === "profile" ? "profile" : "video";
+        renderNodes();
+        refreshOutputDeliveryUi();
+        notifyAppletEditorFlowMaybeDirty();
+      });
+    });
+    nodesLayer.querySelectorAll('select[data-output-player-profile]').forEach((sel) => {
+      sel.addEventListener("mousedown", (ev) => ev.stopPropagation());
+      sel.addEventListener("change", () => {
+        const nid = sel.getAttribute("data-output-player-profile");
+        const node = nodes.find((n) => n.id === nid);
+        if (!node) return;
+        node.settings = node.settings || {};
+        node.settings.profile = String(sel.value).trim() || "cld-default";
+        refreshOutputDeliveryUi();
+        notifyAppletEditorFlowMaybeDirty();
+      });
+    });
+  }
+
   /** "Preview only" checkbox on output sheets — toggles `node.settings.isPreview`. */
   function bindOutputPreviewToggle() {
     nodesLayer.querySelectorAll("input[data-output-preview]").forEach((cb) => {
@@ -5220,7 +5418,14 @@
     if (type === "input_video" || type === "input_image" || type === "input_text") {
       return "inputs";
     }
-    if (type === "output" || type === "output_image" || type === "output_text") return "outputs";
+    if (
+      type === "output" ||
+      type === "output_video_player" ||
+      type === "output_image" ||
+      type === "output_text"
+    ) {
+      return "outputs";
+    }
     if (type.startsWith("mock_")) return "ai";
     if (EDITING_BLOCK_TYPES.has(type)) return "editing";
     if (ACCESSIBILITY_BLOCK_TYPES.has(type)) return "accessibility";
@@ -6447,9 +6652,15 @@
       deliveryUrl: deliveryUrl || null,
     };
     if (spec.kind === "video") {
+      const specNode = nodes.find((n) => n.id === spec.nodeId);
+      const isPlayerBlock = !!(specNode && isVideoPlayerOutputBlockType(specNode.def.type));
       let embed = "";
       try {
-        embed = String(buildCloudinaryEmbedPlayerUrl(spec.nodeId) || "").trim();
+        embed = String(
+          (isPlayerBlock
+            ? buildCloudinaryEmbedPlayerUrlForPlayerBlock(spec.nodeId)
+            : buildCloudinaryEmbedPlayerUrl(spec.nodeId)) || ""
+        ).trim();
       } catch (e2) {
         embed = "";
       }
