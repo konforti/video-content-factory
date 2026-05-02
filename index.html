@@ -1439,6 +1439,13 @@
       color: #92400e;
     }
 
+    .flow-load-delete.is-pending,
+    .flow-load-delete.is-pending:hover {
+      background: #b45309;
+      color: #fff;
+      border-color: #b45309;
+    }
+
     /* Applets hub + editor: dock to the right under the header (not centered) */
     /* Closed <dialog> must stay hidden: author `display:flex` overrides UA `dialog:not(:open){display:none}` */
     .flow-dialog.flow-dialog-applet-panel:not(:open) {
@@ -1821,7 +1828,7 @@
             id="brand-flow-name"
             role="button"
             tabindex="0"
-            title="Load flow"
+            title="Your flows"
           >Untitled</span>
         </div>
       </div>
@@ -1911,7 +1918,7 @@
 
     <dialog id="flow-load-dialog" class="flow-dialog">
       <div class="flow-dialog-inner">
-        <h3 class="flow-dialog-title">Load flow</h3>
+        <h3 class="flow-dialog-title">Your flows</h3>
         <div id="flow-load-list" class="flow-load-list" role="list"></div>
         <input type="file" id="flow-import-input" accept="application/json,.json" hidden />
         <div class="flow-dialog-actions">
@@ -2029,13 +2036,12 @@
     const el = document.getElementById("brand-flow-name");
     if (!el) return;
     const trimmed = String(nameOrEmpty || "").trim();
+    el.title = "Your flows";
     if (trimmed) {
       el.textContent = trimmed;
-      el.title = "Load flow";
       el.classList.remove("is-untitled");
     } else {
       el.textContent = "Untitled";
-      el.title = "Load flow";
       el.classList.add("is-untitled");
     }
   }
@@ -6140,6 +6146,48 @@
     }
   }
 
+  /** Two-step inline confirm for the Delete button in the saved-flows list:
+   * first click arms the button, second click within the timeout actually deletes. */
+  let pendingFlowDeleteName = null;
+  let pendingFlowDeleteTimer = null;
+  const PENDING_FLOW_DELETE_LABEL = "Confirm delete?";
+  const PENDING_FLOW_DELETE_MS = 4000;
+
+  function findFlowDeleteButton(name) {
+    const enc = encodeURIComponent(name);
+    const row = document.querySelector(
+      '.flow-load-row[data-flow-name="' + enc.replace(/"/g, '\\"') + '"]'
+    );
+    return row ? row.querySelector(".flow-load-delete") : null;
+  }
+
+  function clearPendingFlowDelete() {
+    if (pendingFlowDeleteTimer !== null) {
+      clearTimeout(pendingFlowDeleteTimer);
+      pendingFlowDeleteTimer = null;
+    }
+    if (pendingFlowDeleteName !== null) {
+      const btn = findFlowDeleteButton(pendingFlowDeleteName);
+      if (btn) {
+        btn.classList.remove("is-pending");
+        btn.textContent = "Delete";
+      }
+      pendingFlowDeleteName = null;
+    }
+  }
+
+  function armPendingFlowDelete(name, btn) {
+    clearPendingFlowDelete();
+    if (!btn) return;
+    pendingFlowDeleteName = name;
+    btn.classList.add("is-pending");
+    btn.textContent = PENDING_FLOW_DELETE_LABEL;
+    pendingFlowDeleteTimer = setTimeout(() => {
+      pendingFlowDeleteTimer = null;
+      clearPendingFlowDelete();
+    }, PENDING_FLOW_DELETE_MS);
+  }
+
   /** Best-effort filesystem-safe filename from a flow name. Falls back to "flow". */
   function flowDownloadFilename(name) {
     const safe = String(name || "")
@@ -6226,6 +6274,7 @@
   function renderSavedFlowsList() {
     const container = document.getElementById("flow-load-list");
     if (!container) return;
+    clearPendingFlowDelete();
     const store = readFlowStore();
     const names = Object.keys(store.flows).sort((a, b) => a.localeCompare(b));
     if (names.length === 0) {
@@ -7175,6 +7224,10 @@
     document.getElementById("flow-load-dialog").close();
   });
 
+  document.getElementById("flow-load-dialog").addEventListener("close", () => {
+    clearPendingFlowDelete();
+  });
+
   document.getElementById("flow-save-dialog").addEventListener("click", (e) => {
     if (e.target === e.currentTarget && typeof e.currentTarget.close === "function") e.currentTarget.close();
   });
@@ -7192,15 +7245,22 @@
     const name = enc ? decodeURIComponent(enc) : "";
     if (!name) return;
     if (loadBtn) {
+      clearPendingFlowDelete();
       const dlgLoad = document.getElementById("flow-load-dialog");
       const loaded = loadFlowByName(name);
       if (loaded && dlgLoad && dlgLoad.open) dlgLoad.close();
     } else if (exportBtn) {
       e.preventDefault();
+      clearPendingFlowDelete();
       exportSavedFlowByName(name);
     } else if (delBtn) {
       e.preventDefault();
-      void deleteSavedFlowByName(name);
+      if (pendingFlowDeleteName === name) {
+        clearPendingFlowDelete();
+        void deleteSavedFlowByName(name);
+      } else {
+        armPendingFlowDelete(name, delBtn);
+      }
     }
   });
 
