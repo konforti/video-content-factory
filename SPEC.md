@@ -86,9 +86,9 @@ today — not where it might go next.
 | Purpose | Source | Loaded |
 |---|---|---|
 | Inter + JetBrains Mono fonts | `fonts.googleapis.com` | eagerly via `<link>` |
-| Cloudinary Video Player JS + CSS | `cdn.jsdelivr.net/npm/cloudinary-video-player` | lazily, the first time an `output_*video*` block needs to mount a player (`ensureCloudinaryVideoPlayerLib`) |
+| Cloudinary Video Player JS + CSS | `cdn.jsdelivr.net/npm/cloudinary-video-player` | lazily, the first time an `output` / `output_video_player` block needs to mount a player (`ensureCloudinaryVideoPlayerLib`) |
 | Cloudinary Media Library widget | `media-library.cloudinary.com/global/all.js` | lazily, the first time an Input block's "Browse" button is clicked (`loadMediaLibraryScript`) |
-| Cloudinary embed iframe | `player.cloudinary.com/embed/?…` | rendered as `<iframe>` for embed-mode previews |
+| Cloudinary embed-player URL | `player.cloudinary.com/embed/?…` | not embedded as an `<iframe>` in the canvas — surfaced as a readonly text field on the `output_video_player` sheet for users to copy / share. The in-canvas preview always uses the JS Video Player against the same `<video>` element. |
 
 ### 3.3 Top-level JS state
 All scoped inside the IIFE:
@@ -248,8 +248,8 @@ punctuation. Cycles through `mock_ai_text` are guarded by a `visited` set.
 ### 5.4 Outputs
 | Block | Behaviour |
 |---|---|
-| `output` *(Output · video)* | Compiles full chain into a Cloudinary delivery URL; mounts the Cloudinary Video Player against that URL. |
-| `output_video_player` *(Output · video player)* | Two modes via `settings.mode`: `"video"` (chain delivery URL, like above) and `"profile"` (uses Cloudinary Player profile `settings.profile` — the cloud applies the profile's transformations + UI server-side; the chain is ignored on this branch). |
+| `output` *(Output · video)* | Compiles full chain into a Cloudinary delivery URL; mounts the Cloudinary Video Player against that URL. Sheet shows the delivery URL only — no embed-player URL field. |
+| `output_video_player` *(Output · video player)* | Cloud-hosted-player view of the same pipeline. Sheet shows the embed-player URL with `cloud_name`, `public_id`, and the upstream chain mirrored into a single `&raw_transformation=<chain>` param (so splice / overlays / layer_apply / named transitions all carry through). Two modes via `settings.mode`: `"video"` mounts the JS player against the chain delivery URL (same preview as `output`); `"profile"` adds `&profile=<settings.profile>` and mounts the JS player with `{ profile }` + a bare public_id source — the cloud applies the profile's transformations + UI server-side, and the chain is also forwarded so it can compose with the profile. Profile dropdown is `CLOUDINARY_PLAYER_PROFILES`. |
 | `output_image` | Image preview. URL extension forced to `jpg/png/webp/auto` based on Format & quality / Video → image upstream. |
 | `output_text` | Read-only readout of `buildOutputTextResultForOutput`. |
 
@@ -308,11 +308,25 @@ guard against cycles via `visited` sets.
    `https://res.cloudinary.com/<cloud>/<image|video|raw>/upload/<segments joined by />/<public_id>.<ext>`.
 
 ### 7.2 Embed Player URL
-`buildCloudinaryEmbedPlayerUrl(outputId)` returns a query-string URL of the
-form `https://player.cloudinary.com/embed/?cloud_name=…&public_id=…`. The
-`output_video_player` block's `profile` mode adds `&profile=<profile>` and
-the cloud-hosted player applies the profile server-side. The chain is **not**
-included in the embed URL — the embed always sources the raw public_id.
+Two builders share `basePlayerEmbedParams(outputId)` for the mandatory
+`cloud_name` + `public_id` params:
+
+- **`buildCloudinaryEmbedPlayerUrl(outputId)`** — minimal form
+  `https://player.cloudinary.com/embed/?cloud_name=…&public_id=…`. No chain
+  in the URL, so the embed plays back the original asset. Used by the
+  applet example-response readout when the terminal is a regular
+  `output` (Output · video).
+- **`buildCloudinaryEmbedPlayerUrlForPlayerBlock(outputId)`** — used by
+  `output_video_player`. Always appends the chain via
+  `&raw_transformation=<chain>` (a single param carrying the same `/`-joined
+  string as the segments in the delivery URL; built by
+  `buildRawTransformationChainForOutput` over the same primary-path walk
+  used by `buildDeliveryUrlForOutput`, just without the image / still-frame
+  delivery tail). When `settings.mode === "profile"` it also adds
+  `&profile=<settings.profile>`. Encoding for the chain value goes through
+  `encodeRawTransformationForQuery`, which keeps Cloudinary URL syntax
+  characters (`,` `/` `:` `(` `)` `[` `]`) literal and only escapes chars
+  that would break the query string (` ` `&` `#` `?` `+`).
 
 ### 7.3 Splice compilation
 Detail of `case "splice"` inside `nodeTransformationPieces`:

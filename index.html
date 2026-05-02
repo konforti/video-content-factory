@@ -3252,15 +3252,13 @@
     const node = nodes.find((n) => n.id === nodeId && isAnyVideoOutputBlockType(n.def.type));
     if (!node) return;
 
-    const useProfile =
-      isVideoPlayerOutputBlockType(node.def.type) &&
-      (node.settings || {}).mode === "profile";
+    const useProfile = isVideoPlayerProfileMode(node);
     const profileName = useProfile
       ? String((node.settings || {}).profile || "cld-default").trim() || "cld-default"
       : "";
     const cloudName = getPlayerCloudNameForOutput(nodeId);
     const { publicId } = deliveryInputContextFromOutput(nodeId);
-    const pubPath = String(publicId || "").trim().split("/").filter(Boolean).join("/");
+    const pubPath = normalizePublicIdPath(publicId);
     const computed = buildDeliveryUrlForOutput(nodeId);
     const src = useProfile ? pubPath : computed;
 
@@ -4011,7 +4009,7 @@
     if (!pid && defIn.publicId != null && String(defIn.publicId).trim()) {
       pid = String(defIn.publicId).trim();
     }
-    const pubPath = pid.split("/").filter(Boolean).join("/");
+    const pubPath = normalizePublicIdPath(pid);
     if (!pubPath) return null;
     return "image:" + pubPath.replace(/\//g, ":");
   }
@@ -4027,6 +4025,26 @@
   /** Either Output · video or Output · video player — both render a Cloudinary video preview. */
   function isAnyVideoOutputBlockType(t) {
     return isVideoOutputBlockType(t) || isVideoPlayerOutputBlockType(t);
+  }
+
+  /** True when the given node is an Output · video player block currently set to "Profile
+   * settings" mode (the cloud-hosted player applies a saved profile config server-side
+   * instead of consuming the chain delivery URL). Mount/refresh/embed-builder all branch on
+   * this — keep it centralised so they don't drift. */
+  function isVideoPlayerProfileMode(node) {
+    return !!(
+      node &&
+      isVideoPlayerOutputBlockType(node.def.type) &&
+      (node.settings || {}).mode === "profile"
+    );
+  }
+
+  /** Trim, drop empty segments, and re-join a Cloudinary `public_id` path so URL builders
+   * always see a consistent `folder/asset_name` form regardless of leading / trailing /
+   * doubled slashes in user input. Returns "" for undefined / empty input. */
+  function normalizePublicIdPath(value) {
+    if (value === undefined || value === null) return "";
+    return String(value).trim().split("/").filter(Boolean).join("/");
   }
 
   function isImageOutputBlockType(t) {
@@ -4280,7 +4298,7 @@
     }
     const segments = pieces.map(transformationPieceToUrlSegment).filter(Boolean);
     const ext = inferDeliveryFileExtension(idsOnPath, resourceType, imageTerminal);
-    const pubPath = String(publicId).trim().split("/").filter(Boolean).join("/");
+    const pubPath = normalizePublicIdPath(publicId);
     if (!pubPath) return "";
     const rtPath = resourceTypePath(resourceType);
     let url = "https://res.cloudinary.com/" + encodeURIComponent(cloudName) + "/" + rtPath + "/upload";
@@ -4290,18 +4308,34 @@
   }
 
   /**
-   * Cloud-hosted Video Player iframe URL (see Cloudinary “How to embed”).
-   * Uses cloud_name + public_id from the pipeline input (no transformation chain in the embed URL).
+   * The mandatory query params (`cloud_name`, `public_id`) every Cloudinary embed-player
+   * URL needs. Returns `null` when the upstream input is missing a public_id or cloud name
+   * — callers translate that into an empty URL string. Manual `encodeURIComponent` (over
+   * `URLSearchParams`) so we keep a consistent encoding strategy with
+   * `buildCloudinaryEmbedPlayerUrlForPlayerBlock`, which adds query values that mustn't be
+   * touched by the default URL-encoder.
+   */
+  function basePlayerEmbedParams(outputNodeId) {
+    const { cloudName, publicId } = deliveryInputContextFromOutput(outputNodeId);
+    const pubPath = normalizePublicIdPath(publicId);
+    const cn = String(cloudName || "").trim();
+    if (!pubPath || !cn) return null;
+    return [
+      "cloud_name=" + encodeURIComponent(cn),
+      "public_id=" + encodeURIComponent(pubPath),
+    ];
+  }
+
+  /**
+   * Bare cloud-hosted Video Player URL (see Cloudinary “How to embed”). cloud_name +
+   * public_id only — the chain is **not** included on this URL, so the embed always plays
+   * back the original asset. Used by the regular Output · video block and by the applet
+   * example-response readout when the terminal isn't an Output · video player.
    */
   function buildCloudinaryEmbedPlayerUrl(outputNodeId) {
-    const { cloudName, publicId } = deliveryInputContextFromOutput(outputNodeId);
-    const pubPath = String(publicId).trim().split("/").filter(Boolean).join("/");
-    const cn = String(cloudName || "").trim();
-    if (!pubPath || !cn) return "";
-    const q = new URLSearchParams();
-    q.set("cloud_name", cn);
-    q.set("public_id", pubPath);
-    return "https://player.cloudinary.com/embed/?" + q.toString();
+    const params = basePlayerEmbedParams(outputNodeId);
+    if (!params) return "";
+    return "https://player.cloudinary.com/embed/?" + params.join("&");
   }
 
   /**
@@ -4344,17 +4378,12 @@
   function buildCloudinaryEmbedPlayerUrlForPlayerBlock(outputNodeId) {
     const node = nodes.find((n) => n.id === outputNodeId);
     if (!node) return "";
-    const s = node.settings || {};
-    const useProfile = s.mode === "profile";
-    const profile = String(s.profile || "cld-default").trim() || "cld-default";
-    const { cloudName, publicId } = deliveryInputContextFromOutput(outputNodeId);
-    const pubPath = String(publicId).trim().split("/").filter(Boolean).join("/");
-    const cn = String(cloudName || "").trim();
-    if (!pubPath || !cn) return "";
-    const params = [];
-    params.push("cloud_name=" + encodeURIComponent(cn));
-    params.push("public_id=" + encodeURIComponent(pubPath));
-    if (useProfile) params.push("profile=" + encodeURIComponent(profile));
+    const params = basePlayerEmbedParams(outputNodeId);
+    if (!params) return "";
+    if (isVideoPlayerProfileMode(node)) {
+      const profile = String((node.settings || {}).profile || "cld-default").trim() || "cld-default";
+      params.push("profile=" + encodeURIComponent(profile));
+    }
     const chain = buildRawTransformationChainForOutput(outputNodeId);
     if (chain) {
       params.push("raw_transformation=" + encodeRawTransformationForQuery(chain));
@@ -4952,13 +4981,10 @@
           : buildCloudinaryEmbedPlayerUrl(out.id);
       }
       if (!isAnyVideoOutputBlockType(out.def.type)) continue;
-      const useProfile =
-        isVideoPlayerOutputBlockType(out.def.type) &&
-        (out.settings || {}).mode === "profile";
       /* Profile mode pins the source to the bare public_id (the Cloudinary profile defines
        * its own transformations) — `source(deliveryUrl)` would overrule the profile, so
        * always re-mount when the player is in profile mode. */
-      if (useProfile) {
+      if (isVideoPlayerProfileMode(out)) {
         mountOutputCloudinaryPlayer(out.id, outputPlayerRenderGen);
         continue;
       }
