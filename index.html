@@ -122,11 +122,35 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       min-width: 0;
+      cursor: pointer;
+      padding: 2px 6px;
+      margin: -2px -6px;
+      border-radius: 6px;
+      transition: background 0.14s, color 0.14s;
+    }
+
+    .brand-flow-name:hover,
+    .brand-flow-name:focus-visible {
+      background: rgba(0, 0, 0, 0.05);
+      color: var(--text);
+      outline: none;
     }
 
     .brand-flow-name.is-untitled {
       color: var(--text-faint);
       font-style: italic;
+    }
+
+    /* Amber " · unsaved" suffix on the brand flow name whenever the canvas content has
+       diverged from the last saved/loaded baseline. Matches the applet editor pattern. */
+    .brand-flow-name.is-unsaved::after {
+      content: " · unsaved";
+      font-weight: 500;
+      color: #b45309;
+      font-style: normal;
+      font-size: 11px;
+      letter-spacing: 0;
+      margin-left: 1px;
     }
 
     .toolbar {
@@ -223,7 +247,7 @@
       opacity: 0.95;
     }
 
-    /* Bordered pill for Save flow / Load flow — more prominent than `.btn` ghost buttons,
+    /* Bordered pill for Save flow / Import — more prominent than `.btn` ghost buttons,
        lighter than `.btn-run` so the run action stays the primary CTA. */
     .btn-flow {
       font-family: inherit;
@@ -656,19 +680,6 @@
       box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
     }
 
-    .input-vf-hint {
-      margin: 0 0 4px;
-      font-size: 11px;
-      line-height: 1.35;
-      color: var(--text-soft);
-    }
-
-    .input-vf-hint code {
-      font-family: "JetBrains Mono", ui-monospace, monospace;
-      font-size: 11px;
-      color: var(--text-faint);
-    }
-
     .cld-field {
       margin-bottom: 3px;
     }
@@ -878,20 +889,6 @@
       overflow-y: auto;
       overscroll-behavior: contain;
       cursor: default;
-    }
-
-    .splice-hint {
-      margin: 0 0 5px;
-      font-size: 11px;
-      line-height: 1.35;
-      color: var(--text-faint);
-    }
-
-    .splice-handle-glyph {
-      font-family: "JetBrains Mono", ui-monospace, monospace;
-      letter-spacing: -1px;
-      color: var(--text-faint);
-      padding: 0 2px;
     }
 
     .splice-list {
@@ -1245,6 +1242,19 @@
       backdrop-filter: blur(2px);
     }
 
+    /* Popover variant: anchored next to the trigger element (Save flow button or the brand
+     * flow name for Load flow) instead of the default centered showModal() layout. Position
+     * is set inline by JS based on the trigger's bounding rect. */
+    .flow-dialog.flow-dialog-popover {
+      position: fixed;
+      margin: 0;
+      inset: auto;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    .flow-dialog.flow-dialog-popover::backdrop {
+      display: none;
+    }
+
     .flow-dialog-inner {
       padding: 18px 20px 16px;
     }
@@ -1295,6 +1305,19 @@
       justify-content: flex-end;
       gap: 8px;
       flex-wrap: wrap;
+    }
+
+    /* Action button pinned to the start of `.flow-dialog-actions` while the rest stay
+       right-aligned (e.g. "Import from file…" on the left, "Close" on the right). */
+    .flow-dialog-actions .flow-dialog-action-leading {
+      margin-right: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .flow-dialog-actions .flow-dialog-action-leading svg {
+      flex-shrink: 0;
+      opacity: 0.85;
     }
 
     .flow-load-list {
@@ -1554,13 +1577,6 @@
       max-height: min(260px, 38vh);
     }
 
-    .applet-example-response-hint {
-      margin: 0 0 8px;
-      font-size: 10px;
-      line-height: 1.4;
-      color: var(--text-soft);
-    }
-
     .applet-bind-meta {
       font-size: 12px;
       color: var(--text);
@@ -1750,15 +1766,21 @@
           <div class="brand-mark" aria-hidden="true"></div>
           <span class="brand-name">Studio</span>
           <span class="brand-divider" aria-hidden="true">/</span>
-          <span class="brand-flow-name" id="brand-flow-name" title="Current flow">Untitled</span>
+          <span
+            class="brand-flow-name"
+            id="brand-flow-name"
+            role="button"
+            tabindex="0"
+            title="Load flow"
+          >Untitled</span>
         </div>
       </div>
       <div class="toolbar">
-        <button type="button" class="btn-run" id="btn-run-flow" title="Run flow — refresh previews (⌘↵ or Ctrl+Enter)">
+        <button type="button" class="btn-run" id="btn-run-flow" title="Run flow (⌘↵)">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
           Run flow
         </button>
-        <button type="button" class="btn-flow" id="btn-save-flow" title="Save this canvas under a name (browser storage only)">
+        <button type="button" class="btn-flow" id="btn-save-flow">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
             <polyline points="17 21 17 13 7 13 7 21"/>
@@ -1766,37 +1788,11 @@
           </svg>
           Save flow
         </button>
-        <button type="button" class="btn-flow" id="btn-load-flow" title="Load a flow saved in this browser">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-            <polyline points="8 13 12 17 16 13"/>
-            <line x1="12" y1="17" x2="12" y2="9"/>
-          </svg>
-          Load flow
-        </button>
-        <button type="button" class="btn-flow" id="btn-export-flow" title="Download this flow as a JSON file you can share">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          Export
-        </button>
-        <button type="button" class="btn-flow" id="btn-import-flow" title="Load a flow from a JSON file (replaces the current canvas)">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="17 8 12 3 7 8"/>
-            <line x1="12" y1="3" x2="12" y2="15"/>
-          </svg>
-          Import
-        </button>
-        <input type="file" id="flow-import-input" accept="application/json,.json" hidden />
         <span class="toolbar-divider" aria-hidden="true"></span>
         <button
           type="button"
           class="btn-applet"
           id="btn-applets"
-          title="Workflow applet — tied to the named flow you saved (Save flow first)"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="3" y="3" width="7" height="7" rx="1" />
@@ -1848,24 +1844,14 @@
           <span class="sr-only">Fit view</span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
         </button>
-        <span class="dock-divider" aria-hidden="true"></span>
-        <button type="button" class="dock-btn" id="dock-undo" title="Undo" disabled>
-          <span class="sr-only">Undo</span>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/></svg>
-        </button>
-        <button type="button" class="dock-btn" id="dock-redo" title="Redo" disabled>
-          <span class="sr-only">Redo</span>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 019-9 9 9 0 016 2.3l3 2.7"/></svg>
-        </button>
       </nav>
     </div>
 
     <dialog id="flow-save-dialog" class="flow-dialog">
       <div class="flow-dialog-inner">
         <h3 class="flow-dialog-title">Save flow</h3>
-        <p class="flow-dialog-hint">Flows are stored only in this browser (localStorage). They are not uploaded.</p>
         <label class="flow-dialog-label" for="flow-save-name">Name</label>
-        <input type="text" id="flow-save-name" class="flow-dialog-input" autocomplete="off" maxlength="120" placeholder="e.g. Hero teaser" />
+        <input type="text" id="flow-save-name" class="flow-dialog-input" autocomplete="off" maxlength="120" placeholder="Flow name" />
         <div class="flow-dialog-actions">
           <button type="button" class="btn" id="flow-save-cancel">Cancel</button>
           <button type="button" class="btn-run" id="flow-save-confirm">Save</button>
@@ -1876,9 +1862,17 @@
     <dialog id="flow-load-dialog" class="flow-dialog">
       <div class="flow-dialog-inner">
         <h3 class="flow-dialog-title">Load flow</h3>
-        <p class="flow-dialog-hint">Pick a flow saved in this browser. Loading replaces the current canvas.</p>
         <div id="flow-load-list" class="flow-load-list" role="list"></div>
+        <input type="file" id="flow-import-input" accept="application/json,.json" hidden />
         <div class="flow-dialog-actions">
+          <button type="button" class="btn flow-dialog-action-leading" id="btn-import-flow" title="Import flow from JSON">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Import from file…
+          </button>
           <button type="button" class="btn" id="flow-load-close">Close</button>
         </div>
       </div>
@@ -1888,10 +1882,10 @@
       <div class="flow-dialog-inner">
         <h3 class="flow-dialog-title" id="applet-edit-heading">Workflow applet</h3>
         <p class="flow-dialog-hint" id="applet-edit-hint"></p>
-        <p id="applet-edit-dirty-banner" class="applet-edit-dirty-banner" hidden>Unsaved changes — description, input bindings, or the blueprint on the canvas (blocks, wiring, positions, settings, view). Save the applet to persist.</p>
+        <p id="applet-edit-dirty-banner" class="applet-edit-dirty-banner" hidden>Unsaved changes.</p>
         <label class="flow-dialog-label" for="applet-edit-name">Applet name</label>
-        <input type="text" id="applet-edit-name" class="flow-dialog-input" autocomplete="off" maxlength="120" readonly placeholder="Save flow first…" title="Same as the active saved flow; cannot be changed here" />
-        <label class="flow-dialog-label" for="applet-edit-description" id="applet-edit-description-label">Description (optional)</label>
+        <input type="text" id="applet-edit-name" class="flow-dialog-input" autocomplete="off" maxlength="120" readonly placeholder="Save flow first…" />
+        <label class="flow-dialog-label" for="applet-edit-description" id="applet-edit-description-label">Description</label>
         <textarea id="applet-edit-description" class="flow-dialog-textarea" rows="2" maxlength="2000" placeholder="What this applet does…"></textarea>
         <div class="applet-inputs-wrap applet-bindings-panel">
           <div class="applet-inputs-head">
@@ -1912,14 +1906,11 @@
           ></div>
         </div>
         <details class="applet-api-details">
-          <summary class="applet-api-summary">API — run method (planned)</summary>
+          <summary class="applet-api-summary">API — run method</summary>
           <pre id="applet-api-method-readout" class="applet-api-readout" aria-live="polite"></pre>
         </details>
         <details class="applet-api-details">
-          <summary class="applet-api-summary">Example API response body</summary>
-          <p class="flow-dialog-hint applet-example-response-hint">
-            Read-only preview of a successful <code>POST …/run</code> response for this flow. <code>deliveryUrl</code> is computed from the current canvas when possible.
-          </p>
+          <summary class="applet-api-summary">Example response body</summary>
           <pre id="applet-example-response-readout" class="applet-api-readout" aria-live="polite"></pre>
         </details>
         <div class="flow-dialog-actions">
@@ -1946,8 +1937,6 @@
 
   /** Saved workflow document format + localStorage store for named flows */
   const FLOW_DOC_VERSION = 1;
-  /** @deprecated migrated once into FLOW_STORE_KEY */
-  const FLOW_LS_LEGACY_KEY = "videofactory.workflow.v1";
   const FLOW_STORE_KEY = "videofactory.workflow.store.v1";
   /** Active saved flow id lives in the URL (`?flow=name`), not as lastActive in localStorage. */
   const FLOW_QUERY_PARAM = "flow";
@@ -1979,11 +1968,11 @@
     const trimmed = String(nameOrEmpty || "").trim();
     if (trimmed) {
       el.textContent = trimmed;
-      el.title = trimmed;
+      el.title = "Load flow";
       el.classList.remove("is-untitled");
     } else {
       el.textContent = "Untitled";
-      el.title = "No flow saved yet — use Save flow to name it.";
+      el.title = "Load flow";
       el.classList.add("is-untitled");
     }
   }
@@ -2077,7 +2066,7 @@
       id: "loop",
       label: "Loop",
       defaults: { loopCount: "2" },
-      fields: [{ key: "loopCount", label: "Times", type: "text", placeholder: "e.g. 2 (optional)" }],
+      fields: [{ key: "loopCount", label: "Times", type: "text", placeholder: "" }],
       build(s) {
         const c = String(s.loopCount ?? "").trim();
         return c ? "loop:" + c : "loop";
@@ -2097,7 +2086,7 @@
       id: "fade_in",
       label: "Fade in",
       defaults: { fadeMs: "2000" },
-      fields: [{ key: "fadeMs", label: "Duration (ms)", type: "text", placeholder: "milliseconds" }],
+      fields: [{ key: "fadeMs", label: "Duration (ms)", type: "text", placeholder: "" }],
       build(s) {
         const v = String(s.fadeMs ?? "2000").trim() || "2000";
         return "fade_in:" + v;
@@ -2107,7 +2096,7 @@
       id: "fade_out",
       label: "Fade out",
       defaults: { fadeMs: "2000" },
-      fields: [{ key: "fadeMs", label: "Duration (ms)", type: "text", placeholder: "milliseconds" }],
+      fields: [{ key: "fadeMs", label: "Duration (ms)", type: "text", placeholder: "" }],
       build(s) {
         const v = String(s.fadeMs ?? "2000").trim() || "2000";
         return "fade_out:" + v;
@@ -2150,7 +2139,7 @@
           key: "customEffect",
           label: "Effect string (e_)",
           type: "textarea",
-          placeholder: "blur:50 · accelerate:-50 · reverse",
+          placeholder: "e.g. blur:50",
         },
       ],
       build(s) {
@@ -2159,81 +2148,11 @@
     },
   ];
 
-  function migrateEffectSettings(s) {
-    const out = Object.assign({}, s);
-    if (out.effectPreset && CLD_VIDEO_EFFECT_PRESETS.some((p) => p.id === out.effectPreset)) {
-      return out;
-    }
-    const legacy = (out.effect && String(out.effect).trim()) || "";
-    delete out.effect;
-    if (!legacy) {
-      out.effectPreset = "blur";
-      out.blurStrength = out.blurStrength || "50";
-      return out;
-    }
-    const low = legacy.toLowerCase().replace(/\s+/g, "");
-    if (["reverse", "boomerang", "loop", "grayscale", "sepia"].includes(low)) {
-      out.effectPreset = low === "loop" ? "loop" : low;
-      return out;
-    }
-    const loopM = legacy.match(/^loop(?::(\d+))?$/i);
-    if (loopM) {
-      out.effectPreset = "loop";
-      if (loopM[1]) out.loopCount = loopM[1];
-      return out;
-    }
-    const blurM = legacy.match(/^blur:(\d+)/i);
-    if (blurM) {
-      out.effectPreset = "blur";
-      out.blurStrength = blurM[1];
-      return out;
-    }
-    const accM = legacy.match(/^accelerate:([-\d.]+)/i);
-    if (accM) {
-      out.effectPreset = "accelerate";
-      out.accelPct = accM[1];
-      return out;
-    }
-    const decM = legacy.match(/^decelerate:([-\d.]+)/i);
-    if (decM) {
-      out.effectPreset = "decelerate";
-      out.decelPct = decM[1];
-      return out;
-    }
-    const vigM = legacy.match(/^vignette:([\d.]+)/i);
-    if (vigM) {
-      out.effectPreset = "vignette";
-      out.vignetteAmt = vigM[1];
-      return out;
-    }
-    const fiM = legacy.match(/^fade_in:(\d+)/i);
-    if (fiM) {
-      out.effectPreset = "fade_in";
-      out.fadeMs = fiM[1];
-      return out;
-    }
-    const foM = legacy.match(/^fade_out:(\d+)/i);
-    if (foM) {
-      out.effectPreset = "fade_out";
-      out.fadeMs = foM[1];
-      return out;
-    }
-    const nM = legacy.match(/^noise:([\d.]+)/i);
-    if (nM) {
-      out.effectPreset = "noise";
-      out.noiseLevel = nM[1];
-      return out;
-    }
-    out.effectPreset = "custom";
-    out.customEffect = legacy;
-    return out;
-  }
-
   function buildEffectFromPreset(s) {
-    const ms = migrateEffectSettings(s);
     const preset =
-      CLD_VIDEO_EFFECT_PRESETS.find((p) => p.id === (ms.effectPreset || "blur")) || CLD_VIDEO_EFFECT_PRESETS[0];
-    const raw = preset.build(ms);
+      CLD_VIDEO_EFFECT_PRESETS.find((p) => p.id === ((s && s.effectPreset) || "blur")) ||
+      CLD_VIDEO_EFFECT_PRESETS[0];
+    const raw = preset.build(s || {});
     return String(raw).trim();
   }
 
@@ -2302,7 +2221,7 @@
           key: "prompt",
           label: "Text",
           type: "textarea",
-          placeholder: "Any text — overlay, applet params, prompts (system vs user is how you use it)",
+          placeholder: "",
         },
       ],
     },
@@ -2318,9 +2237,13 @@
       ins: [{ id: "in", label: "", multiple: true }],
       outs: [{ id: "out", label: "" }],
       placeholder: "",
+      /* Emits Cloudinary `fl_splice[:transition_(name_<x>)],l_video:<id>/<inlined chain>/
+       * fl_layer_apply` chunks for every segment after the first. The first segment becomes
+       * the base video via `findPrimaryMediaInputNode` (splice-aware). */
+      cldKind: "splice",
       defaultSettings: {
-        order: [],        /* edge ids, top → bottom segment order */
-        transitions: {},  /* edge id → transition value (between this segment and the next) */
+        order: [],            /* edge ids, top → bottom segment order */
+        transitions: {},      /* edge id → transition preset (between this segment and the next) */
       },
     },
     {
@@ -2364,8 +2287,7 @@
           key: "chain",
           label: "Transformation string",
           type: "textarea",
-          placeholder:
-            "URL segments: w_640,c_fill or w_640/e_grayscale — split on / or newline",
+          placeholder: "w_640,c_fill / e_grayscale",
         },
       ],
     },
@@ -2397,8 +2319,8 @@
           { v: "limit", label: "limit" },
           { v: "fit", label: "fit" },
         ]},
-        { key: "width", label: "Width (w_)", type: "text", placeholder: "e.g. 640" },
-        { key: "height", label: "Height (h_)", type: "text", placeholder: "e.g. 360" },
+        { key: "width", label: "Width (w_)", type: "text", placeholder: "640" },
+        { key: "height", label: "Height (h_)", type: "text", placeholder: "360" },
         { key: "aspect_ratio", label: "Aspect ratio (ar_)", type: "text", placeholder: "16:9" },
         { key: "gravity", label: "Gravity (g_)", type: "select", options: [
           { v: "", label: "—" },
@@ -2425,9 +2347,9 @@
       cldKind: "trim",
       defaultSettings: { start_offset: "", end_offset: "", duration: "" },
       settingsFields: [
-        { key: "start_offset", label: "Start offset (so_)", type: "text", placeholder: "seconds, e.g. 2" },
-        { key: "end_offset", label: "End offset (eo_)", type: "text", placeholder: "seconds from end" },
-        { key: "duration", label: "Duration (du_)", type: "text", placeholder: "clip length" },
+        { key: "start_offset", label: "Start offset (so_)", type: "text", placeholder: "seconds" },
+        { key: "end_offset", label: "End offset (eo_)", type: "text", placeholder: "seconds" },
+        { key: "duration", label: "Duration (du_)", type: "text", placeholder: "seconds" },
       ],
     },
     {
@@ -2445,9 +2367,9 @@
       cldKind: "video_preview",
       defaultSettings: { duration: "5", max_seg: "", min_seg_dur: "" },
       settingsFields: [
-        { key: "duration", label: "Preview duration (s)", type: "text", placeholder: "default 5" },
-        { key: "max_seg", label: "Max segments (optional)", type: "text", placeholder: "e.g. 3" },
-        { key: "min_seg_dur", label: "Min segment duration (s, optional)", type: "text", placeholder: "e.g. 2" },
+        { key: "duration", label: "Duration (s)", type: "text", placeholder: "5" },
+        { key: "max_seg", label: "Max segments", type: "text", placeholder: "" },
+        { key: "min_seg_dur", label: "Min segment (s)", type: "text", placeholder: "" },
       ],
     },
     {
@@ -2467,15 +2389,15 @@
         height: "",
       },
       settingsFields: [
-        { key: "start_offset", label: "Time (so_)", type: "text", placeholder: "seconds, e.g. 2.5 or 10%" },
+        { key: "start_offset", label: "Time (so_)", type: "text", placeholder: "seconds or %" },
         { key: "format", label: "Image format (f_)", type: "select", options: [
           { v: "jpg", label: "jpg" },
           { v: "png", label: "png" },
           { v: "webp", label: "webp" },
           { v: "auto", label: "auto" },
         ]},
-        { key: "width", label: "Width (w_, optional)", type: "text", placeholder: "" },
-        { key: "height", label: "Height (h_, optional)", type: "text", placeholder: "" },
+        { key: "width", label: "Width (w_)", type: "text", placeholder: "" },
+        { key: "height", label: "Height (h_)", type: "text", placeholder: "" },
       ],
     },
     {
@@ -2513,7 +2435,7 @@
       cldKind: "round",
       defaultSettings: { radius: "max" },
       settingsFields: [
-        { key: "radius", label: "Radius (r_)", type: "text", placeholder: "max or pixels, e.g. 40" },
+        { key: "radius", label: "Radius (r_)", type: "text", placeholder: "max or px" },
       ],
     },
     {
@@ -2531,7 +2453,7 @@
         { key: "brightness", label: "Brightness", type: "text", placeholder: "−99–100" },
         { key: "contrast", label: "Contrast", type: "text", placeholder: "−100–100" },
         { key: "saturation", label: "Saturation", type: "text", placeholder: "−100–100" },
-        { key: "vignette", label: "Vignette strength", type: "text", placeholder: "e.g. 50" },
+        { key: "vignette", label: "Vignette", type: "text", placeholder: "0–100" },
       ],
     },
     {
@@ -2572,8 +2494,8 @@
         y: "24",
       },
       settingsFields: [
-        { key: "font_family", label: "Font family", type: "text", placeholder: "Arial, Georgia…" },
-        { key: "font_size", label: "Font size", type: "text", placeholder: "e.g. 48" },
+        { key: "font_family", label: "Font family", type: "text", placeholder: "Arial" },
+        { key: "font_size", label: "Font size", type: "text", placeholder: "48" },
         {
           key: "font_weight",
           label: "Weight",
@@ -2583,7 +2505,7 @@
             { v: "bold", label: "bold" },
           ],
         },
-        { key: "color", label: "Color (co_)", type: "text", placeholder: "white, rgb:fff…" },
+        { key: "color", label: "Color (co_)", type: "text", placeholder: "white or rgb:fff" },
         {
           key: "gravity",
           label: "Layer gravity",
@@ -2627,9 +2549,9 @@
       settingsFields: [
         {
           key: "asset",
-          label: "Layer (l_) if Layer port unwired",
+          label: "Layer (l_)",
           type: "text",
-          placeholder: "image:public_id — or wire Input · image to Layer port",
+          placeholder: "image:public_id (or wire Layer port)",
         },
         { key: "opacity", label: "Opacity (o_)", type: "text", placeholder: "0–100" },
         {
@@ -2680,7 +2602,7 @@
           { v: "auto:best", label: "auto:best" },
           { v: "80", label: "80" },
         ]},
-        { key: "video_codec", label: "Video codec (vc_)", type: "text", placeholder: "optional, e.g. h264" },
+        { key: "video_codec", label: "Video codec (vc_)", type: "text", placeholder: "h264" },
       ],
     },
     {
@@ -2695,7 +2617,7 @@
       cldKind: "rotate",
       defaultSettings: { angle: "0" },
       settingsFields: [
-        { key: "angle", label: "Angle (a_)", type: "text", placeholder: "degrees, e.g. 90 or vflip" },
+        { key: "angle", label: "Angle (a_)", type: "text", placeholder: "90 or vflip" },
       ],
     },
     {
@@ -2714,8 +2636,13 @@
       ],
     },
     {
+      /* Auto transcription — TRIGGERS generation only. The resulting `.transcript` (and
+         per-language `<id>.<lang>.transcript`) raw files are auto-saved by Cloudinary
+         alongside the source video. A future dedicated block consumes them for burn-in
+         or Video Player text-tracks. Docs:
+         https://cloudinary.com/documentation/video_transcription#requesting_transcription */
       type: "cld_transcribe",
-      title: "Auto subtitles",
+      title: "Auto transcription",
       iconBg: "#ede9fe",
       glyphColor: "#6d28d9",
       wireColor: "#c4b5fd",
@@ -2724,33 +2651,19 @@
       outs: [{ id: "out", label: "" }],
       cldKind: "transcribe",
       defaultSettings: {
-        format: "transcript",
-        font_family: "Arial",
-        font_size: "32",
-        color: "white",
-        gravity: "south",
-        y: "20",
+        original_language: "",
+        translate: "",
       },
       settingsFields: [
-        { key: "format", label: "Subtitle file (.<fmt>)", type: "select", options: [
-          { v: "transcript", label: "transcript (Cloudinary auto)" },
-          { v: "vtt", label: "vtt" },
-          { v: "srt", label: "srt" },
-        ]},
-        { key: "font_family", label: "Font family", type: "text", placeholder: "Arial, Georgia…" },
-        { key: "font_size", label: "Font size", type: "text", placeholder: "e.g. 32" },
-        { key: "color", label: "Color (co_)", type: "text", placeholder: "white, rgb:fff…" },
-        { key: "gravity", label: "Layer gravity", type: "select", options: [
-          { v: "south", label: "south" },
-          { v: "north", label: "north" },
-          { v: "center", label: "center" },
-          { v: "south_east", label: "south_east" },
-          { v: "south_west", label: "south_west" },
-        ]},
-        { key: "y", label: "Y offset", type: "text", placeholder: "pixels" },
+        { key: "original_language", label: "Original language", type: "text", placeholder: "blank = auto-detect" },
+        { key: "translate", label: "Translate to", type: "text", placeholder: "fr-FR, es, de" },
       ],
     },
     {
+      /* Auto chapters — TRIGGERS generation only. Cloudinary saves the resulting
+         `<public-id>-chapters.vtt` raw file alongside the video. A future dedicated
+         Video Player block consumes it via `chapters: true | { url|inline }`. Docs:
+         https://cloudinary.com/documentation/video_player_customization#video_chapters */
       type: "cld_auto_chapters",
       title: "Auto chapters",
       iconBg: "#dcfce7",
@@ -2760,16 +2673,17 @@
       ins: [{ id: "in", label: "" }],
       outs: [{ id: "out", label: "" }],
       cldKind: "auto_chapters",
-      defaultSettings: { duration: "15", max_seg: "3", min_seg_dur: "2" },
-      settingsFields: [
-        { key: "duration", label: "Total duration (s)", type: "text", placeholder: "e.g. 15" },
-        { key: "max_seg", label: "Max segments", type: "text", placeholder: "e.g. 3" },
-        { key: "min_seg_dur", label: "Min segment duration (s)", type: "text", placeholder: "e.g. 2" },
-      ],
+      placeholder: "Triggers chapter generation.",
+      defaultSettings: {},
+      settingsFields: [],
     },
     {
+      /* AI video details — TRIGGERS generation only. Cloudinary saves the resulting
+         AI title / description / tags as context metadata on the video asset. A future
+         dedicated Video Player block consumes them via `title: true` / `description: true`.
+         Docs: https://cloudinary.com/documentation/video_player_customization#ai_generation */
       type: "cld_ai_details",
-      title: "AI auto details",
+      title: "AI video details",
       iconBg: "#fce7f3",
       glyphColor: "#a21caf",
       wireColor: "#f0abfc",
@@ -2777,14 +2691,9 @@
       ins: [{ id: "in", label: "" }],
       outs: [{ id: "out", label: "" }],
       cldKind: "ai_details",
-      defaultSettings: { mode: "blur_faces", strength: "" },
-      settingsFields: [
-        { key: "mode", label: "AI feature", type: "select", options: [
-          { v: "blur_faces", label: "Blur detected faces" },
-          { v: "pixelate_faces", label: "Pixelate detected faces" },
-        ]},
-        { key: "strength", label: "Strength (optional)", type: "text", placeholder: "blur 1–2000 / pixelate 1–200" },
-      ],
+      placeholder: "Triggers AI title / description / tag generation.",
+      defaultSettings: {},
+      settingsFields: [],
     },
     {
       type: "mock_i2v_frames",
@@ -2809,24 +2718,24 @@
       },
       settingsFields: [
         { key: "prompt_enhancement", label: "Prompt enhancement", type: "select", options: [
-          { v: "true", label: "true (default)" },
+          { v: "true", label: "true" },
           { v: "false", label: "false" },
         ]},
-        { key: "duration", label: "Duration (seconds)", type: "select", options: [
+        { key: "duration", label: "Duration (s)", type: "select", options: [
           { v: "4", label: "4" },
           { v: "6", label: "6" },
-          { v: "8", label: "8 (default)" },
+          { v: "8", label: "8" },
         ]},
         { key: "audio", label: "Audio", type: "select", options: [
           { v: "true", label: "true" },
           { v: "false", label: "false" },
         ]},
         { key: "resolution", label: "Resolution", type: "select", options: [
-          { v: "720p", label: "720p (default)" },
+          { v: "720p", label: "720p" },
           { v: "1080p", label: "1080p" },
         ]},
         { key: "aspect_ratio", label: "Aspect ratio", type: "select", options: [
-          { v: "auto", label: "auto (default)" },
+          { v: "auto", label: "auto" },
           { v: "16:9", label: "16:9" },
           { v: "9:16", label: "9:16" },
         ]},
@@ -2856,24 +2765,24 @@
       },
       settingsFields: [
         { key: "prompt_enhancement", label: "Prompt enhancement", type: "select", options: [
-          { v: "true", label: "true (default)" },
+          { v: "true", label: "true" },
           { v: "false", label: "false" },
         ]},
-        { key: "duration", label: "Duration (seconds)", type: "select", options: [
+        { key: "duration", label: "Duration (s)", type: "select", options: [
           { v: "4", label: "4" },
           { v: "6", label: "6" },
-          { v: "8", label: "8 (default)" },
+          { v: "8", label: "8" },
         ]},
         { key: "audio", label: "Audio", type: "select", options: [
           { v: "true", label: "true" },
           { v: "false", label: "false" },
         ]},
         { key: "resolution", label: "Resolution", type: "select", options: [
-          { v: "720p", label: "720p (default)" },
+          { v: "720p", label: "720p" },
           { v: "1080p", label: "1080p" },
         ]},
         { key: "aspect_ratio", label: "Aspect ratio", type: "select", options: [
-          { v: "auto", label: "auto (default)" },
+          { v: "auto", label: "auto" },
           { v: "16:9", label: "16:9" },
           { v: "9:16", label: "9:16" },
         ]},
@@ -2898,11 +2807,11 @@
       },
       settingsFields: [
         { key: "prompt_enhancement", label: "Prompt enhancement", type: "select", options: [
-          { v: "true", label: "true (default)" },
+          { v: "true", label: "true" },
           { v: "false", label: "false" },
         ]},
         { key: "aspect_ratio", label: "Aspect ratio", type: "select", options: [
-          { v: "auto", label: "auto (default)" },
+          { v: "auto", label: "auto" },
           { v: "1:1", label: "1:1" },
           { v: "16:9", label: "16:9" },
           { v: "9:16", label: "9:16" },
@@ -2927,11 +2836,11 @@
       },
       settingsFields: [
         { key: "prompt_enhancement", label: "Prompt enhancement", type: "select", options: [
-          { v: "true", label: "true (default)" },
+          { v: "true", label: "true" },
           { v: "false", label: "false" },
         ]},
         { key: "aspect_ratio", label: "Aspect ratio", type: "select", options: [
-          { v: "auto", label: "auto (default)" },
+          { v: "auto", label: "auto" },
           { v: "1:1", label: "1:1" },
           { v: "16:9", label: "16:9" },
           { v: "9:16", label: "9:16" },
@@ -2951,8 +2860,17 @@
       ],
       outs: [{ id: "out", label: "" }],
       mockGenerator: { kind: "text" },
-      defaultSettings: {},
-      settingsFields: [],
+      defaultSettings: {
+        prompt: "",
+      },
+      settingsFields: [
+        {
+          key: "prompt",
+          label: "Prompt",
+          type: "textarea",
+          placeholder: "Instruction for the mock LLM (e.g. \"sanitize and improve\"). Wired text is always passed through and tidied; this is shown for context.",
+        },
+      ],
     },
     {
       type: "output_text",
@@ -3015,7 +2933,7 @@
     cld_auto_chapters:
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13"/><path d="M5 4v15a1 1 0 0 0 1 1h13"/><path d="M9 9h6"/><path d="M9 13h6"/><path d="M9 17h4"/></svg>',
     cld_ai_details:
-      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.35-4.35"/><path d="M9 9.5a2 2 0 0 1 2-2"/><path d="M13 12.5a2 2 0 0 1-2 2"/></svg>',
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="14" height="11" rx="1.5"/><path d="M6 9h7"/><path d="M6 12h5"/><path d="m18 18 1 2.2 2.2 1-2.2 1-1 2.2-1-2.2-2.2-1 2.2-1z"/></svg>',
     mock_i2v_frames:
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="8" height="12" rx="1.5"/><rect x="13.5" y="6" width="8" height="12" rx="1.5"/><path d="M11 12h2"/><path d="M11 9.5h2"/><path d="M11 14.5h2"/></svg>',
     mock_i2v_refs:
@@ -3046,22 +2964,68 @@
     return JSON.parse(JSON.stringify(def.defaultSettings));
   }
 
-  /** Splice transition presets shown between consecutive segments. `cut` = no transition. */
+  /**
+   * Splice transition presets shown between consecutive segments. The `v` value matches the
+   * built-in cross-fade transition name accepted by `fl_splice:transition_(name_<v>...)` —
+   * see https://cloudinary.com/documentation/transformation_reference#fl_splice. `cut` is our
+   * sentinel for "no transition" (emits a bare `fl_splice`). All other names are real
+   * Cloudinary built-ins, so no transition assets need to be uploaded.
+   */
   const SPLICE_TRANSITIONS = [
     { v: "cut", label: "None (cut)" },
     { v: "fade", label: "Fade" },
+    { v: "fadeblack", label: "Fade · black" },
+    { v: "fadewhite", label: "Fade · white" },
+    { v: "fadegrays", label: "Fade · grays" },
     { v: "dissolve", label: "Dissolve" },
-    { v: "wipe", label: "Wipe" },
-    { v: "slide", label: "Slide" },
-    { v: "circle", label: "Circle" },
+    { v: "pixelize", label: "Pixelize" },
+    { v: "distance", label: "Distance" },
+    { v: "radial", label: "Radial" },
+    { v: "hblur", label: "Horizontal blur" },
+    { v: "wipeleft", label: "Wipe ← left" },
+    { v: "wiperight", label: "Wipe → right" },
+    { v: "wipeup", label: "Wipe ↑ up" },
+    { v: "wipedown", label: "Wipe ↓ down" },
+    { v: "slideleft", label: "Slide ← left" },
+    { v: "slideright", label: "Slide → right" },
+    { v: "slideup", label: "Slide ↑ up" },
+    { v: "slidedown", label: "Slide ↓ down" },
+    { v: "smoothleft", label: "Smooth ← left" },
+    { v: "smoothright", label: "Smooth → right" },
+    { v: "smoothup", label: "Smooth ↑ up" },
+    { v: "smoothdown", label: "Smooth ↓ down" },
+    { v: "wipetl", label: "Wipe ↖ top-left" },
+    { v: "wipetr", label: "Wipe ↗ top-right" },
+    { v: "wipebl", label: "Wipe ↙ bottom-left" },
+    { v: "wipebr", label: "Wipe ↘ bottom-right" },
+    { v: "circleopen", label: "Circle open" },
+    { v: "circleclose", label: "Circle close" },
+    { v: "circlecrop", label: "Circle crop" },
+    { v: "rectcrop", label: "Rect crop" },
+    { v: "vertopen", label: "Vertical open" },
+    { v: "vertclose", label: "Vertical close" },
+    { v: "horzopen", label: "Horizontal open" },
+    { v: "horzclose", label: "Horizontal close" },
+    { v: "diagtl", label: "Diagonal ↖ top-left" },
+    { v: "diagtr", label: "Diagonal ↗ top-right" },
+    { v: "diagbl", label: "Diagonal ↙ bottom-left" },
+    { v: "diagbr", label: "Diagonal ↘ bottom-right" },
+    { v: "hlslice", label: "Slice ← horizontal-left" },
+    { v: "hrslice", label: "Slice → horizontal-right" },
+    { v: "vuslice", label: "Slice ↑ vertical-up" },
+    { v: "vdslice", label: "Slice ↓ vertical-down" },
+    { v: "squeezeh", label: "Squeeze · horizontal" },
+    { v: "squeezev", label: "Squeeze · vertical" },
   ];
   const SPLICE_TRANSITION_LABELS = (() => {
     const m = {};
     for (const t of SPLICE_TRANSITIONS) m[t.v] = t.label;
     return m;
   })();
+
   function normalizeSpliceTransition(v) {
-    return SPLICE_TRANSITION_LABELS[String(v || "")] ? String(v) : "cut";
+    const t = String(v || "");
+    return SPLICE_TRANSITION_LABELS[t] ? t : "cut";
   }
 
   /**
@@ -3266,7 +3230,7 @@
   function renderOutputPreviewToggle(node) {
     const checked = isPreviewOutputNode(node) ? " checked" : "";
     const id = "out-preview-" + sanitizeDomIdForPlayer(node.id);
-    return `<label class="output-preview-toggle" for="${id}" title="When on, this block is excluded from applet/terminal-output detection — it just shows a side preview.">
+    return `<label class="output-preview-toggle" for="${id}" title="Excluded from terminal output">
       <input id="${id}" type="checkbox" data-output-preview="${escapeHtml(node.id)}"${checked} />
       <span>Preview only</span>
     </label>`;
@@ -3464,51 +3428,14 @@
         if (low === "mute" || low === "0") return [{ effect: "volume:mute" }];
         return [{ effect: "volume:" + vol }];
       }
-      case "transcribe": {
-        const primary = findPrimaryMediaInputNode(node.id);
-        if (!primary) return [];
-        let pid = "";
-        if (isMockGeneratorNodeType(primary.def.type)) {
-          pid = mockGeneratorPublicIdForKind(mockGeneratorOutputKind(primary)) || "";
-        } else {
-          const sset = primary.settings || {};
-          const dset = (primary.def && primary.def.defaultSettings) || {};
-          pid = sset.publicId !== undefined && sset.publicId !== null ? String(sset.publicId).trim() : "";
-          if (!pid && dset.publicId != null) pid = String(dset.publicId).trim();
-        }
-        const pubPath = String(pid).replace(/^\/+/, "").split("/").filter(Boolean).join(":");
-        if (!pubPath) return [];
-        const fmt = (s.format && String(s.format).trim()) || "transcript";
-        const family = ((s.font_family && String(s.font_family).trim()) || "Arial").replace(/\s+/g, "_");
-        const size = (s.font_size && String(s.font_size).trim()) || "32";
-        const color = (s.color && String(s.color).trim()) || "";
-        const styleParts = ["font_family_" + family, "font_size_" + size];
-        if (color) styleParts.push("color_" + color);
-        const overlayVal = "subtitles:" + styleParts.join(";") + ":" + pubPath + "." + fmt;
-        const first = { overlay: overlayVal };
-        const rest = prune({
-          flags: "layer_apply",
-          gravity: (s.gravity && String(s.gravity).trim()) || undefined,
-          y: parseScalar(s.y),
-        });
-        return [first, rest];
-      }
-      case "auto_chapters": {
-        const dur = (s.duration && String(s.duration).trim()) || "";
-        const maxSeg = (s.max_seg && String(s.max_seg).trim()) || "";
-        const minDur = (s.min_seg_dur && String(s.min_seg_dur).trim()) || "";
-        const parts = [];
-        if (dur) parts.push("duration_" + dur);
-        if (maxSeg) parts.push("max_seg_" + maxSeg);
-        if (minDur) parts.push("min_seg_dur_" + minDur);
-        const arg = parts.join(";");
-        return [{ effect: arg ? "preview:" + arg : "preview" }];
-      }
+      /* Generation triggers — no URL transformation. Cloudinary auto-saves the produced
+         artifacts (`.transcript` raw files, `<id>-chapters.vtt`, AI context metadata)
+         alongside the source video. Burn-in / Video Player consumption lives on dedicated
+         future blocks; here we only emit the trigger intent. */
+      case "transcribe":
+      case "auto_chapters":
       case "ai_details": {
-        const mode = ((s.mode && String(s.mode).trim()) || "blur_faces").toLowerCase();
-        const allowed = mode === "pixelate_faces" ? "pixelate_faces" : "blur_faces";
-        const strength = (s.strength && String(s.strength).trim()) || "";
-        return [{ effect: strength ? allowed + ":" + strength : allowed }];
+        return [];
       }
       case "raw": {
         const raw = (s.chain && String(s.chain)) || "";
@@ -3518,6 +3445,53 @@
           .map((p) => p.trim())
           .filter(Boolean)
           .map((seg) => ({ _raw: seg }));
+      }
+      case "splice": {
+        /* Cloudinary `fl_splice` concatenates a video layer (`l_video:<id>`) onto the base.
+         * The first segment IS the base (its public_id is set by the primary-media walk);
+         * each subsequent segment becomes a layer. The transition stored on the *previous*
+         * segment turns into a built-in cross-fade via `fl_splice:transition_(name_<X>)` — a
+         * single qualifier on the splice flag itself, no transition assets required.
+         * `cut` emits a bare `fl_splice` (no transition).
+         *
+         * Per-segment transforms (Resize, Trim, etc. wired between an Input·video and this
+         * Splice) are inlined as URL segments BETWEEN the layer opener and `fl_layer_apply`,
+         * so they apply only to that layer (e.g. downscale a clip before splicing).
+         *
+         * Reference: https://cloudinary.com/documentation/transformation_reference#fl_splice
+         *           https://cloudinary.com/documentation/transformation_reference#fl_layer_apply */
+        const segs = spliceIncomingEdges(node).edges;
+        if (segs.length <= 1) return [];
+        const transitions =
+          (node.settings && node.settings.transitions && typeof node.settings.transitions === "object")
+            ? node.settings.transitions
+            : {};
+        const pieces = [];
+        for (let i = 1; i < segs.length; i += 1) {
+          const segEdge = segs[i];
+          const prevEdge = segs[i - 1];
+          const tName = normalizeSpliceTransition(transitions[prevEdge.id]);
+          const chain = spliceSegmentLayerChain(segEdge.fromNode);
+          const sourceNode = chain ? chain.source : findPrimaryMediaInputNode(segEdge.fromNode);
+          const pid = publicIdFromMediaInputNode(sourceNode);
+          if (!pid) continue;
+          const layerRef = cloudinaryLayerPublicIdRef(pid);
+          if (!layerRef) continue;
+          const spliceFlag =
+            tName === "cut" ? "fl_splice" : "fl_splice:transition_(name_" + tName + ")";
+          pieces.push({ _raw: spliceFlag + ",l_video:" + layerRef });
+          if (chain && chain.transforms.length) {
+            for (const t of chain.transforms) {
+              const innerPieces = nodeTransformationPieces(t);
+              for (const p of innerPieces) {
+                const segUrl = transformationPieceToUrlSegment(p);
+                if (segUrl) pieces.push({ _raw: segUrl });
+              }
+            }
+          }
+          pieces.push({ _raw: "fl_layer_apply" });
+        }
+        return pieces;
       }
       default:
         return [];
@@ -3707,6 +3681,8 @@
    * Stops on:
    *   - Input · video / Input · image  → primary media (returned)
    *   - any mock generator (image/video) → primary media (returned, treated as the asset spine)
+   * Splice nodes special-case: only follow the FIRST segment (per user-defined `settings.order`)
+   * so the base public_id of the resulting splice URL is the first clip on the timeline.
    */
   function findPrimaryMediaInputNode(startNodeId) {
     function walk(curId, visited) {
@@ -3718,13 +3694,19 @@
         const k = mockGeneratorOutputKind(node);
         if (k === "image" || k === "video") return node;
       }
-      const incoming = edges.filter(
-        (e) =>
-          e.toNode === curId &&
-          !OVERLAY_AUXILIARY_TO_PORTS.has(e.toPort) &&
-          !MOCK_GEN_AUXILIARY_TO_PORTS.has(e.toPort)
-      );
-      incoming.sort((a, b) => a.fromNode.localeCompare(b.fromNode));
+      let incoming;
+      if (node && node.def.type === "splice") {
+        const segs = spliceIncomingEdges(node).edges;
+        incoming = segs.length ? [segs[0]] : [];
+      } else {
+        incoming = edges.filter(
+          (e) =>
+            e.toNode === curId &&
+            !OVERLAY_AUXILIARY_TO_PORTS.has(e.toPort) &&
+            !MOCK_GEN_AUXILIARY_TO_PORTS.has(e.toPort)
+        );
+        incoming.sort((a, b) => a.fromNode.localeCompare(b.fromNode));
+      }
       for (const e of incoming) {
         const found = walk(e.fromNode, visited);
         if (found) return found;
@@ -3732,6 +3714,114 @@
       return null;
     }
     return walk(startNodeId, new Set());
+  }
+
+  /**
+   * Set of node ids on the "primary path" from a terminal back to the deepest media input,
+   * splice-aware (only follows the FIRST segment at a splice). Used by `buildDeliveryUrlForOutput`
+   * to skip transforms that live on a non-first splice branch from the *main* chain — those
+   * transforms belong inside the splice's layer (handled by `spliceSegmentLayerChain`).
+   */
+  function nodesOnPrimaryPath(outputNodeId) {
+    const visited = new Set();
+    function walk(curId) {
+      if (!curId || visited.has(curId)) return;
+      visited.add(curId);
+      const node = nodes.find((n) => n.id === curId);
+      if (!node) return;
+      if (isMediaInputNodeType(node.def.type) || isMockGeneratorNodeType(node.def.type)) return;
+      let incoming;
+      if (node.def.type === "splice") {
+        const segs = spliceIncomingEdges(node).edges;
+        incoming = segs.length ? [segs[0]] : [];
+      } else {
+        incoming = edges.filter(
+          (e) =>
+            e.toNode === curId &&
+            !OVERLAY_AUXILIARY_TO_PORTS.has(e.toPort) &&
+            !MOCK_GEN_AUXILIARY_TO_PORTS.has(e.toPort)
+        );
+      }
+      for (const e of incoming) walk(e.fromNode);
+    }
+    walk(outputNodeId);
+    return visited;
+  }
+
+  /** Extract a public_id from a media-input or mock-generator node, applying defaults. */
+  function publicIdFromMediaInputNode(node) {
+    if (!node || !node.def) return "";
+    if (isMockGeneratorNodeType(node.def.type)) {
+      const k = mockGeneratorOutputKind(node);
+      return mockGeneratorPublicIdForKind(k) || "";
+    }
+    const s = node.settings || {};
+    const defIn = node.def.defaultSettings || {};
+    let pid = s.publicId !== undefined && s.publicId !== null ? String(s.publicId).trim() : "";
+    if (!pid && defIn.publicId != null && String(defIn.publicId).trim()) {
+      pid = String(defIn.publicId).trim();
+    }
+    return pid;
+  }
+
+  /** Cloudinary layer reference: `path/to/asset` → `path:to:asset` (no leading/trailing slashes). */
+  function cloudinaryLayerPublicIdRef(publicId) {
+    return String(publicId || "")
+      .trim()
+      .replace(/^\/+|\/+$/g, "")
+      .replace(/\//g, ":");
+  }
+
+  /**
+   * Resolve a single splice segment's source + the chain of transforms wired between that source
+   * and the splice. Walks STRICTLY linearly upstream (one non-auxiliary input per node) so we can
+   * inline the chain inside the layer's `l_video:<id>/<chain>/fl_layer_apply` window.
+   *
+   * Returns `{ source, transforms }` where `transforms` is an array of cldKind nodes in input→
+   * output order, or `null` if the chain forks, hits another splice, exceeds the depth cap, or
+   * has a cycle. In the null case the caller falls back to a bare `l_video:<id>` (no per-layer
+   * transforms).
+   *
+   * Layer-overlay safety: per-segment chains may legitimately contain other layer-creating
+   * blocks (Text overlay, Image overlay, Subtitles burnin). Cloudinary supports nested layers —
+   * the inner block's `l_<id>/fl_layer_apply` pair sits inside the splice's
+   * `l_video:<id>/.../fl_layer_apply` pair and resolves LIFO. So inlining e.g. a text overlay
+   * for one segment yields `fl_splice,l_video:X / l_text:Foo / fl_layer_apply,g_south /
+   * fl_layer_apply` — the inner `fl_layer_apply` closes the text layer (text composited onto X),
+   * the outer one closes the splice layer (X+text spliced onto base). Validated against the
+   * docs' two-text-layer example (`l_text:A/l_text:B/fl_layer_apply/fl_layer_apply`).
+   *
+   * Reference: https://cloudinary.com/documentation/transformation_reference#fl_layer_apply
+   */
+  const SPLICE_SEGMENT_CHAIN_MAX_DEPTH = 32;
+  function spliceSegmentLayerChain(startNodeId) {
+    const visited = new Set();
+    const collected = [];
+    let cur = startNodeId;
+    let depth = 0;
+    while (cur) {
+      if (visited.has(cur)) return null;
+      if (depth >= SPLICE_SEGMENT_CHAIN_MAX_DEPTH) return null;
+      visited.add(cur);
+      depth += 1;
+      const node = nodes.find((n) => n.id === cur);
+      if (!node) return null;
+      if (isMediaInputNodeType(node.def.type) || isMockGeneratorNodeType(node.def.type)) {
+        collected.reverse();
+        return { source: node, transforms: collected };
+      }
+      if (node.def.type === "splice") return null;
+      if (node.def.cldKind) collected.push(node);
+      const incoming = edges.filter(
+        (e) =>
+          e.toNode === cur &&
+          !OVERLAY_AUXILIARY_TO_PORTS.has(e.toPort) &&
+          !MOCK_GEN_AUXILIARY_TO_PORTS.has(e.toPort)
+      );
+      if (incoming.length !== 1) return null;
+      cur = incoming[0].fromNode;
+    }
+    return null;
   }
 
   function deliveryInputContextFromOutput(outputNodeId) {
@@ -3764,14 +3854,17 @@
     return { cloudName, publicId, resourceType };
   }
 
-  /** @returns {string|null} null unless Input · text is wired to the Text port */
+  /**
+   * Resolve the text content fed into a Text overlay's `text` port. Walks through `mock_ai_text`
+   * (AI text generator) and `input_text` via the shared `resolveUpstreamTextForEdge` helper so
+   * chains like `Input·text → AI text → Text overlay` produce the AI-generated text, while a
+   * direct `Input·text → Text overlay` still produces the user's typed prompt.
+   * @returns {string|null} null when no text source is wired (or the wired source isn't a text producer).
+   */
   function overlayTextFromWiredSource(textOverlayNodeId) {
     const e = edges.find((x) => x.toNode === textOverlayNodeId && x.toPort === "text");
     if (!e) return null;
-    const src = nodes.find((n) => n.id === e.fromNode);
-    if (!src || src.def.type !== "input_text") return null;
-    const t = src.settings?.prompt;
-    return t != null ? String(t) : "";
+    return resolveUpstreamTextForEdge(e, new Set());
   }
 
   /** @returns {string|null} null = no wire or not Input · image */
@@ -3835,14 +3928,47 @@
   }
 
   /**
-   * Build a synthetic LLM-style result for an AI text block by combining its wired
-   * text sources, count of wired image sources, and the block's own instruction prompt.
+   * Light copy-edit applied to the AI text block's pass-through output — simulates an LLM
+   * tidying up the text:
+   *   - normalise whitespace (collapse runs of spaces/tabs, strip around newlines, trim)
+   *   - ensure a single space after sentence-ending punctuation (`.`, `!`, `?`)
+   *   - capitalise the first letter of each sentence (and the very first character)
+   *   - append a trailing period when no terminal punctuation is present
+   * Idempotent on already-clean text. Pure (no side effects).
+   */
+  function mockAiTextTidy(text) {
+    if (text == null) return "";
+    let s = String(text);
+    s = s.replace(/[ \t]+/g, " ");
+    s = s.replace(/[ \t]*\n[ \t]*/g, "\n");
+    s = s.trim();
+    if (!s) return "";
+    s = s.replace(/([.!?])(?=\S)/g, "$1 ");
+    s = s.replace(/(^|[.!?]\s+|\n)([a-z])/g, (_, prefix, ch) => prefix + ch.toUpperCase());
+    if (!/[.!?]$/.test(s)) s += ".";
+    return s;
+  }
+
+  /**
+   * Resolve the text "output" of an AI text block for previews and downstream consumers.
+   * The block's `settings.prompt` is treated as an *instruction* to the mock LLM, not a
+   * literal response — wired text always wins so chains like
+   * `Input·text "hello world" → AI text(prompt: "sanitize and improve") → Text overlay`
+   * preview as `"Hello world."` (the LLM "edits" the user's text per its prompt).
+   *
+   * Resolution order:
+   *   1. Wired text inputs (joined with a space) → run through `mockAiTextTidy`.
+   *   2. `settings.prompt` → tidied and used as the synthesized response when no text is
+   *      wired (so a prompt-only block still emits something sensible downstream).
+   *   3. Image-input placeholder when only images are wired.
+   *   4. Generic "no inputs wired" placeholder.
    */
   function mockAiTextResultForNode(aiTextNode, visited) {
     visited = visited || new Set();
     const visitKey = "ai|" + aiTextNode.id;
     if (visited.has(visitKey)) return "";
     visited.add(visitKey);
+
     const textInputs = [];
     const textEdges = edges.filter((e) => e.toNode === aiTextNode.id && e.toPort === "text");
     for (const e of textEdges) {
@@ -3851,20 +3977,28 @@
         textInputs.push(String(upstream).trim());
       }
     }
+    if (textInputs.length) {
+      return mockAiTextTidy(textInputs.join(" "));
+    }
+
+    const promptRaw = (aiTextNode && aiTextNode.settings && aiTextNode.settings.prompt) || "";
+    if (String(promptRaw).trim() !== "") {
+      return mockAiTextTidy(String(promptRaw));
+    }
+
     const imageCount = edges.filter(
       (e) => e.toNode === aiTextNode.id && e.toPort === "image"
     ).length;
-    const parts = [];
-    if (textInputs.length) {
-      parts.push(textInputs.length + " text input" + (textInputs.length > 1 ? "s" : ""));
-    }
     if (imageCount) {
-      parts.push(imageCount + " image" + (imageCount > 1 ? "s" : ""));
+      return (
+        "[mock AI text] Synthesized response from " +
+        imageCount +
+        " image" +
+        (imageCount > 1 ? "s" : "") +
+        "."
+      );
     }
-    if (!parts.length) {
-      return "[mock AI text] No inputs wired — placeholder LLM response.";
-    }
-    return "[mock AI text] Synthesized response from " + parts.join(", ") + ".";
+    return "[mock AI text] No inputs wired — placeholder LLM response.";
   }
 
   /**
@@ -3990,13 +4124,17 @@
     const imageTerminal = outNode && isImageOutputBlockType(outNode.def.type);
     const ids = orderedPipelineNodes(outputNodeId);
     const { cloudName, publicId, resourceType } = deliveryInputContextFromOutput(outputNodeId);
+    const primaryPath = nodesOnPrimaryPath(outputNodeId);
+    /* Only nodes on the primary (first-segment) path participate in the base chain; transforms
+     * that live on a non-first splice branch are skipped here (and ignored by helpers below). */
+    const idsOnPath = ids.filter((id) => primaryPath.has(id));
     const pieces = [];
-    for (const id of ids) {
+    for (const id of idsOnPath) {
       const node = nodes.find((n) => n.id === id);
       if (!node?.def?.cldKind) continue;
       pieces.push(...nodeTransformationPieces(node));
     }
-    if (pipelineHasVideoStillFrame(ids)) {
+    if (pipelineHasVideoStillFrame(idsOnPath)) {
       pieces.push(...stillFramePlaybackTail());
     } else if (imageTerminal) {
       pieces.push(...imageTerminalPlaybackPieces(resourceType));
@@ -4004,7 +4142,7 @@
       pieces.push(...playbackNormalizationPieces(resourceType));
     }
     const segments = pieces.map(transformationPieceToUrlSegment).filter(Boolean);
-    const ext = inferDeliveryFileExtension(ids, resourceType, imageTerminal);
+    const ext = inferDeliveryFileExtension(idsOnPath, resourceType, imageTerminal);
     const pubPath = String(publicId).trim().split("/").filter(Boolean).join("/");
     if (!pubPath) return "";
     const rtPath = resourceTypePath(resourceType);
@@ -4031,7 +4169,7 @@
 
   function effectiveCldEffectSettings(node) {
     const def = node.def;
-    return migrateEffectSettings(Object.assign({}, def.defaultSettings || {}, node.settings || {}));
+    return Object.assign({}, def.defaultSettings || {}, node.settings || {});
   }
 
   /**
@@ -4044,11 +4182,10 @@
     const { edges: segs, transitionFor } = spliceIncomingEdges(node);
     let html = `<div class="node-sheet splice-sheet" data-node-id="${escapeHtml(node.id)}">`;
     if (segs.length === 0) {
-      html += `<p class="splice-empty">Wire video sources into the input dot to add segments.</p>`;
+      html += `<p class="splice-empty">Wire sources to add segments.</p>`;
       html += `</div>`;
       return html;
     }
-    html += `<p class="splice-hint">Drag <span class="splice-handle-glyph" aria-hidden="true">⋮⋮</span> to reorder. Transition between segments — <em>None (cut)</em> = no transition.</p>`;
     html += `<ul class="splice-list" data-splice-list="${escapeHtml(node.id)}">`;
     segs.forEach((edge, idx) => {
       const isLast = idx === segs.length - 1;
@@ -4056,10 +4193,10 @@
       const sourceLabel = fromNode ? fromNode.id : edge.fromNode;
       html += `<li class="splice-seg" data-edge-id="${escapeHtml(edge.id)}" data-seg-idx="${idx}">`;
       html += `<div class="splice-seg-row">`;
-      html += `<span class="splice-handle" title="Drag to reorder" aria-hidden="true">⋮⋮</span>`;
+      html += `<span class="splice-handle" aria-hidden="true">⋮⋮</span>`;
       html += `<span class="splice-num">${idx + 1}</span>`;
       html += `<span class="splice-port-id" title="${escapeHtml(sourceLabel)}"><code>${escapeHtml(sourceLabel)}</code></span>`;
-      html += `<button type="button" class="splice-remove" data-edge-id="${escapeHtml(edge.id)}" title="Disconnect this source" aria-label="Disconnect">×</button>`;
+      html += `<button type="button" class="splice-remove" data-edge-id="${escapeHtml(edge.id)}" aria-label="Disconnect">×</button>`;
       html += `</div>`;
       if (!isLast) {
         const t = transitionFor(edge.id);
@@ -4120,8 +4257,6 @@
         }
       }
     } else if (isMediaInputNodeType(def.type)) {
-      const kindHint = def.type === "input_image" ? "image" : "video";
-      html += `<p class="input-vf-hint">Browse the Media Library or type a public ID.</p>`;
       html += `<div class="input-ml-toolbar"><button type="button" class="input-ml-browse" data-node-id="${escapeHtml(
         node.id
       )}">Browse assets…</button></div>`;
@@ -4366,8 +4501,7 @@
       } else {
         const segRows = cnt * 22;
         const transitionRows = Math.max(0, cnt - 1) * 36;
-        const hint = 18;
-        spliceExtra = segRows + transitionRows + hint;
+        spliceExtra = segRows + transitionRows;
       }
     }
     return { w, h: base + extraPorts + sheetBoost + outputExtra + spliceExtra };
@@ -4521,7 +4655,7 @@
       const outPorts = nodeOutPorts(node)
         .map(
           (p) =>
-            `<div class="port out" data-port="${p.id}">${p.label ? `<span>${p.label}</span>` : ""}<span class="dot out-dot" style="${dotStyle}" data-kind="out" data-port="${p.id}" tabindex="0" title="Drag to another block’s input to connect"></span></div>`
+            `<div class="port out" data-port="${p.id}">${p.label ? `<span>${p.label}</span>` : ""}<span class="dot out-dot" style="${dotStyle}" data-kind="out" data-port="${p.id}" tabindex="0"></span></div>`
         )
         .join("");
       let sheetHtml;
@@ -4536,7 +4670,12 @@
       } else if (def.type === "cld_effect" || (def.settingsFields && def.settingsFields.length)) {
         sheetHtml = renderSettingsFields(node);
       } else {
-        sheetHtml = `<div class="node-sheet placeholder">${def.placeholder}</div>`;
+        /* Defensive: blocks without `settingsFields` and without an explicit `placeholder`
+           must not template-literal `undefined` into the sheet. */
+        const ph = def.placeholder != null ? String(def.placeholder) : "";
+        sheetHtml = ph
+          ? `<div class="node-sheet placeholder">${escapeHtml(ph)}</div>`
+          : `<div class="node-sheet placeholder is-empty"></div>`;
       }
       const el = document.createElement("div");
       const previewCls = isPreviewOutputNode(node) ? " is-preview" : "";
@@ -4546,7 +4685,7 @@
       el.style.top = node.y + "px";
       el.style.width = w + "px";
       const previewBadge = isPreviewOutputNode(node)
-        ? `<span class="node-preview-badge" title="Marked as preview only — not the workflow's terminal output.">PREVIEW</span>`
+        ? `<span class="node-preview-badge" title="Preview only">PREVIEW</span>`
         : "";
       el.innerHTML = `
         <div class="node-head">
@@ -4661,7 +4800,7 @@
     const outputs = nodes.filter((n) => isTerminalOutputNode(n));
     refreshOutputDeliveryUi();
     if (outputs.length === 0) {
-      showFlowToast("Flow ran — add a non-preview Output · video, Output · image, or Output · text block.");
+      showFlowToast("Add an Output block.");
       return;
     }
     const mediaOutputs = outputs.filter((o) => !isTextOutputBlockType(o.def.type));
@@ -4677,17 +4816,13 @@
       return;
     }
     if (withUrl === 0) {
-      showFlowToast("Flow ran — set a public ID on an Input · video/image block (or wire a mock generator) to build delivery URLs.");
+      showFlowToast("Set a public ID on an Input block.");
     } else if (withUrl === mediaOutputs.length) {
       const n = outputs.length;
       showFlowToast("Flow ran — " + n + " preview" + (n === 1 ? "" : "s") + " updated.");
     } else {
       showFlowToast(
-        "Flow ran — " +
-          withUrl +
-          " of " +
-          mediaOutputs.length +
-          " media output(s) have a delivery URL. Set Input public ID where missing."
+        "Flow ran — " + withUrl + " of " + mediaOutputs.length + " outputs have a URL."
       );
     }
   }
@@ -5059,10 +5194,10 @@
   /** Sidebar palette section order and labels. Transformations stays last on purpose. */
   const PALETTE_SECTION_ORDER = [
     { id: "inputs", label: "Inputs" },
+    { id: "outputs", label: "Outputs" },
     { id: "ai", label: "AI (mock)" },
     { id: "editing", label: "Editing" },
     { id: "accessibility", label: "Accessibility" },
-    { id: "outputs", label: "Outputs" },
     { id: "other", label: "Other" },
     { id: "transforms", label: "Transformations" },
   ];
@@ -5428,11 +5563,6 @@
     let maxN = 0;
     let maxE = 0;
     for (const n of nodes) {
-      const legacy = /^n_(\d+)$/.exec(n.id);
-      if (legacy) {
-        maxN = Math.max(maxN, Number(legacy[1]));
-        continue;
-      }
       const tail = /_(\d+)$/.exec(n.id);
       if (tail) maxN = Math.max(maxN, Number(tail[1]));
     }
@@ -5504,6 +5634,39 @@
     });
   }
 
+  /** Fingerprint of just the *content* of the canvas (no viewport). Used for the brand
+   * "· unsaved" indicator so that panning/zooming alone doesn't mark a flow dirty. */
+  function flowContentFingerprint() {
+    const doc = serializeFlowDocument();
+    return JSON.stringify({
+      v: doc.v,
+      nodeIdSeq: doc.nodeIdSeq,
+      edgeIdSeq: doc.edgeIdSeq,
+      nodes: doc.nodes,
+      edges: doc.edges,
+    });
+  }
+
+  /** Last known-clean content fingerprint (set on load/save/import/seed). */
+  let cleanFlowFingerprint = "";
+
+  /** Reset baseline — call after the canvas matches a known persisted state. */
+  function markFlowAsClean() {
+    cleanFlowFingerprint = flowContentFingerprint();
+    updateBrandFlowDirtyUi();
+  }
+
+  function flowIsDirty() {
+    return flowContentFingerprint() !== cleanFlowFingerprint;
+  }
+
+  /** Toggle the amber " · unsaved" suffix on the topbar flow name. */
+  function updateBrandFlowDirtyUi() {
+    const el = document.getElementById("brand-flow-name");
+    if (!el) return;
+    el.classList.toggle("is-unsaved", flowIsDirty());
+  }
+
   function appletEditDialogIsOpen() {
     const dlg = document.getElementById("applet-edit-dialog");
     return !!(dlg && dlg.open);
@@ -5511,165 +5674,12 @@
 
   /** Blueprint/layout/settings/viewport changed while applet editor may be open — refresh previews + unsaved UI. */
   function notifyAppletEditorFlowMaybeDirty() {
+    /* Always refresh the brand "· unsaved" indicator regardless of applet editor state. */
+    updateBrandFlowDirtyUi();
     if (!appletEditDialogIsOpen()) return;
     updateAppletFlowOutputReadout();
     updateAppletApiMethodReadout();
     updateAppletEditorDirtyUi();
-  }
-
-  /**
-   * Old saves used `n_1`, `n_2`, … New blocks use `{type}_{seq}` (e.g. `input_text_2`).
-   * Rewrite legacy ids on load so the canvas + applet store stay aligned (stable: `n_4` → `input_text_4`).
-   * @returns {Map<string, string>|null}
-   */
-  function migrateLegacyNPrefixedNodeIdsInPlace() {
-    const legacy = nodes.filter((n) => /^n_\d+$/.test(String(n.id)));
-    if (!legacy.length) return null;
-    legacy.sort((a, b) => String(a.id).localeCompare(String(b.id)));
-    const used = new Set(nodes.map((n) => n.id));
-    const idMap = new Map();
-    for (const node of legacy) {
-      const oldId = node.id;
-      const numMatch = /^n_(\d+)$/.exec(oldId);
-      const baseNum = numMatch ? numMatch[1] : "1";
-      const slug = nodeTypeSlugForNewId(node.def.type);
-      let candidate = slug + "_" + baseNum;
-      let bump = 2;
-      while (used.has(candidate)) {
-        candidate = slug + "_" + baseNum + "_" + bump++;
-      }
-      used.delete(oldId);
-      used.add(candidate);
-      idMap.set(oldId, candidate);
-      node.id = candidate;
-    }
-    for (const e of edges) {
-      if (idMap.has(e.fromNode)) e.fromNode = idMap.get(e.fromNode);
-      if (idMap.has(e.toNode)) e.toNode = idMap.get(e.toNode);
-    }
-    return idMap;
-  }
-
-  /** Older type-based ids used `cld_resize_3`; strip to `resize_3`. @returns {Map<string, string>|null} */
-  function migrateStripCldPrefixFromNodeIdsInPlace() {
-    const targets = nodes.filter((n) => typeof n.id === "string" && n.id.startsWith("cld_"));
-    if (!targets.length) return null;
-    targets.sort((a, b) => String(a.id).localeCompare(String(b.id)));
-    const used = new Set(nodes.map((n) => n.id));
-    const idMap = new Map();
-    for (const node of targets) {
-      const oldId = node.id;
-      let candidate = oldId.slice(4);
-      if (!candidate || !/^[a-zA-Z0-9_]/.test(candidate)) continue;
-      let bump = 2;
-      const base = candidate;
-      while (used.has(candidate)) {
-        candidate = base + "_" + bump++;
-      }
-      used.delete(oldId);
-      used.add(candidate);
-      idMap.set(oldId, candidate);
-      node.id = candidate;
-    }
-    if (!idMap.size) return null;
-    for (const e of edges) {
-      if (idMap.has(e.fromNode)) e.fromNode = idMap.get(e.fromNode);
-      if (idMap.has(e.toNode)) e.toNode = idMap.get(e.toNode);
-    }
-    return idMap;
-  }
-
-  /** Legacy ids used `output_3` for video terminal; use `output_video_3` (and `output_image_*` stays). */
-  function migrateBareOutputPrefixedNodeIdsInPlace() {
-    const targets = [];
-    for (const node of nodes) {
-      if (node.def.type !== "output" && node.def.type !== "output_image") continue;
-      if (!/^output_\d+$/.test(String(node.id))) continue;
-      targets.push(node);
-    }
-    if (!targets.length) return null;
-    targets.sort((a, b) => String(a.id).localeCompare(String(b.id)));
-    const used = new Set(nodes.map((n) => n.id));
-    const idMap = new Map();
-    for (const node of targets) {
-      const oldId = node.id;
-      const numMatch = /^output_(\d+)$/.exec(oldId);
-      const baseNum = numMatch ? numMatch[1] : "1";
-      const slug = node.def.type === "output_image" ? "output_image" : "output_video";
-      let candidate = slug + "_" + baseNum;
-      let bump = 2;
-      while (used.has(candidate)) {
-        candidate = slug + "_" + baseNum + "_" + bump++;
-      }
-      used.delete(oldId);
-      used.add(candidate);
-      idMap.set(oldId, candidate);
-      node.id = candidate;
-    }
-    for (const e of edges) {
-      if (idMap.has(e.fromNode)) e.fromNode = idMap.get(e.fromNode);
-      if (idMap.has(e.toNode)) e.toNode = idMap.get(e.toNode);
-    }
-    return idMap;
-  }
-
-  function mergeNodeIdMigrationMaps(a, b) {
-    const out = new Map();
-    if (a && a.size) for (const [k, v] of a) out.set(k, v);
-    if (b && b.size) for (const [k, v] of b) out.set(k, v);
-    return out.size ? out : null;
-  }
-
-  function patchAppletStoreAfterNodeIdMigration(idMap) {
-    if (!idMap || idMap.size === 0) return;
-    try {
-      const store = readAppletStore();
-      let touched = false;
-      for (const slug of Object.keys(store.applets || {})) {
-        const rec = store.applets[slug];
-        if (!rec || typeof rec !== "object") continue;
-        if (rec.output && typeof rec.output === "object" && rec.output.nodeId && idMap.has(rec.output.nodeId)) {
-          rec.output = Object.assign({}, rec.output, { nodeId: idMap.get(rec.output.nodeId) });
-          touched = true;
-        }
-        if (Array.isArray(rec.inputs)) {
-          let inpChanged = false;
-          const nextIn = rec.inputs.map((row) => {
-            if (!row || typeof row !== "object" || !row.nodeId || !idMap.has(row.nodeId)) return row;
-            inpChanged = true;
-            return Object.assign({}, row, { nodeId: idMap.get(row.nodeId) });
-          });
-          if (inpChanged) {
-            rec.inputs = nextIn;
-            touched = true;
-          }
-        }
-        const snap = rec.flowSnapshot;
-        if (snap && typeof snap === "object") {
-          if (Array.isArray(snap.nodes)) {
-            for (const rn of snap.nodes) {
-              if (rn && rn.id && idMap.has(rn.id)) {
-                rn.id = idMap.get(rn.id);
-                touched = true;
-              }
-            }
-          }
-          if (Array.isArray(snap.edges)) {
-            for (const ed of snap.edges) {
-              if (ed && idMap.has(ed.fromNode)) {
-                ed.fromNode = idMap.get(ed.fromNode);
-                touched = true;
-              }
-              if (ed && idMap.has(ed.toNode)) {
-                ed.toNode = idMap.get(ed.toNode);
-                touched = true;
-              }
-            }
-          }
-        }
-      }
-      if (touched) writeAppletStore(store);
-    } catch (e) {}
   }
 
   /**
@@ -5698,24 +5708,12 @@
       });
     }
     const byId = new Map(built.map((n) => [n.id, n]));
-    /* Splice used to have static `a`/`b` ports, then `seg_N` per-segment ports. Today the block
-     * has a single multi-input anchor `in`; remap any legacy port id so older saves keep wiring.
-     * AI text used to have text1/text2/text3 + image1/image2 single-wire ports; today it has
-     * one multi-wire `text` and one multi-wire `image` port — fold legacy port ids onto those. */
     const builtEdges = [];
     for (const e of doc.edges || []) {
       const fromN = byId.get(e.fromNode);
       const toN = byId.get(e.toNode);
       if (!fromN || !toN) continue;
-      let toPort = e.toPort;
-      if (toN.def.type === "splice" && toPort !== "in") {
-        toPort = "in";
-      }
-      if (toN.def.type === "mock_ai_text") {
-        if (toPort === "text1" || toPort === "text2" || toPort === "text3") toPort = "text";
-        else if (toPort === "image1" || toPort === "image2") toPort = "image";
-      }
-      if (!portExistsOnNode(fromN, "out", e.fromPort) || !portExistsOnNode(toN, "in", toPort)) {
+      if (!portExistsOnNode(fromN, "out", e.fromPort) || !portExistsOnNode(toN, "in", e.toPort)) {
         continue;
       }
       builtEdges.push({
@@ -5723,30 +5721,13 @@
         fromNode: e.fromNode,
         fromPort: e.fromPort,
         toNode: e.toNode,
-        toPort: toPort,
+        toPort: e.toPort,
       });
-    }
-    /* After remap, sync `settings.order` for any splice node so the in-block list reflects
-     * loaded edges (older saves won't have an order array yet). */
-    for (const n of built) {
-      if (n.def.type === "splice") {
-        const haveOrder = n.settings && Array.isArray(n.settings.order) && n.settings.order.length;
-        if (!haveOrder) {
-          const eids = builtEdges.filter((ed) => ed.toNode === n.id && ed.toPort === "in").map((ed) => ed.id);
-          n.settings = n.settings || {};
-          n.settings.order = eids;
-        }
-      }
     }
     nodes = built;
     edges = builtEdges;
     nodeIdSeq = Number(doc.nodeIdSeq) || 1;
     edgeIdSeq = Number(doc.edgeIdSeq) || 1;
-    const legacyIdMap = migrateLegacyNPrefixedNodeIdsInPlace();
-    const stripCldMap = migrateStripCldPrefixFromNodeIdsInPlace();
-    const bareOutputMap = migrateBareOutputPrefixedNodeIdsInPlace();
-    const mergedIdMap = mergeNodeIdMigrationMaps(mergeNodeIdMigrationMaps(legacyIdMap, stripCldMap), bareOutputMap);
-    if (mergedIdMap) patchAppletStoreAfterNodeIdMigration(mergedIdMap);
     syncIdSequencesFromGraph();
     if (doc.viewport && typeof doc.viewport === "object") {
       const vx = Number(doc.viewport.panX);
@@ -5762,34 +5743,10 @@
     selectedEdgeId = null;
     renderNodes();
     applyTransform();
+    /* Canvas now matches the document we just applied — baseline the dirty tracker so the
+       brand stays clean until the user makes their first change. */
+    markFlowAsClean();
     return { unknownTypes };
-  }
-
-  function migrateLegacyFlowKeyIfNeeded() {
-    try {
-      const legacy = localStorage.getItem(FLOW_LS_LEGACY_KEY);
-      if (!legacy || !legacy.trim()) return;
-      const doc = JSON.parse(legacy);
-      if (!doc || doc.v !== FLOW_DOC_VERSION) {
-        localStorage.removeItem(FLOW_LS_LEGACY_KEY);
-        return;
-      }
-      let store = safeParseFlowStoreRaw(localStorage.getItem(FLOW_STORE_KEY));
-      let name = "Imported";
-      let i = 2;
-      while (Object.prototype.hasOwnProperty.call(store.flows, name)) {
-        name = "Imported (" + i + ")";
-        i += 1;
-      }
-      store.flows[name] = doc;
-      writeFlowStore(store);
-      setFlowIdInUrl(name);
-      localStorage.removeItem(FLOW_LS_LEGACY_KEY);
-    } catch (err) {
-      try {
-        localStorage.removeItem(FLOW_LS_LEGACY_KEY);
-      } catch (e2) {}
-    }
   }
 
   function safeParseFlowStoreRaw(raw) {
@@ -5810,7 +5767,6 @@
   }
 
   function readFlowStore() {
-    migrateLegacyFlowKeyIfNeeded();
     return safeParseFlowStoreRaw(localStorage.getItem(FLOW_STORE_KEY));
   }
 
@@ -5841,6 +5797,7 @@
       store.flows[name] = serializeFlowDocument();
       writeFlowStore(store);
       setFlowIdInUrl(name);
+      markFlowAsClean();
       return true;
     } catch (err) {
       return false;
@@ -5859,6 +5816,7 @@
     try {
       writeFlowStore(store);
       setFlowIdInUrl(trimmed);
+      markFlowAsClean();
       showFlowToast('Saved flow "' + trimmed + '".');
       return true;
     } catch (err) {
@@ -5879,10 +5837,7 @@
       setFlowIdInUrl(name);
       let msg = 'Loaded flow "' + name + '".';
       if (unknownTypes.length) {
-        msg +=
-          " Skipped unknown block type(s): " +
-          Array.from(new Set(unknownTypes)).join(", ") +
-          ".";
+        msg += " Skipped: " + Array.from(new Set(unknownTypes)).join(", ");
       }
       showFlowToast(msg);
       return true;
@@ -5938,19 +5893,6 @@
     }
   }
 
-  /** Export the live canvas (whatever is currently on screen, regardless of save state). */
-  function exportCurrentFlow() {
-    const doc = serializeFlowDocument();
-    if (!doc.nodes.length && !doc.edges.length) {
-      showFlowToast("Canvas is empty — nothing to export.");
-      return;
-    }
-    const name = getActiveSavedFlowName() || "flow";
-    if (downloadFlowDocument(doc, name)) {
-      showFlowToast('Exported "' + name + '" as JSON.');
-    }
-  }
-
   /** Export a named flow straight from the saved store (without loading it onto the canvas). */
   function exportSavedFlowByName(name) {
     const store = readFlowStore();
@@ -5989,12 +5931,8 @@
         setFlowIdInUrl("");
         let msg = "Imported flow.";
         if (unknownTypes.length) {
-          msg +=
-            " Skipped unknown block type(s): " +
-            Array.from(new Set(unknownTypes)).join(", ") +
-            ".";
+          msg += " Skipped: " + Array.from(new Set(unknownTypes)).join(", ");
         }
-        msg += " Use Save flow to keep it in this browser.";
         showFlowToast(msg);
       } catch (err) {
         showFlowToast(err.message || String(err));
@@ -6013,7 +5951,7 @@
     const names = Object.keys(store.flows).sort((a, b) => a.localeCompare(b));
     if (names.length === 0) {
       container.innerHTML =
-        '<p class="flow-load-empty" role="listitem">No saved flows yet. Use <strong>Save flow</strong> to create one.</p>';
+        '<p class="flow-load-empty" role="listitem">No saved flows yet.</p>';
       return;
     }
     container.innerHTML = names
@@ -6035,7 +5973,7 @@
           "</div>" +
           '<div class="flow-load-row-actions">' +
           '<button type="button" class="btn flow-load-open">Load</button>' +
-          '<button type="button" class="btn flow-load-export" title="Download this flow as JSON">Export</button>' +
+          '<button type="button" class="btn flow-load-export">Export</button>' +
           '<button type="button" class="btn flow-load-delete">Delete</button>' +
           "</div>" +
           "</div>"
@@ -6083,41 +6021,25 @@
   }
 
   /**
-   * Normalize manifest inputs: `{ nodeId, kind, required, ignored?, paramName? }` or legacy `{ key, type }`.
+   * Normalize manifest inputs: `{ nodeId, kind, required, ignored?, paramName? }`. Drops malformed
+   * rows and clamps `kind` to the allowed set (image/text/video/node).
    * @returns {{ nodeId: string, kind: string, required: boolean, ignored: boolean, paramName?: string }[]}
    */
-  function migrateLegacyAppletInputs(inputs) {
+  function normalizeAppletInputs(inputs) {
     if (!Array.isArray(inputs)) return [];
     const out = [];
     for (const row of inputs) {
       if (!row || typeof row !== "object") continue;
+      if (!row.nodeId || typeof row.nodeId !== "string") continue;
+      const k = String(row.kind || "node").toLowerCase();
+      const kind = k === "image" || k === "text" || k === "video" || k === "node" ? k : "node";
+      const ignored = row.ignored === true;
+      const required = ignored ? false : row.required !== false;
       const pn =
         row.paramName != null && String(row.paramName).trim()
           ? String(row.paramName).trim()
           : undefined;
-      if (row.nodeId && row.kind) {
-        const k = String(row.kind).toLowerCase();
-        const kind =
-          k === "image" || k === "text" || k === "video" || k === "node" ? k : "node";
-        const ignored = row.ignored === true;
-        const required = ignored ? false : row.required !== false;
-        out.push({
-          nodeId: String(row.nodeId),
-          kind,
-          required,
-          ignored,
-          paramName: pn,
-        });
-        continue;
-      }
-      const nid = row.nodeId || row.key;
-      if (!nid || typeof nid !== "string") continue;
-      const t = String(row.type || "video").toLowerCase();
-      const kind =
-        t === "image" ? "image" : t === "text" ? "text" : t === "video" ? "video" : "node";
-      const ignored = row.ignored === true;
-      const required = ignored ? false : row.required !== false;
-      out.push({ nodeId: String(nid), kind, required, ignored, paramName: pn });
+      out.push({ nodeId: String(row.nodeId), kind, required, ignored, paramName: pn });
     }
     return out;
   }
@@ -6152,25 +6074,12 @@
     return name;
   }
 
-  /** Matches former default API names derived from block title (before kind-based `input_*`). */
-  function legacySlugifyAppletParamBase(title) {
-    let x = String(title || "")
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "_")
-      .replace(/^_+|_+$/g, "");
-    if (!x) x = "param";
-    return x.slice(0, 48);
-  }
-
-  /** True → replace with `suggestAppletParamName` (empty name, node id key, or old title-slug default). */
+  /** True → replace with `suggestAppletParamName` (empty name, or just the raw node id). */
   function shouldReplaceWithKindBasedAppletParamName(node, paramName) {
     const p = String(paramName || "").trim();
     if (!p) return true;
     if (p === String(node.id)) return true;
-    if (/^n_\d+$/.test(p)) return true;
-    const legacy = legacySlugifyAppletParamBase(node.def.title || "");
-    return legacy !== "" && p === legacy;
+    return false;
   }
 
   /**
@@ -6198,7 +6107,7 @@
 
   function mergeDiscoveredInputsWithSaved(savedRows) {
     const found = discoverCanvasInputBlocksForApplet();
-    const savedMap = new Map(migrateLegacyAppletInputs(savedRows || []).map((s) => [s.nodeId, s]));
+    const savedMap = new Map(normalizeAppletInputs(savedRows || []).map((s) => [s.nodeId, s]));
     const usedNames = new Set();
     for (const { node } of found) {
       const prev = savedMap.get(node.id);
@@ -6263,7 +6172,7 @@
     appletEditorPersistedBindingIds.clear();
     appletEditorPersistedInputsMap.clear();
     if (!rec || !Array.isArray(rec.inputs)) return;
-    for (const row of migrateLegacyAppletInputs(rec.inputs)) {
+    for (const row of normalizeAppletInputs(rec.inputs)) {
       appletEditorPersistedBindingIds.add(row.nodeId);
       appletEditorPersistedInputsMap.set(row.nodeId, row);
     }
@@ -6287,7 +6196,7 @@
     return (
       '<div class="applet-removed-from-canvas-wrap">' +
       '<p class="applet-removed-heading">Removed from canvas</p>' +
-      '<p class="flow-load-empty" style="margin:0 0 10px;font-size:11px;line-height:1.45;">Still listed in the <strong>last saved applet</strong>. Saving updates the manifest and drops these unless the blocks become sources again.</p>' +
+      '<p class="flow-load-empty" style="margin:0 0 10px;font-size:11px;line-height:1.45;">Saving the applet drops these.</p>' +
       removedIds
         .map((id) => {
           const pr = appletEditorPersistedInputsMap.get(id);
@@ -6324,7 +6233,7 @@
         kind: null,
         nodeId: null,
         label: "",
-        message: "Add exactly one Output · video, Output · image, or Output · text block.",
+        message: "Add one Output block (video, image, or text).",
       };
     }
     if (terminals.length > 1) {
@@ -6333,8 +6242,7 @@
         kind: null,
         nodeId: null,
         label: "",
-        message:
-          "Applets expect exactly one terminal output block. Remove extras or mark them as Preview only so only one Output · video / image / text remains as terminal.",
+        message: "Only one terminal Output allowed. Mark extras as Preview only.",
       };
     }
     const t = terminals[0];
@@ -6374,7 +6282,7 @@
         "</div>" +
         '<span class="applet-bind-role-wrap applet-output-delivery-field">' +
         "<label>Delivery kind</label>" +
-        '<span class="applet-output-kind-readout" title="Returned in the run response; drives playback URL shape">' +
+        '<span class="applet-output-kind-readout">' +
         k +
         "</span>" +
         "</span>";
@@ -6396,14 +6304,14 @@
     const container = document.getElementById("applet-input-blocks-list");
     if (!container) return;
     const savedMap = new Map();
-    for (const x of migrateLegacyAppletInputs(savedInputs || [])) {
+    for (const x of normalizeAppletInputs(savedInputs || [])) {
       savedMap.set(x.nodeId, x);
     }
     const found = discoverCanvasInputBlocksForApplet();
     if (found.length === 0) {
       const removedIdsWhenEmpty = [...appletEditorPersistedBindingIds];
       container.innerHTML =
-        '<p class="flow-load-empty" style="margin:0">No blueprint sources yet — applet inputs are every block with <strong>no incoming wires</strong>. Add or wire blocks, then <strong>Refresh</strong>.</p>' +
+        '<p class="flow-load-empty" style="margin:0">No inputs. Add blocks with no incoming wires, then <strong>Refresh</strong>.</p>' +
         htmlAppletRemovedFromCanvasSection(removedIdsWhenEmpty);
       updateAppletApiMethodReadout();
       return;
@@ -6469,10 +6377,10 @@
           pnv +
           '"' +
           nameDis +
-          ' title="JSON params key for POST /applets/…/run (unused when Role is Ignored)" /></span>' +
+          ' /></span>' +
           "</div>" +
           '<span class="applet-bind-role-wrap"><label>Role</label>' +
-          '<select class="applet-bind-role" title="Required = caller must supply; Optional = may omit; Ignored = fixed on canvas (e.g. system prompt), not in API">' +
+          '<select class="applet-bind-role">' +
           '<option value="required"' +
           selReq +
           ">Required</option>" +
@@ -6481,7 +6389,7 @@
           ">Optional</option>" +
           '<option value="ignored"' +
           selIgn +
-          ">Ignored (not in API)</option>" +
+          ">Ignored</option>" +
           "</select></span>" +
           "</div>"
         );
@@ -6717,11 +6625,9 @@
     const hint = document.getElementById("applet-edit-hint");
     if (!hint) return;
     if (!hasExistingApplet) {
-      hint.innerHTML =
-        "No applet is stored yet for <strong>this saved workflow</strong>. <strong>Every block with no incoming wires</strong> is listed as an input. Set each row to <strong>Required</strong> (caller must supply), <strong>Optional</strong>, or <strong>Ignored</strong> (fixed on canvas — e.g. system prompt — omitted from the API). Output kind comes from your terminal output block (below).";
+      hint.innerHTML = "No applet stored yet for this flow.";
     } else {
-      hint.innerHTML =
-        "This applet is tied only to <strong>this workflow</strong>. All blueprint sources (no incoming wires) appear below; saving updates the snapshot from the <strong>current canvas</strong>. Output kind comes from your terminal output block (below).";
+      hint.innerHTML = "Configure the input and output interface for this flow.";
     }
   }
 
@@ -6732,11 +6638,11 @@
 
     const flowName = getActiveSavedFlowName();
     if (!flowName) {
-      showFlowToast("Save this flow under a name first (Save flow). The applet is tied to that workflow.");
+      showFlowToast("Save the flow first.");
       return;
     }
     if (!nodes.length) {
-      showFlowToast("Add blocks to the canvas first — the applet saves this blueprint.");
+      showFlowToast("Add blocks first.");
       return;
     }
 
@@ -6751,7 +6657,7 @@
     if (rec) {
       syncAppletEditorPersistedFromRecord(rec);
       appletEditingSlug = flowName;
-      appletSavedInputsSnapshot = mergeDiscoveredInputsWithSaved(migrateLegacyAppletInputs(rec.inputs || []));
+      appletSavedInputsSnapshot = mergeDiscoveredInputsWithSaved(normalizeAppletInputs(rec.inputs || []));
       const descEl = document.getElementById("applet-edit-description");
       if (descEl) descEl.value = rec.description || "";
       syncAppletEditHint(true);
@@ -6859,7 +6765,7 @@
       writeAppletStore(store);
       showFlowToast('Saved flow and applet "' + record.name + '".');
       appletEditingSlug = record.slug;
-      appletSavedInputsSnapshot = migrateLegacyAppletInputs(record.inputs || []);
+      appletSavedInputsSnapshot = normalizeAppletInputs(record.inputs || []);
       syncAppletEditorPersistedFromRecord(record);
       renderAppletInputBindings(appletSavedInputsSnapshot);
       syncAppletFlowNameFieldFromStore();
@@ -6874,13 +6780,62 @@
     }
   }
 
+  /**
+   * Open `dlg` as a popover anchored to `anchorBtn` (used for Save flow / Load flow).
+   * Uses non-modal `dlg.show()` so there's no backdrop or inert behind it; closes on
+   * outside click or Escape. If the dialog is already open, this toggles it closed.
+   */
+  function openFlowDialogAsPopover(dlg, anchorBtn) {
+    if (!dlg || !anchorBtn) return false;
+    if (dlg.open) {
+      dlg.close();
+      return false;
+    }
+    dlg.classList.add("flow-dialog-popover");
+    if (typeof dlg.show === "function") dlg.show();
+    else if (typeof dlg.showModal === "function") dlg.showModal();
+    else dlg.setAttribute("open", "");
+    const r = anchorBtn.getBoundingClientRect();
+    const dr = dlg.getBoundingClientRect();
+    const pad = 6;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    let left = r.left;
+    let top = r.bottom + pad;
+    if (left + dr.width > vw - 8) left = Math.max(8, vw - dr.width - 8);
+    if (top + dr.height > vh - 8) top = Math.max(8, r.top - dr.height - pad);
+    dlg.style.top = top + "px";
+    dlg.style.left = left + "px";
+    function onDocPointer(e) {
+      if (!dlg.open) {
+        document.removeEventListener("mousedown", onDocPointer, true);
+        document.removeEventListener("keydown", onKey, true);
+        return;
+      }
+      if (dlg.contains(e.target)) return;
+      if (anchorBtn.contains(e.target)) return;
+      dlg.close();
+    }
+    function onKey(e) {
+      if (e.key === "Escape" && dlg.open) {
+        e.preventDefault();
+        dlg.close();
+      }
+    }
+    setTimeout(() => {
+      document.addEventListener("mousedown", onDocPointer, true);
+      document.addEventListener("keydown", onKey, true);
+    }, 0);
+    return true;
+  }
+
   function openFlowSaveDialog() {
     const dlg = document.getElementById("flow-save-dialog");
     const inp = document.getElementById("flow-save-name");
-    if (!dlg || !inp) return;
+    const btn = document.getElementById("btn-save-flow");
+    if (!dlg || !inp || !btn) return;
     inp.value = getActiveSavedFlowName();
-    if (typeof dlg.showModal === "function") dlg.showModal();
-    else dlg.setAttribute("open", "");
+    if (!openFlowDialogAsPopover(dlg, btn)) return;
     requestAnimationFrame(() => {
       inp.focus();
       inp.select();
@@ -6889,10 +6844,10 @@
 
   function openFlowLoadDialog() {
     const dlg = document.getElementById("flow-load-dialog");
-    if (!dlg) return;
+    const anchor = document.getElementById("brand-flow-name");
+    if (!dlg || !anchor) return;
     renderSavedFlowsList();
-    if (typeof dlg.showModal === "function") dlg.showModal();
-    else dlg.setAttribute("open", "");
+    openFlowDialogAsPopover(dlg, anchor);
   }
 
   document.getElementById("btn-save-flow").addEventListener("click", () => {
@@ -6917,9 +6872,19 @@
     }
   });
 
-  document.getElementById("btn-load-flow").addEventListener("click", () => {
-    openFlowLoadDialog();
-  });
+  (function wireBrandFlowNameAsLoadTrigger() {
+    const el = document.getElementById("brand-flow-name");
+    if (!el) return;
+    el.addEventListener("click", () => {
+      openFlowLoadDialog();
+    });
+    el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+        e.preventDefault();
+        openFlowLoadDialog();
+      }
+    });
+  })();
 
   document.getElementById("flow-load-close").addEventListener("click", () => {
     document.getElementById("flow-load-dialog").close();
@@ -6954,10 +6919,6 @@
     }
   });
 
-  document.getElementById("btn-export-flow").addEventListener("click", () => {
-    exportCurrentFlow();
-  });
-
   document.getElementById("btn-import-flow").addEventListener("click", () => {
     const inp = document.getElementById("flow-import-input");
     if (!inp) return;
@@ -6968,7 +6929,11 @@
   document.getElementById("flow-import-input").addEventListener("change", (e) => {
     const inp = e.currentTarget;
     const file = inp && inp.files && inp.files[0];
-    if (file) importFlowFromFile(file);
+    if (file) {
+      importFlowFromFile(file);
+      const dlgLoad = document.getElementById("flow-load-dialog");
+      if (dlgLoad && dlgLoad.open) dlgLoad.close();
+    }
     inp.value = "";
   });
 
@@ -7035,6 +7000,8 @@
     ];
     renderNodes();
     fitView();
+    /* Baseline the dirty tracker so a freshly-seeded demo isn't shown as "· unsaved". */
+    markFlowAsClean();
   }
 
   buildPalette("");
