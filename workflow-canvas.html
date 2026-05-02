@@ -93,6 +93,7 @@
       font-size: 13px;
       letter-spacing: -0.025em;
       color: var(--text);
+      min-width: 0;
     }
 
     .brand-mark {
@@ -102,6 +103,32 @@
       background: linear-gradient(145deg, #fdba74, #fb923c);
       opacity: 0.92;
       box-shadow: 0 1px 3px rgba(251, 146, 60, 0.25);
+      flex-shrink: 0;
+    }
+
+    .brand-name {
+      flex-shrink: 0;
+    }
+
+    .brand-divider {
+      color: var(--text-faint);
+      font-weight: 400;
+      flex-shrink: 0;
+    }
+
+    .brand-flow-name {
+      font-weight: 400;
+      color: var(--text-soft);
+      max-width: 280px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+    }
+
+    .brand-flow-name.is-untitled {
+      color: var(--text-faint);
+      font-style: italic;
     }
 
     .toolbar {
@@ -196,6 +223,50 @@
     .btn-run svg {
       flex-shrink: 0;
       opacity: 0.95;
+    }
+
+    /* Bordered pill for Save flow / Load flow — more prominent than `.btn` ghost buttons,
+       lighter than `.btn-run` so the run action stays the primary CTA. */
+    .btn-flow {
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 6px 11px;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      background: #fff;
+      color: var(--text);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      white-space: nowrap;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      transition: border-color 0.14s, box-shadow 0.14s, color 0.14s, transform 0.12s;
+    }
+
+    .btn-flow:hover {
+      border-color: var(--accent-focus);
+      color: var(--accent-focus);
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.16);
+    }
+
+    .btn-flow:active {
+      transform: scale(0.98);
+    }
+
+    .btn-flow svg {
+      flex-shrink: 0;
+      opacity: 0.85;
+    }
+
+    .toolbar-divider {
+      width: 1px;
+      height: 18px;
+      background: var(--border-hair);
+      margin: 0 4px;
+      flex-shrink: 0;
     }
 
     aside.palette {
@@ -749,6 +820,240 @@
       cursor: default;
       outline: none;
       white-space: pre-wrap;
+    }
+
+    .output-preview-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      padding: 3px 1px;
+      font-size: 11px;
+      color: var(--text-soft);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .output-preview-toggle input[type="checkbox"] {
+      width: 13px;
+      height: 13px;
+      margin: 0;
+      cursor: pointer;
+      accent-color: #f59e0b;
+      flex-shrink: 0;
+    }
+
+    .output-preview-toggle:hover {
+      color: var(--text);
+    }
+
+    #nodes-layer .node.is-preview {
+      border-style: dashed;
+      border-color: rgba(245, 158, 11, 0.55);
+      background: linear-gradient(180deg, rgba(254, 243, 199, 0.35), #fff 28px);
+    }
+
+    #nodes-layer .node.is-preview.selected {
+      border-color: rgba(245, 158, 11, 0.85);
+    }
+
+    .node-preview-badge {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 0 5px;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #b45309;
+      background: rgba(245, 158, 11, 0.16);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      border-radius: 3px;
+      vertical-align: 1px;
+      line-height: 1.5;
+    }
+
+    .splice-sheet {
+      padding: 6px 6px 5px;
+      max-height: min(280px, 50vh);
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      cursor: default;
+    }
+
+    .splice-hint {
+      margin: 0 0 5px;
+      font-size: 11px;
+      line-height: 1.35;
+      color: var(--text-faint);
+    }
+
+    .splice-handle-glyph {
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      letter-spacing: -1px;
+      color: var(--text-faint);
+      padding: 0 2px;
+    }
+
+    .splice-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .splice-seg {
+      border: 1px solid var(--border-hair);
+      border-radius: 6px;
+      background: #fff;
+      transition: border-color 0.12s, box-shadow 0.12s, opacity 0.12s, transform 0.12s;
+    }
+
+    .splice-seg.dragging {
+      opacity: 0.45;
+      border-style: dashed;
+    }
+
+    .splice-seg.drop-before {
+      box-shadow: 0 -2px 0 0 rgba(14, 165, 233, 0.7);
+    }
+
+    .splice-seg.drop-after {
+      box-shadow: 0 2px 0 0 rgba(14, 165, 233, 0.7);
+    }
+
+    .splice-seg-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 6px;
+    }
+
+    .splice-handle {
+      cursor: grab;
+      color: var(--text-faint);
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 11px;
+      letter-spacing: -1px;
+      user-select: none;
+      padding: 1px 4px;
+      margin: -1px 0;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .splice-handle:hover {
+      background: rgba(0, 0, 0, 0.05);
+      color: var(--text);
+    }
+
+    .splice-handle:active,
+    .splice-seg.dragging .splice-handle {
+      cursor: grabbing;
+    }
+
+    .splice-num {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text);
+      flex-shrink: 0;
+      min-width: 14px;
+      text-align: center;
+    }
+
+    .splice-port-id {
+      flex: 1;
+      min-width: 0;
+      color: var(--text-faint);
+      font-size: 10px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .splice-port-id code {
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 10px;
+    }
+
+    .splice-remove {
+      border: none;
+      background: transparent;
+      color: var(--text-faint);
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      line-height: 1;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .splice-remove:hover {
+      background: rgba(239, 68, 68, 0.12);
+      color: #dc2626;
+    }
+
+    .splice-remove:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .splice-transition {
+      padding: 0 6px 5px 22px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .splice-transition label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-faint);
+      letter-spacing: 0.02em;
+      flex-shrink: 0;
+    }
+
+    .splice-transition select {
+      flex: 1;
+      min-width: 0;
+      font-family: inherit;
+      font-size: 11px;
+      padding: 2px 4px;
+      border-radius: 5px;
+      border: 1px solid var(--border-hair);
+      background: #fff;
+      color: var(--text);
+      outline: none;
+    }
+
+    .splice-transition select:focus {
+      border-color: rgba(14, 165, 233, 0.45);
+      box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.12);
+    }
+
+    .splice-empty {
+      margin: 0;
+      padding: 6px 4px;
+      font-size: 11px;
+      line-height: 1.4;
+      color: var(--text-faint);
+      text-align: center;
+    }
+
+    .dot.in-dot-multi {
+      box-shadow: 0 0 0 2.5px rgba(56, 189, 248, 0.18);
+    }
+
+    .dot.in-dot-multi:hover {
+      box-shadow: 0 0 0 3.5px rgba(56, 189, 248, 0.28);
     }
 
     .ports {
@@ -1445,7 +1750,9 @@
       <div class="topbar-left">
         <div class="brand">
           <div class="brand-mark" aria-hidden="true"></div>
-          <span>Studio</span>
+          <span class="brand-name">Studio</span>
+          <span class="brand-divider" aria-hidden="true">/</span>
+          <span class="brand-flow-name" id="brand-flow-name" title="Current flow">Untitled</span>
         </div>
       </div>
       <div class="toolbar">
@@ -1453,12 +1760,23 @@
           <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
           Run flow
         </button>
-        <button type="button" class="btn" id="btn-save-flow" title="Save this canvas under a name (browser storage only)">
+        <button type="button" class="btn-flow" id="btn-save-flow" title="Save this canvas under a name (browser storage only)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/>
+            <polyline points="7 3 7 8 15 8"/>
+          </svg>
           Save flow
         </button>
-        <button type="button" class="btn" id="btn-load-flow" title="Load a flow saved in this browser">
+        <button type="button" class="btn-flow" id="btn-load-flow" title="Load a flow saved in this browser">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="8 13 12 17 16 13"/>
+            <line x1="12" y1="17" x2="12" y2="9"/>
+          </svg>
           Load flow
         </button>
+        <span class="toolbar-divider" aria-hidden="true"></span>
         <button type="button" class="btn" id="btn-clear">Clear</button>
         <button
           type="button"
@@ -1637,6 +1955,23 @@
       else url.searchParams.delete(FLOW_QUERY_PARAM);
       window.history.replaceState({}, "", url.pathname + url.search + url.hash);
     } catch (e) {}
+    updateBrandFlowName(nameOrEmpty);
+  }
+
+  /** Render the current flow name in the topbar brand area (italic "Untitled" if blank). */
+  function updateBrandFlowName(nameOrEmpty) {
+    const el = document.getElementById("brand-flow-name");
+    if (!el) return;
+    const trimmed = String(nameOrEmpty || "").trim();
+    if (trimmed) {
+      el.textContent = trimmed;
+      el.title = trimmed;
+      el.classList.remove("is-untitled");
+    } else {
+      el.textContent = "Untitled";
+      el.title = "No flow saved yet — use Save flow to name it.";
+      el.classList.add("is-untitled");
+    }
   }
 
   /**
@@ -1925,7 +2260,7 @@
       ins: [],
       defaultSettings: {
         cloudName: VIDEOFACTORY_CLOUD_NAME,
-        publicId: "",
+        publicId: "cld-sample",
         resourceType: "image",
       },
       settingsFields: [
@@ -1964,12 +2299,15 @@
       glyphColor: "#0369a1",
       wireColor: "#9dceeb",
       dotColor: "#38bdf8",
-      ins: [
-        { id: "a", label: "" },
-        { id: "b", label: "" },
-      ],
+      /* Single input anchor that accepts unlimited incoming wires (`multiple: true` —
+       * see wiring code). Each wire becomes a segment in the in-block list. */
+      ins: [{ id: "in", label: "", multiple: true }],
       outs: [{ id: "out", label: "" }],
-      placeholder: "Merged stream from two inputs will appear here.",
+      placeholder: "",
+      defaultSettings: {
+        order: [],        /* edge ids, top → bottom segment order */
+        transitions: {},  /* edge id → transition value (between this segment and the next) */
+      },
     },
     {
       type: "output",
@@ -2076,6 +2414,26 @@
         { key: "start_offset", label: "Start offset (so_)", type: "text", placeholder: "seconds, e.g. 2" },
         { key: "end_offset", label: "End offset (eo_)", type: "text", placeholder: "seconds from end" },
         { key: "duration", label: "Duration (du_)", type: "text", placeholder: "clip length" },
+      ],
+    },
+    {
+      /* Cloudinary AI video preview / summarization (`e_preview`).
+         Picks the most "interesting" segments and stitches them into a short clip.
+         Docs: https://cloudinary.com/documentation/video_effects_and_enhancements#ai_based_video_preview */
+      type: "cld_video_preview",
+      title: "Video summarization",
+      iconBg: "#ede9fe",
+      glyphColor: "#5b21b6",
+      wireColor: "#c4b5fd",
+      dotColor: "#7c3aed",
+      ins: [{ id: "in", label: "" }],
+      outs: [{ id: "out", label: "" }],
+      cldKind: "video_preview",
+      defaultSettings: { duration: "5", max_seg: "", min_seg_dur: "" },
+      settingsFields: [
+        { key: "duration", label: "Preview duration (s)", type: "text", placeholder: "default 5" },
+        { key: "max_seg", label: "Max segments (optional)", type: "text", placeholder: "e.g. 3" },
+        { key: "min_seg_dur", label: "Min segment duration (s, optional)", type: "text", placeholder: "e.g. 2" },
       ],
     },
     {
@@ -2429,7 +2787,6 @@
       outs: [{ id: "out", label: "" }],
       mockGenerator: { kind: "video" },
       defaultSettings: {
-        prompt: "",
         prompt_enhancement: "true",
         duration: "8",
         audio: "true",
@@ -2437,7 +2794,6 @@
         aspect_ratio: "auto",
       },
       settingsFields: [
-        { key: "prompt", label: "Prompt (overrides wired text)", type: "textarea", placeholder: "Describe the motion / scene…" },
         { key: "prompt_enhancement", label: "Prompt enhancement", type: "select", options: [
           { v: "true", label: "true (default)" },
           { v: "false", label: "false" },
@@ -2478,7 +2834,6 @@
       outs: [{ id: "out", label: "" }],
       mockGenerator: { kind: "video" },
       defaultSettings: {
-        prompt: "",
         prompt_enhancement: "true",
         duration: "8",
         audio: "true",
@@ -2486,7 +2841,6 @@
         aspect_ratio: "auto",
       },
       settingsFields: [
-        { key: "prompt", label: "Prompt (overrides wired text)", type: "textarea", placeholder: "Describe the motion / scene…" },
         { key: "prompt_enhancement", label: "Prompt enhancement", type: "select", options: [
           { v: "true", label: "true (default)" },
           { v: "false", label: "false" },
@@ -2525,12 +2879,10 @@
       outs: [{ id: "out", label: "" }],
       mockGenerator: { kind: "image" },
       defaultSettings: {
-        prompt: "",
         prompt_enhancement: "true",
         aspect_ratio: "auto",
       },
       settingsFields: [
-        { key: "prompt", label: "Prompt (overrides wired text)", type: "textarea", placeholder: "Describe the edit / style…" },
         { key: "prompt_enhancement", label: "Prompt enhancement", type: "select", options: [
           { v: "true", label: "true (default)" },
           { v: "false", label: "false" },
@@ -2556,12 +2908,10 @@
       outs: [{ id: "out", label: "" }],
       mockGenerator: { kind: "image" },
       defaultSettings: {
-        prompt: "",
         prompt_enhancement: "true",
         aspect_ratio: "auto",
       },
       settingsFields: [
-        { key: "prompt", label: "Prompt (overrides wired text)", type: "textarea", placeholder: "Describe the image…" },
         { key: "prompt_enhancement", label: "Prompt enhancement", type: "select", options: [
           { v: "true", label: "true (default)" },
           { v: "false", label: "false" },
@@ -2582,20 +2932,13 @@
       wireColor: "#a5b4fc",
       dotColor: "#6366f1",
       ins: [
-        { id: "text1", label: "text 1" },
-        { id: "text2", label: "text 2" },
-        { id: "text3", label: "text 3" },
-        { id: "image1", label: "image 1" },
-        { id: "image2", label: "image 2" },
+        { id: "text", label: "text", multiple: true },
+        { id: "image", label: "image", multiple: true },
       ],
       outs: [{ id: "out", label: "" }],
       mockGenerator: { kind: "text" },
-      defaultSettings: {
-        prompt: "",
-      },
-      settingsFields: [
-        { key: "prompt", label: "Instruction (optional)", type: "textarea", placeholder: "Optional system / instruction; ignored in mock" },
-      ],
+      defaultSettings: {},
+      settingsFields: [],
     },
     {
       type: "output_text",
@@ -2631,6 +2974,8 @@
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>',
     cld_trim:
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2"/><path d="M16 4h2a2 2 0 0 1 2 2v2"/><path d="M20 16v2a2 2 0 0 1-2 2h-2"/><path d="M8 20H6a2 2 0 0 1-2-2v-2"/><line x1="10" y1="12" x2="14" y2="12"/></svg>',
+    cld_video_preview:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="14" height="12" rx="1.5"/><polygon points="6.5 9.5 11.5 12 6.5 14.5"/><path d="m18.5 5 .9 2 2 .9-2 .9-.9 2-.9-2-2-.9 2-.9z"/><path d="m20 14 .6 1.4 1.4.6-1.4.6L20 18l-.6-1.4-1.4-.6 1.4-.6z"/></svg>',
     cld_video_frame:
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5.5" width="16" height="13" rx="1"/><circle cx="12" cy="12" r="2.75"/><path d="M8 5.5V4"/><path d="M16 5.5V4"/></svg>',
     cld_effect:
@@ -2685,6 +3030,79 @@
   function cloneSettings(def) {
     if (!def.defaultSettings) return {};
     return JSON.parse(JSON.stringify(def.defaultSettings));
+  }
+
+  /** Splice transition presets shown between consecutive segments. `cut` = no transition. */
+  const SPLICE_TRANSITIONS = [
+    { v: "cut", label: "None (cut)" },
+    { v: "fade", label: "Fade" },
+    { v: "dissolve", label: "Dissolve" },
+    { v: "wipe", label: "Wipe" },
+    { v: "slide", label: "Slide" },
+    { v: "circle", label: "Circle" },
+  ];
+  const SPLICE_TRANSITION_LABELS = (() => {
+    const m = {};
+    for (const t of SPLICE_TRANSITIONS) m[t.v] = t.label;
+    return m;
+  })();
+  function normalizeSpliceTransition(v) {
+    return SPLICE_TRANSITION_LABELS[String(v || "")] ? String(v) : "cut";
+  }
+
+  /**
+   * Live incoming wires on a splice node, ordered by `settings.order` (with any newly added
+   * edges appended at the end so they appear immediately after wiring).
+   * Also returns the per-edge transition map (transition AFTER each segment).
+   */
+  function spliceIncomingEdges(node) {
+    const live = edges.filter((e) => e.toNode === node.id && e.toPort === "in");
+    const s = (node && node.settings) || {};
+    const order = Array.isArray(s.order) ? s.order : [];
+    const transitions = (s.transitions && typeof s.transitions === "object") ? s.transitions : {};
+    const byId = new Map(live.map((e) => [e.id, e]));
+    const used = new Set();
+    const ordered = [];
+    for (const eid of order) {
+      const e = byId.get(eid);
+      if (e && !used.has(eid)) {
+        ordered.push(e);
+        used.add(eid);
+      }
+    }
+    for (const e of live) {
+      if (!used.has(e.id)) {
+        ordered.push(e);
+        used.add(e.id);
+      }
+    }
+    return {
+      edges: ordered,
+      transitionFor(edgeId) {
+        return normalizeSpliceTransition(transitions[edgeId]);
+      },
+    };
+  }
+
+  /**
+   * Whether a port (by node + port kind + port id) accepts multiple incoming wires.
+   * Used to skip the "drop existing edge before pushing" dedupe in the wiring code.
+   */
+  function portAcceptsMultiple(node, kind, portId) {
+    if (!node || !node.def) return false;
+    const list = kind === "out" ? (node.def.outs || []) : (node.def.ins || []);
+    const p = list.find((x) => x.id === portId);
+    return !!(p && p.multiple);
+  }
+
+  /** Effective input ports for a node. */
+  function nodeInPorts(node) {
+    return (node && node.def && node.def.ins) || [];
+  }
+
+  /** Effective output ports for a node. */
+  function nodeOutPorts(node) {
+    return (node && node.def && node.def.outs) || [];
   }
 
   function sanitizeDomIdForPlayer(nodeId) {
@@ -2829,6 +3247,17 @@
     return t;
   }
 
+  /** Checkbox row on every output sheet — flips `node.settings.isPreview`. Side-channel: keeps
+   * the block in the canvas as a working preview but excludes it from terminal-output detection. */
+  function renderOutputPreviewToggle(node) {
+    const checked = isPreviewOutputNode(node) ? " checked" : "";
+    const id = "out-preview-" + sanitizeDomIdForPlayer(node.id);
+    return `<label class="output-preview-toggle" for="${id}" title="When on, this block is excluded from applet/terminal-output detection — it just shows a side preview.">
+      <input id="${id}" type="checkbox" data-output-preview="${escapeHtml(node.id)}"${checked} />
+      <span>Preview only</span>
+    </label>`;
+  }
+
   function renderOutputSheet(node) {
     const computed = buildDeliveryUrlForOutput(node.id);
     const embed = buildCloudinaryEmbedPlayerUrl(node.id);
@@ -2845,6 +3274,7 @@
         <label for="out-embed-${node.id}">Cloudinary embed player URL (share)</label>
         <input id="out-embed-${node.id}" type="text" readonly class="output-url-readonly output-embed-readonly" value="${safeEmbed}" tabindex="-1" />
       </div>
+      ${renderOutputPreviewToggle(node)}
     </div>`;
   }
 
@@ -2858,6 +3288,7 @@
         <label for="out-computed-${node.id}">Image delivery URL</label>
         <input id="out-computed-${node.id}" type="text" readonly class="output-url-readonly" value="${safeComputed}" tabindex="-1" />
       </div>
+      ${renderOutputPreviewToggle(node)}
     </div>`;
   }
 
@@ -2869,6 +3300,7 @@
         <label for="out-text-${node.id}">Result text (mock)</label>
         <textarea id="out-text-${node.id}" class="output-text-readonly" readonly tabindex="-1" rows="4" spellcheck="false">${safeValue}</textarea>
       </div>
+      ${renderOutputPreviewToggle(node)}
     </div>`;
   }
 
@@ -2913,6 +3345,20 @@
           height: parseScalar(s.height),
         });
         return Object.keys(o).length ? [o] : [];
+      }
+      case "video_preview": {
+        /* AI-based video preview / summarization. Cloudinary syntax:
+             e_preview[:duration_X][:max_seg_Y][:min_seg_dur_Z]
+           Parameters are colon-separated; bare `e_preview` is valid (defaults to 5s). */
+        const dur = (s.duration && String(s.duration).trim()) || "";
+        const maxSeg = (s.max_seg && String(s.max_seg).trim()) || "";
+        const minDur = (s.min_seg_dur && String(s.min_seg_dur).trim()) || "";
+        const parts = [];
+        if (dur) parts.push("duration_" + dur);
+        if (maxSeg) parts.push("max_seg_" + maxSeg);
+        if (minDur) parts.push("min_seg_dur_" + minDur);
+        const arg = parts.join(":");
+        return [{ effect: arg ? "preview:" + arg : "preview" }];
       }
       case "effect": {
         const fx = buildEffectFromPreset(s);
@@ -3067,7 +3513,7 @@
   function orderedNodeIds() {
     const order = [];
     const seen = new Set();
-    const starts = nodes.filter((n) => n.def.ins.length === 0);
+    const starts = nodes.filter((n) => nodeInPorts(n).length === 0);
     function walk(id) {
       if (seen.has(id)) return;
       seen.add(id);
@@ -3352,20 +3798,47 @@
   }
 
   /**
+   * Output block opted out of being the workflow's terminal output (e.g. an extra Output · video
+   * used only for preview while iterating). Preview blocks still render their preview locally —
+   * applet/run-flow logic just doesn't count them as the canonical terminal.
+   */
+  function isPreviewOutputNode(node) {
+    return !!(
+      node &&
+      isTerminalOutputBlockType(node.def.type) &&
+      node.settings &&
+      node.settings.isPreview === true
+    );
+  }
+
+  /** True when this node is a terminal output block AND not opted out as a preview-only node. */
+  function isTerminalOutputNode(node) {
+    return !!(
+      node &&
+      isTerminalOutputBlockType(node.def.type) &&
+      !isPreviewOutputNode(node)
+    );
+  }
+
+  /**
    * Build a synthetic LLM-style result for an AI text block by combining its wired
    * text sources, count of wired image sources, and the block's own instruction prompt.
    */
   function mockAiTextResultForNode(aiTextNode, visited) {
-    const ownPrompt = String((aiTextNode.settings && aiTextNode.settings.prompt) || "").trim();
+    visited = visited || new Set();
+    const visitKey = "ai|" + aiTextNode.id;
+    if (visited.has(visitKey)) return "";
+    visited.add(visitKey);
     const textInputs = [];
-    for (const portId of ["text1", "text2", "text3"]) {
-      const upstream = resolveUpstreamTextForPort(aiTextNode.id, portId, visited);
+    const textEdges = edges.filter((e) => e.toNode === aiTextNode.id && e.toPort === "text");
+    for (const e of textEdges) {
+      const upstream = resolveUpstreamTextForEdge(e, visited);
       if (upstream != null && String(upstream).trim()) {
         textInputs.push(String(upstream).trim());
       }
     }
-    const imageCount = ["image1", "image2"].filter((p) =>
-      edges.some((e) => e.toNode === aiTextNode.id && e.toPort === p)
+    const imageCount = edges.filter(
+      (e) => e.toNode === aiTextNode.id && e.toPort === "image"
     ).length;
     const parts = [];
     if (textInputs.length) {
@@ -3374,28 +3847,19 @@
     if (imageCount) {
       parts.push(imageCount + " image" + (imageCount > 1 ? "s" : ""));
     }
-    if (ownPrompt) {
-      const promptShort = ownPrompt.length > 160 ? ownPrompt.slice(0, 157) + "…" : ownPrompt;
-      parts.push('prompt "' + promptShort + '"');
-    }
     if (!parts.length) {
-      return "[mock AI text] No inputs wired and no instruction set — placeholder LLM response.";
+      return "[mock AI text] No inputs wired — placeholder LLM response.";
     }
     return "[mock AI text] Synthesized response from " + parts.join(", ") + ".";
   }
 
   /**
-   * Resolve a text value flowing into `nodeId`'s `portId`. Walks through `mock_ai_text` and
-   * `input_text`. Returns `null` if no text upstream (e.g. an image is wired).
+   * Resolve the text value carried by a single incoming edge. Walks through `mock_ai_text`
+   * and `input_text`. Returns `null` if no text upstream (e.g. an image source is wired).
    */
-  function resolveUpstreamTextForPort(nodeId, portId, visited) {
-    visited = visited || new Set();
-    const key = nodeId + "|" + portId;
-    if (visited.has(key)) return null;
-    visited.add(key);
-    const e = edges.find((x) => x.toNode === nodeId && x.toPort === portId);
-    if (!e) return null;
-    const src = nodes.find((n) => n.id === e.fromNode);
+  function resolveUpstreamTextForEdge(edge, visited) {
+    if (!edge) return null;
+    const src = nodes.find((n) => n.id === edge.fromNode);
     if (!src) return null;
     if (src.def.type === "input_text") {
       const t = src.settings && src.settings.prompt;
@@ -3408,16 +3872,13 @@
   }
 
   /**
-   * Resolve a non-empty prompt value for a mock generator node:
-   *   1. Wired text on `prompt` port (recurses through ai_text / input_text)
-   *   2. The block's own `prompt` setting
+   * Resolve a text value flowing into `nodeId`'s single-wire `portId` (e.g. an output_text
+   * `in` port or a mock generator `prompt` port). For multi-wire ports, iterate edges and
+   * call `resolveUpstreamTextForEdge` directly.
    */
-  function resolveMockGeneratorPrompt(node) {
-    if (!node) return "";
-    const wired = resolveUpstreamTextForPort(node.id, "prompt");
-    if (wired != null && String(wired).trim()) return String(wired);
-    const own = node.settings && node.settings.prompt;
-    return own == null ? "" : String(own);
+  function resolveUpstreamTextForPort(nodeId, portId, visited) {
+    const e = edges.find((x) => x.toNode === nodeId && x.toPort === portId);
+    return resolveUpstreamTextForEdge(e, visited);
   }
 
   /** Build the readonly text shown in an `output_text` block. */
@@ -3559,6 +4020,52 @@
     return migrateEffectSettings(Object.assign({}, def.defaultSettings || {}, node.settings || {}));
   }
 
+  /**
+   * Splice sheet: ordered list of incoming wires (one row per connected source). Wire any number
+   * of video sources into the single in-anchor; each becomes a segment. Supports drag-to-reorder,
+   * per-gap transition selection, and per-row unwire. Order persists via `settings.order` (edge
+   * ids); transitions persist via `settings.transitions` (edge id → preset). `cut` = no transition.
+   */
+  function renderSpliceSheet(node) {
+    const { edges: segs, transitionFor } = spliceIncomingEdges(node);
+    let html = `<div class="node-sheet splice-sheet" data-node-id="${escapeHtml(node.id)}">`;
+    if (segs.length === 0) {
+      html += `<p class="splice-empty">Wire video sources into the input dot to add segments.</p>`;
+      html += `</div>`;
+      return html;
+    }
+    html += `<p class="splice-hint">Drag <span class="splice-handle-glyph" aria-hidden="true">⋮⋮</span> to reorder. Transition between segments — <em>None (cut)</em> = no transition.</p>`;
+    html += `<ul class="splice-list" data-splice-list="${escapeHtml(node.id)}">`;
+    segs.forEach((edge, idx) => {
+      const isLast = idx === segs.length - 1;
+      const fromNode = nodes.find((n) => n.id === edge.fromNode);
+      const sourceLabel = fromNode ? fromNode.id : edge.fromNode;
+      html += `<li class="splice-seg" data-edge-id="${escapeHtml(edge.id)}" data-seg-idx="${idx}">`;
+      html += `<div class="splice-seg-row">`;
+      html += `<span class="splice-handle" title="Drag to reorder" aria-hidden="true">⋮⋮</span>`;
+      html += `<span class="splice-num">${idx + 1}</span>`;
+      html += `<span class="splice-port-id" title="${escapeHtml(sourceLabel)}"><code>${escapeHtml(sourceLabel)}</code></span>`;
+      html += `<button type="button" class="splice-remove" data-edge-id="${escapeHtml(edge.id)}" title="Disconnect this source" aria-label="Disconnect">×</button>`;
+      html += `</div>`;
+      if (!isLast) {
+        const t = transitionFor(edge.id);
+        html += `<div class="splice-transition">`;
+        html += `<label>Transition</label>`;
+        html += `<select data-splice-transition="${escapeHtml(edge.id)}">`;
+        for (const opt of SPLICE_TRANSITIONS) {
+          const sel = String(opt.v) === String(t) ? " selected" : "";
+          html += `<option value="${escapeHtml(opt.v)}"${sel}>${escapeHtml(opt.label)}</option>`;
+        }
+        html += `</select>`;
+        html += `</div>`;
+      }
+      html += `</li>`;
+    });
+    html += `</ul>`;
+    html += `</div>`;
+    return html;
+  }
+
   function renderSettingsFields(node) {
     const def = node.def;
     const canRender =
@@ -3600,11 +4107,7 @@
       }
     } else if (isMediaInputNodeType(def.type)) {
       const kindHint = def.type === "input_image" ? "image" : "video";
-      html += `<p class="input-vf-hint">${escapeHtml(
-        kindHint.charAt(0).toUpperCase() + kindHint.slice(1)
-      )} on Video Factory cloud (<code>${escapeHtml(
-        VIDEOFACTORY_CLOUD_NAME
-      )}</code>). Browse the Media Library or type a public ID.</p>`;
+      html += `<p class="input-vf-hint">Browse the Media Library or type a public ID.</p>`;
       html += `<div class="input-ml-toolbar"><button type="button" class="input-ml-browse" data-node-id="${escapeHtml(
         node.id
       )}">Browse assets…</button></div>`;
@@ -3825,19 +4328,35 @@
     /* Tuned to compact `.node-*` padding/margins + PORT_STACK_STEP */
     /* +13 for header row subtitle (block slug, e.g. input_video / output_video / resize) */
     const base = 123;
+    const ins = nodeInPorts(node);
+    const outs = nodeOutPorts(node);
     const extraPorts =
-      Math.max(0, Math.max(node.def.ins.length, node.def.outs.length, 1) - 1) * 12;
+      Math.max(0, Math.max(ins.length, outs.length, 1) - 1) * 12;
     const nf = node.def.settingsFields ? node.def.settingsFields.length : 0;
     const inputHintExtra = isMediaInputNodeType(node.def.type) ? 48 : 0;
     const sheetBoost = (nf ? Math.min(nf, 9) * 15 + 14 : 0) + inputHintExtra;
     const outputExtra = isVideoOutputBlockType(node.def.type)
-      ? 106
+      ? 128
       : isImageOutputBlockType(node.def.type)
-        ? 88
+        ? 110
         : isTextOutputBlockType(node.def.type)
-          ? 110
+          ? 132
           : 0;
-    return { w, h: base + extraPorts + sheetBoost + outputExtra };
+    /* Splice sheet: one row per incoming wire + a transition select between rows. The sheet
+     * itself scrolls when it overflows, but estimating height keeps short lists tightly fit. */
+    let spliceExtra = 0;
+    if (node.def.type === "splice") {
+      const cnt = spliceIncomingEdges(node).edges.length;
+      if (cnt === 0) {
+        spliceExtra = 36;
+      } else {
+        const segRows = cnt * 22;
+        const transitionRows = Math.max(0, cnt - 1) * 36;
+        const hint = 18;
+        spliceExtra = segRows + transitionRows + hint;
+      }
+    }
+    return { w, h: base + extraPorts + sheetBoost + outputExtra + spliceExtra };
   }
 
   /**
@@ -3865,8 +4384,8 @@
     const node = nodes.find((n) => n.id === nodeId);
     if (!node) return { x: 0, y: 0 };
     const { w } = nodeElBounds(node);
-    const ins = node.def.ins;
-    const outs = node.def.outs;
+    const ins = nodeInPorts(node);
+    const outs = nodeOutPorts(node);
     if (kind === "in") {
       const idx = Math.max(0, ins.findIndex((p) => p.id === portId));
       const total = ins.length;
@@ -3977,13 +4496,15 @@
       const { w, h } = nodeElBounds(node);
       const sel = node.id === selectedNodeId ? " selected" : "";
       const dotStyle = `border-color:${def.dotColor}`;
-      const inPorts = def.ins
-        .map(
-          (p) =>
-            `<div class="port in" data-port="${p.id}"><span class="dot in-dot" style="${dotStyle}" data-kind="in" data-port="${p.id}" tabindex="0" title="Drag: disconnect &amp; reconnect. Click edge + Delete: remove."></span>${p.label ? `<span>${p.label}</span>` : ""}</div>`
-        )
+      const inPorts = nodeInPorts(node)
+        .map((p) => {
+          const tip = p.multiple
+            ? "Accepts multiple wires — drop any number of sources here."
+            : "Drag: disconnect &amp; reconnect. Click edge + Delete: remove.";
+          return `<div class="port in" data-port="${p.id}"><span class="dot in-dot${p.multiple ? " in-dot-multi" : ""}" style="${dotStyle}" data-kind="in" data-port="${p.id}" tabindex="0" title="${tip}"></span>${p.label ? `<span>${p.label}</span>` : ""}</div>`;
+        })
         .join("");
-      const outPorts = def.outs
+      const outPorts = nodeOutPorts(node)
         .map(
           (p) =>
             `<div class="port out" data-port="${p.id}">${p.label ? `<span>${p.label}</span>` : ""}<span class="dot out-dot" style="${dotStyle}" data-kind="out" data-port="${p.id}" tabindex="0" title="Drag to another block’s input to connect"></span></div>`
@@ -3996,22 +4517,28 @@
         sheetHtml = renderOutputImageSheet(node);
       } else if (isTextOutputBlockType(def.type)) {
         sheetHtml = renderOutputTextSheet(node);
+      } else if (def.type === "splice") {
+        sheetHtml = renderSpliceSheet(node);
       } else if (def.type === "cld_effect" || (def.settingsFields && def.settingsFields.length)) {
         sheetHtml = renderSettingsFields(node);
       } else {
         sheetHtml = `<div class="node-sheet placeholder">${def.placeholder}</div>`;
       }
       const el = document.createElement("div");
-      el.className = "node" + sel;
+      const previewCls = isPreviewOutputNode(node) ? " is-preview" : "";
+      el.className = "node" + sel + previewCls;
       el.dataset.nodeId = node.id;
       el.style.left = node.x + "px";
       el.style.top = node.y + "px";
       el.style.width = w + "px";
+      const previewBadge = isPreviewOutputNode(node)
+        ? `<span class="node-preview-badge" title="Marked as preview only — not the workflow's terminal output.">PREVIEW</span>`
+        : "";
       el.innerHTML = `
         <div class="node-head">
           <div class="ni" style="background:${def.iconBg};color:${def.glyphColor}">${blockIconInner(def)}</div>
           <div class="titles">
-            <div class="title">${def.title}</div>
+            <div class="title">${def.title}${previewBadge}</div>
             <div class="node-id">${escapeHtml(node.id)}</div>
           </div>
           <div class="node-actions">
@@ -4028,6 +4555,8 @@
     }
     bindNodeEvents();
     bindSettingsEvents();
+    bindSpliceEvents();
+    bindOutputPreviewToggle();
     bindInputAssetPicker();
     mountAllOutputCloudinaryPlayers(gen);
     syncOutputImageThumbnails();
@@ -4115,10 +4644,10 @@
       showFlowToast("Add blocks to the canvas first.");
       return;
     }
-    const outputs = nodes.filter((n) => isTerminalOutputBlockType(n.def.type));
+    const outputs = nodes.filter((n) => isTerminalOutputNode(n));
     refreshOutputDeliveryUi();
     if (outputs.length === 0) {
-      showFlowToast("Flow ran — add an Output · video, Output · image, or Output · text block.");
+      showFlowToast("Flow ran — add a non-preview Output · video, Output · image, or Output · text block.");
       return;
     }
     const mediaOutputs = outputs.filter((o) => !isTextOutputBlockType(o.def.type));
@@ -4192,13 +4721,173 @@
     });
   }
 
+  /** Persist current incoming-edge order onto `node.settings.order` (drops stale edge ids). */
+  function syncSpliceOrderFromEdges(node) {
+    if (!node || node.def.type !== "splice") return;
+    const live = spliceIncomingEdges(node).edges.map((e) => e.id);
+    node.settings = node.settings || {};
+    node.settings.order = live;
+    if (node.settings.transitions && typeof node.settings.transitions === "object") {
+      const allowed = new Set(live);
+      const next = {};
+      for (const [k, v] of Object.entries(node.settings.transitions)) {
+        if (allowed.has(k)) next[k] = v;
+      }
+      node.settings.transitions = next;
+    }
+  }
+
+  /** Drag-and-drop reordering, transition selection, and per-row unwire for the Splice block. */
+  function bindSpliceEvents() {
+    const lists = nodesLayer.querySelectorAll(".splice-list");
+    lists.forEach((listEl) => {
+      const nid = listEl.getAttribute("data-splice-list");
+      const node = nodes.find((n) => n.id === nid);
+      if (!node) return;
+
+      /* Pointer-based drag (HTML5 drag-and-drop conflicts with the canvas-wide palette drop
+       * handler, which preventDefaults dragover/drop everywhere). The handle starts the drag;
+       * we paint a drop indicator on the row currently under the cursor and commit on mouseup. */
+      const items = Array.from(listEl.querySelectorAll(".splice-seg"));
+      items.forEach((li) => {
+        const handle = li.querySelector(".splice-handle");
+        if (!handle) return;
+        handle.addEventListener("mousedown", (downEvent) => {
+          if (downEvent.button !== 0) return;
+          downEvent.preventDefault();
+          downEvent.stopPropagation();
+
+          const dragEdgeId = li.getAttribute("data-edge-id");
+          const rows = Array.from(listEl.querySelectorAll(".splice-seg"));
+          li.classList.add("dragging");
+          document.body.style.cursor = "grabbing";
+
+          let dropTarget = null;
+          let dropBefore = false;
+
+          const clearIndicators = () => {
+            rows.forEach((r) => r.classList.remove("drop-before", "drop-after"));
+          };
+
+          const onMove = (moveEvent) => {
+            const y = moveEvent.clientY;
+            let target = null;
+            let before = false;
+            for (const r of rows) {
+              const rect = r.getBoundingClientRect();
+              if (y >= rect.top && y <= rect.bottom) {
+                target = r;
+                before = y < rect.top + rect.height / 2;
+                break;
+              }
+            }
+            if (!target && rows.length) {
+              const firstRect = rows[0].getBoundingClientRect();
+              const lastRect = rows[rows.length - 1].getBoundingClientRect();
+              if (y < firstRect.top) {
+                target = rows[0];
+                before = true;
+              } else if (y > lastRect.bottom) {
+                target = rows[rows.length - 1];
+                before = false;
+              }
+            }
+            if (target === li) target = null;
+            if (target !== dropTarget || before !== dropBefore) {
+              clearIndicators();
+              if (target) {
+                target.classList.toggle("drop-before", before);
+                target.classList.toggle("drop-after", !before);
+              }
+              dropTarget = target;
+              dropBefore = before;
+            }
+          };
+
+          const onUp = () => {
+            document.removeEventListener("mousemove", onMove);
+            document.removeEventListener("mouseup", onUp);
+            document.body.style.cursor = "";
+            li.classList.remove("dragging");
+            clearIndicators();
+            if (!dropTarget || dropTarget === li) return;
+            const targetEdgeId = dropTarget.getAttribute("data-edge-id");
+            const segs = spliceIncomingEdges(node).edges.map((ed) => ed.id);
+            const fromIdx = segs.indexOf(dragEdgeId);
+            let toIdx = segs.indexOf(targetEdgeId);
+            if (fromIdx < 0 || toIdx < 0) return;
+            const [moved] = segs.splice(fromIdx, 1);
+            if (fromIdx < toIdx) toIdx -= 1;
+            const insertAt = dropBefore ? toIdx : toIdx + 1;
+            segs.splice(insertAt, 0, moved);
+            node.settings = node.settings || {};
+            node.settings.order = segs;
+            renderNodes();
+            refreshOutputDeliveryUi();
+            notifyAppletEditorFlowMaybeDirty();
+          };
+
+          document.addEventListener("mousemove", onMove);
+          document.addEventListener("mouseup", onUp);
+        });
+      });
+
+      listEl.querySelectorAll("select[data-splice-transition]").forEach((sel) => {
+        sel.addEventListener("change", (e) => {
+          const edgeId = sel.getAttribute("data-splice-transition");
+          if (!edgeId) return;
+          node.settings = node.settings || {};
+          const trans = (node.settings.transitions && typeof node.settings.transitions === "object")
+            ? Object.assign({}, node.settings.transitions)
+            : {};
+          trans[edgeId] = normalizeSpliceTransition(e.target.value);
+          node.settings.transitions = trans;
+          refreshOutputDeliveryUi();
+          notifyAppletEditorFlowMaybeDirty();
+        });
+        sel.addEventListener("mousedown", (ev) => ev.stopPropagation());
+      });
+
+      listEl.querySelectorAll(".splice-remove").forEach((btn) => {
+        btn.addEventListener("mousedown", (ev) => ev.stopPropagation());
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const edgeId = btn.getAttribute("data-edge-id");
+          if (!edgeId) return;
+          edges = edges.filter((ed) => ed.id !== edgeId);
+          syncSpliceOrderFromEdges(node);
+          renderNodes();
+          refreshOutputDeliveryUi();
+          notifyAppletEditorFlowMaybeDirty();
+        });
+      });
+    });
+  }
+
+  /** "Preview only" checkbox on output sheets — toggles `node.settings.isPreview`. */
+  function bindOutputPreviewToggle() {
+    nodesLayer.querySelectorAll("input[data-output-preview]").forEach((cb) => {
+      cb.addEventListener("mousedown", (ev) => ev.stopPropagation());
+      cb.addEventListener("change", (e) => {
+        const nid = cb.getAttribute("data-output-preview");
+        const node = nodes.find((n) => n.id === nid);
+        if (!node) return;
+        node.settings = node.settings || {};
+        node.settings.isPreview = !!e.target.checked;
+        renderNodes();
+        refreshOutputDeliveryUi();
+        notifyAppletEditorFlowMaybeDirty();
+      });
+    });
+  }
+
   function bindNodeEvents() {
     nodesLayer.querySelectorAll(".node").forEach((el) => {
       const id = el.dataset.nodeId;
       el.addEventListener("mousedown", (e) => {
         if (e.target.closest(".dot")) return;
         if (e.target.closest(".node-remove") || e.target.closest(".node-menu")) return;
-        if (e.target.closest("input, textarea, select, .cld-form, .output-sheet")) return;
+        if (e.target.closest("input, textarea, select, .cld-form, .output-sheet, .splice-sheet")) return;
         if (tool === "hand") return;
         if (e.button !== 0) return;
         selectedNodeId = id;
@@ -4235,6 +4924,10 @@
           if (e.button !== 0) return;
           e.stopPropagation();
           const toPort = dot.dataset.port;
+          const node = nodes.find((n) => n.id === id);
+          /* Multi-input ports (e.g. Splice's anchor): the in-block list is the source of truth
+           * for disconnects, so don't grab the most-recent wire when the user clicks the dot. */
+          if (portAcceptsMultiple(node, "in", toPort)) return;
           const incoming = edges.filter((ed) => ed.toNode === id && ed.toPort === toPort);
           if (incoming.length === 0) return;
           inputWirePull = {
@@ -4255,7 +4948,16 @@
             hideWirePreview();
             return;
           }
-          edges = edges.filter((ed) => !(ed.toNode === id && ed.toPort === toPort));
+          const toNode = nodes.find((n) => n.id === id);
+          const allowsMultiple = portAcceptsMultiple(toNode, "in", toPort);
+          if (!allowsMultiple) {
+            edges = edges.filter((ed) => !(ed.toNode === id && ed.toPort === toPort));
+          } else {
+            /* Don't stack two wires from the same source onto a multi-input port. */
+            edges = edges.filter(
+              (ed) => !(ed.toNode === id && ed.toPort === toPort && ed.fromNode === wiring.nodeId && ed.fromPort === wiring.portId)
+            );
+          }
           edges.push({
             id: "e_" + edgeIdSeq++,
             fromNode: wiring.nodeId,
@@ -4263,6 +4965,9 @@
             toNode: id,
             toPort: toPort,
           });
+          if (toNode && toNode.def.type === "splice") {
+            syncSpliceOrderFromEdges(toNode);
+          }
           wiring = null;
           hideWirePreview();
           renderNodes();
@@ -4279,6 +4984,7 @@
         const nid = el.dataset.nodeId;
         nodes = nodes.filter((n) => n.id !== nid);
         edges = edges.filter((ed) => ed.fromNode !== nid && ed.toNode !== nid);
+        for (const n of nodes) if (n.def.type === "splice") syncSpliceOrderFromEdges(n);
         if (selectedNodeId === nid) selectedNodeId = null;
         if (selectedEdgeId) selectedEdgeId = null;
         renderNodes();
@@ -4336,15 +5042,23 @@
     notifyAppletEditorFlowMaybeDirty();
   }
 
-  /** Sidebar palette section order and labels */
+  /** Sidebar palette section order and labels. Transformations stays last on purpose. */
   const PALETTE_SECTION_ORDER = [
     { id: "inputs", label: "Inputs" },
     { id: "ai", label: "AI (mock)" },
-    { id: "outputs", label: "Outputs" },
-    { id: "transforms", label: "Transformations" },
+    { id: "editing", label: "Editing" },
     { id: "accessibility", label: "Accessibility" },
+    { id: "outputs", label: "Outputs" },
     { id: "other", label: "Other" },
+    { id: "transforms", label: "Transformations" },
   ];
+
+  /** Block types in the Editing palette section (splice / trim / e_preview summarization) */
+  const EDITING_BLOCK_TYPES = new Set([
+    "splice",
+    "cld_trim",
+    "cld_video_preview",
+  ]);
 
   /** Block types in the Accessibility palette section */
   const ACCESSIBILITY_BLOCK_TYPES = new Set([
@@ -4359,6 +5073,7 @@
     }
     if (type === "output" || type === "output_image" || type === "output_text") return "outputs";
     if (type.startsWith("mock_")) return "ai";
+    if (EDITING_BLOCK_TYPES.has(type)) return "editing";
     if (ACCESSIBILITY_BLOCK_TYPES.has(type)) return "accessibility";
     if (type.startsWith("cld_")) return "transforms";
     return "other";
@@ -4656,12 +5371,14 @@
       if (selectedEdgeId) {
         edges = edges.filter((x) => x.id !== selectedEdgeId);
         selectedEdgeId = null;
-        updateEdges();
+        for (const n of nodes) if (n.def.type === "splice") syncSpliceOrderFromEdges(n);
+        renderNodes();
         notifyAppletEditorFlowMaybeDirty();
       } else if (selectedNodeId) {
         const id = selectedNodeId;
         nodes = nodes.filter((n) => n.id !== id);
         edges = edges.filter((ed) => ed.fromNode !== id && ed.toNode !== id);
+        for (const n of nodes) if (n.def.type === "splice") syncSpliceOrderFromEdges(n);
         selectedNodeId = null;
         renderNodes();
       }
@@ -4722,8 +5439,8 @@
     edgeIdSeq = Math.max(edgeIdSeq, maxE + 1);
   }
 
-  function portExistsOnDef(def, kind, portId) {
-    const list = kind === "out" ? def.outs : def.ins;
+  function portExistsOnNode(node, kind, portId) {
+    const list = kind === "out" ? nodeOutPorts(node) : nodeInPorts(node);
     return list.some((p) => p.id === portId);
   }
 
@@ -4976,12 +5693,24 @@
       });
     }
     const byId = new Map(built.map((n) => [n.id, n]));
+    /* Splice used to have static `a`/`b` ports, then `seg_N` per-segment ports. Today the block
+     * has a single multi-input anchor `in`; remap any legacy port id so older saves keep wiring.
+     * AI text used to have text1/text2/text3 + image1/image2 single-wire ports; today it has
+     * one multi-wire `text` and one multi-wire `image` port — fold legacy port ids onto those. */
     const builtEdges = [];
     for (const e of doc.edges || []) {
       const fromN = byId.get(e.fromNode);
       const toN = byId.get(e.toNode);
       if (!fromN || !toN) continue;
-      if (!portExistsOnDef(fromN.def, "out", e.fromPort) || !portExistsOnDef(toN.def, "in", e.toPort)) {
+      let toPort = e.toPort;
+      if (toN.def.type === "splice" && toPort !== "in") {
+        toPort = "in";
+      }
+      if (toN.def.type === "mock_ai_text") {
+        if (toPort === "text1" || toPort === "text2" || toPort === "text3") toPort = "text";
+        else if (toPort === "image1" || toPort === "image2") toPort = "image";
+      }
+      if (!portExistsOnNode(fromN, "out", e.fromPort) || !portExistsOnNode(toN, "in", toPort)) {
         continue;
       }
       builtEdges.push({
@@ -4989,8 +5718,20 @@
         fromNode: e.fromNode,
         fromPort: e.fromPort,
         toNode: e.toNode,
-        toPort: e.toPort,
+        toPort: toPort,
       });
+    }
+    /* After remap, sync `settings.order` for any splice node so the in-block list reflects
+     * loaded edges (older saves won't have an order array yet). */
+    for (const n of built) {
+      if (n.def.type === "splice") {
+        const haveOrder = n.settings && Array.isArray(n.settings.order) && n.settings.order.length;
+        if (!haveOrder) {
+          const eids = builtEdges.filter((ed) => ed.toNode === n.id && ed.toPort === "in").map((ed) => ed.id);
+          n.settings = n.settings || {};
+          n.settings.order = eids;
+        }
+      }
     }
     nodes = built;
     edges = builtEdges;
@@ -5466,7 +6207,7 @@
   }
 
   function listTerminalOutputNodesOnCanvas() {
-    return nodes.filter((n) => isTerminalOutputBlockType(n.def.type));
+    return nodes.filter((n) => isTerminalOutputNode(n));
   }
 
   function deriveAppletOutputSpecFromFlow() {
@@ -5487,7 +6228,7 @@
         nodeId: null,
         label: "",
         message:
-          "Applets expect exactly one terminal output block. Remove extras so only one Output · video / image / text remains.",
+          "Applets expect exactly one terminal output block. Remove extras or mark them as Preview only so only one Output · video / image / text remains as terminal.",
       };
     }
     const t = terminals[0];
@@ -6219,11 +6960,16 @@
     if (flowId && Object.prototype.hasOwnProperty.call(store.flows, flowId)) {
       try {
         applyFlowDocument(store.flows[flowId]);
+        updateBrandFlowName(flowId);
         return;
       } catch (err) {}
     }
     seedDemo();
+    updateBrandFlowName("");
   });
+  /* Initial brand-name sync (covers the boot path that loads a URL-bound flow without
+   * calling setFlowIdInUrl). */
+  updateBrandFlowName(getFlowIdFromLocation());
   syncDock();
 })();
   </script>
