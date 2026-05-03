@@ -5720,8 +5720,9 @@
   });
 
   /**
-   * Never zoom the canvas while the pointer is over a block: either scroll an inner scrollable
-   * region or ignore the wheel (zoom only on empty canvas / wires).
+   * Never hijack the wheel while the pointer is over a block's scrollable inner region: let it
+   * scroll its own content. Otherwise, mouse wheel / two-finger trackpad scroll pans the canvas,
+   * and only pinch-to-zoom (which arrives as a wheel event with ctrlKey=true) zooms.
    */
   function findWheelScrollTarget(target, root) {
     let el = target && target.nodeType === 3 ? target.parentElement : target;
@@ -5764,19 +5765,29 @@
         if (scrollEl && wheelWouldScrollElement(scrollEl, e.deltaY)) {
           return;
         }
-        return;
+        if (!e.ctrlKey) return;
       }
       e.preventDefault();
-      const delta = e.deltaY > 0 ? 0.92 : 1.09;
-      const nz = Math.min(MAX_Z, Math.max(MIN_Z, zoom * delta));
-      const rect = canvasBg.getBoundingClientRect();
-      const mx = e.clientX - rect.left;
-      const my = e.clientY - rect.top;
-      const wx = (mx - panX) / zoom;
-      const wy = (my - panY) / zoom;
-      zoom = nz;
-      panX = mx - wx * zoom;
-      panY = my - wy * zoom;
+      // Trackpad pinch-to-zoom is delivered as a wheel event with ctrlKey=true (also covers
+      // Ctrl+wheel on a mouse). Anything else — mouse wheel, two-finger trackpad scroll — pans.
+      if (e.ctrlKey) {
+        // Scale by the actual wheel delta (in pixels for trackpad pinch / Ctrl+wheel) so small
+        // pinches make small adjustments. ZOOM_SENSITIVITY tunes how aggressive a full pinch is.
+        const ZOOM_SENSITIVITY = 0.0035;
+        const factor = Math.exp(-e.deltaY * ZOOM_SENSITIVITY);
+        const nz = Math.min(MAX_Z, Math.max(MIN_Z, zoom * factor));
+        const rect = canvasBg.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        const wx = (mx - panX) / zoom;
+        const wy = (my - panY) / zoom;
+        zoom = nz;
+        panX = mx - wx * zoom;
+        panY = my - wy * zoom;
+      } else {
+        panX -= e.deltaX;
+        panY -= e.deltaY;
+      }
       applyTransform();
       notifyAppletEditorFlowMaybeDirty();
     },
