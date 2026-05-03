@@ -1634,6 +1634,148 @@
       max-height: min(260px, 38vh);
     }
 
+    .applet-named-tx-wrap {
+      margin-bottom: 16px;
+    }
+
+    .applet-named-tx-pill {
+      margin-left: auto;
+      padding: 2px 8px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      white-space: nowrap;
+      text-transform: uppercase;
+    }
+
+    .applet-named-tx-pill.applet-named-tx-pill-on {
+      background: rgba(34, 197, 94, 0.14);
+      color: #166534;
+      border-color: rgba(34, 197, 94, 0.42);
+    }
+
+    .applet-named-tx-pill.applet-named-tx-pill-off {
+      background: rgba(148, 163, 184, 0.18);
+      color: #475569;
+      border-color: rgba(148, 163, 184, 0.4);
+    }
+
+    .applet-named-tx-code {
+      margin: 0;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-hair);
+      background: var(--bg-sheet);
+      font-size: 11px;
+      font-family: ui-monospace, "JetBrains Mono", monospace;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: var(--text-soft);
+      line-height: 1.5;
+    }
+
+    .applet-named-tx-code .applet-named-tx-placeholder {
+      color: #1d4ed8;
+      font-weight: 600;
+    }
+
+    .applet-named-tx-meta {
+      font-size: 11px;
+      color: var(--text-faint);
+      line-height: 1.5;
+    }
+
+    .applet-named-tx-meta code {
+      font-family: ui-monospace, "JetBrains Mono", monospace;
+      font-size: 11px;
+      color: var(--text-soft);
+      background: var(--bg-muted);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    .applet-named-tx-banner {
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(148, 163, 184, 0.38);
+      background: var(--bg-muted);
+      color: var(--text-soft);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .applet-named-tx-banner-title {
+      margin: 0 0 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .applet-named-tx-banner-sub {
+      margin: 0 0 8px;
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    .applet-named-tx-banner-list {
+      margin: 8px 0 0;
+      padding-left: 18px;
+    }
+
+    .applet-named-tx-banner-list li {
+      margin-bottom: 2px;
+    }
+
+    .applet-named-tx-blocker-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .applet-named-tx-blocker {
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(245, 158, 11, 0.32);
+      background: rgba(245, 158, 11, 0.08);
+    }
+
+    .applet-named-tx-blocker-head {
+      font-size: 11px;
+      color: var(--text);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .applet-named-tx-blocker-head code {
+      font-family: ui-monospace, "JetBrains Mono", monospace;
+      font-size: 11px;
+      color: var(--text-soft);
+      background: var(--bg-panel);
+      padding: 1px 6px;
+      border-radius: 3px;
+      border: 1px solid var(--border-hair);
+    }
+
+    .applet-named-tx-blocker-title {
+      font-weight: 600;
+    }
+
+    .applet-named-tx-blocker-reason {
+      margin: 0;
+      font-size: 11px;
+      line-height: 1.5;
+      color: var(--text-soft);
+    }
+
+
     .applet-bind-meta {
       font-size: 12px;
       color: var(--text);
@@ -1682,6 +1824,47 @@
       border: 1px solid rgba(245, 158, 11, 0.5);
       background: rgba(245, 158, 11, 0.12);
       color: var(--text);
+    }
+
+    .applet-edit-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 6px;
+    }
+
+    .applet-edit-title-row .flow-dialog-title {
+      margin: 0;
+    }
+
+    .applet-supported-forms {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .applet-supported-badge {
+      padding: 3px 10px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      cursor: default;
+      user-select: none;
+    }
+
+    .applet-supported-badge.is-on {
+      background: rgba(34, 197, 94, 0.14);
+      color: #166534;
+      border-color: rgba(34, 197, 94, 0.42);
+    }
+
+    .applet-supported-badge[hidden] {
+      display: none;
     }
 
     .applet-edit-dirty-banner[hidden] {
@@ -1937,7 +2120,26 @@
 
     <dialog id="applet-edit-dialog" class="flow-dialog flow-dialog-applet-panel">
       <div class="flow-dialog-inner">
-        <h3 class="flow-dialog-title" id="applet-edit-heading">Workflow applet</h3>
+        <div class="applet-edit-title-row">
+          <h3 class="flow-dialog-title" id="applet-edit-heading">Workflow applet</h3>
+          <div
+            id="applet-supported-forms"
+            class="applet-supported-forms"
+            role="list"
+            aria-label="Supported invocation forms for this applet"
+          >
+            <span
+              class="applet-supported-badge"
+              data-form="api"
+              role="listitem"
+            >API</span>
+            <span
+              class="applet-supported-badge"
+              data-form="url"
+              role="listitem"
+            >URL</span>
+          </div>
+        </div>
         <p class="flow-dialog-hint" id="applet-edit-hint"></p>
         <p id="applet-edit-dirty-banner" class="applet-edit-dirty-banner" hidden>Unsaved changes.</p>
         <label class="flow-dialog-label" for="applet-edit-name">Applet name</label>
@@ -1958,6 +2160,21 @@
           <div
             id="applet-flow-output-readout"
             class="applet-bind-row applet-output-bind-row"
+            role="status"
+            aria-live="polite"
+          ></div>
+        </div>
+        <div
+          id="applet-named-transformation-section"
+          class="applet-inputs-wrap applet-named-tx-wrap"
+        >
+          <div class="applet-inputs-head">
+            <span>Named transformation</span>
+            <span id="applet-named-tx-pill" class="applet-named-tx-pill"></span>
+          </div>
+          <div
+            id="applet-named-tx-readout"
+            class="applet-named-tx-body"
             role="status"
             aria-live="polite"
           ></div>
@@ -6634,6 +6851,7 @@
         "</div>";
     }
     updateAppletExampleResponseReadout();
+    updateAppletNamedTransformationReadout();
   }
 
   /**
@@ -6744,6 +6962,332 @@
     return "folder/asset_id";
   }
 
+  /* ============================================================================
+   * Named-transformation publishing (Class A applets — URL-form)
+   *
+   * A workflow whose graph collapses to a single Cloudinary URL transformation
+   * chain can be published as a named transformation (`t_<slug>`) on the cloud
+   * account. The applet's `POST /applets/<slug>/run` then becomes a stateless
+   * URL constructor instead of a server-executed pipeline.
+   *
+   * Class A requires (all of):
+   *   - terminal output kind is video or image (text outputs have no URL form),
+   *   - no generative blocks anywhere (image→video, text→image, etc. — each
+   *     materializes a brand-new asset that has no URL grammar equivalent),
+   *   - no Cloudinary AI sidecar blocks (transcribe, auto-chapters, AI details
+   *     trigger server-side jobs that store separate resources).
+   *
+   * Variables: applet inputs that *can* parameterize the URL bind to:
+   *   - the URL public_id slot (the primary base media input — one per flow),
+   *   - Cloudinary user-defined variables `$(<name>)` referenced inside the
+   *     chain (today: `input_text` blocks wired into a Text overlay's text
+   *     port).
+   * Other bound inputs (overlay images, splice segments) are listed as "baked
+   * in URL" — their canvas-time values are hardcoded into the named
+   * transformation; an API wrapper would need per-call URL assembly to
+   * parameterize them. */
+
+  /** `vcf_<slug>` keeps our names from colliding with built-in cloud transforms. */
+  function slugifyForCloudinaryNamedTransformation(name) {
+    let s = String(name || "").trim().toLowerCase();
+    s = s.replace(/[^a-z0-9_]+/g, "_").replace(/^_+|_+$/g, "").replace(/_+/g, "_");
+    if (!s) s = "workflow";
+    return "vcf_" + s.slice(0, 80);
+  }
+
+  /** Cloudinary user-defined variable: `$<name>`, name = `[a-z][a-z0-9]*` (no underscores). */
+  function cloudinaryVariableNameFromParamKey(paramKey, used) {
+    let s = String(paramKey || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (!s) s = "p";
+    if (!/^[a-z]/.test(s)) s = "v" + s;
+    s = s.slice(0, 32);
+    if (!used) return s;
+    let candidate = s;
+    let i = 2;
+    while (used.has(candidate)) {
+      const suffix = String(i);
+      candidate = s.slice(0, Math.max(1, 32 - suffix.length)) + suffix;
+      i += 1;
+    }
+    used.add(candidate);
+    return candidate;
+  }
+
+  /** Sample value used in the example URL when illustrating a variable substitution. */
+  function namedTransformationSampleForKind(kind) {
+    if (kind === "text") return "Hello world";
+    if (kind === "image") return "samples/woman";
+    if (kind === "video") return "samples/sea-turtle";
+    return "value";
+  }
+
+  /**
+   * Decide whether the active flow can be published as a Cloudinary named transformation.
+   *
+   * Class B blockers come in two flavours so the readout can explain *which* block
+   * forces API-only and *why*:
+   *   - `blockers`: per-block records `{ nodeId, blockType, blockTitle, reason }` for
+   *     each materialising / sidecar node — printed as an itemised list under the
+   *     banner.
+   *   - `reasons`: graph-level sentences (e.g. "Output kind is text — no URL form")
+   *     that don't pin to a specific node.
+   *
+   * @param {{ nodeId: string, kind: string, ignored?: boolean }[]} bindings
+   * @returns {{ ok: boolean, reasons: string[], blockers: object[], outSpec?: object,
+   *            baseBinding?: object|null, textVarBindings?: object[],
+   *            bakedBindings?: object[], primaryNodeId?: string|null }}
+   */
+  function classifyAppletForNamedTransformation(bindings) {
+    const reasons = [];
+    const blockers = [];
+    const outSpec = deriveAppletOutputSpecFromFlow();
+    if (!outSpec.ok) {
+      return { ok: false, reasons: [outSpec.message], blockers, outSpec };
+    }
+    if (outSpec.kind === "text") {
+      const outNode = nodes.find((n) => n.id === outSpec.nodeId);
+      reasons.push("Output kind is text — text results have no Cloudinary URL form.");
+      if (outNode) {
+        blockers.push({
+          nodeId: outNode.id,
+          blockType: outNode.def.type,
+          blockTitle: outNode.def.title || outNode.def.type,
+          reason: "Text outputs return a string, not a deliverable URL.",
+        });
+      }
+    }
+    for (const n of nodes) {
+      if (!isMockGeneratorNodeType(n.def.type)) continue;
+      const kind = mockGeneratorOutputKind(n) || "asset";
+      blockers.push({
+        nodeId: n.id,
+        blockType: n.def.type,
+        blockTitle: (n.def && n.def.title) || n.def.type,
+        reason:
+          "Generative block — produces a new " + kind +
+          " by calling an AI model. This step has no URL-grammar equivalent.",
+      });
+    }
+    const sidecarReasons = {
+      transcribe:
+        "Cloudinary AI transcription — triggers a server-side job that stores a transcript sidecar resource.",
+      auto_chapters:
+        "Cloudinary auto-chapters — triggers a server-side job that stores a chapters VTT sidecar resource.",
+      ai_details:
+        "Cloudinary AI details — triggers a server-side job that stores AI-generated metadata.",
+    };
+    for (const n of nodes) {
+      const k = n.def && n.def.cldKind;
+      if (!k || !sidecarReasons[k]) continue;
+      blockers.push({
+        nodeId: n.id,
+        blockType: n.def.type,
+        blockTitle: (n.def && n.def.title) || n.def.type,
+        reason: sidecarReasons[k],
+      });
+    }
+    const primary = findPrimaryMediaInputNode(outSpec.nodeId);
+    const params = (bindings || []).filter((b) => !b.ignored);
+    const baseBinding = primary
+      ? params.find((b) => b.nodeId === primary.id) || null
+      : null;
+    const textVarBindings = [];
+    for (const b of params) {
+      if (b.kind !== "text") continue;
+      const node = nodes.find((n) => n.id === b.nodeId);
+      if (!node || node.def.type !== "input_text") continue;
+      const wiresToOverlay = edges.some((e) => {
+        if (e.fromNode !== node.id) return false;
+        const dst = nodes.find((n) => n.id === e.toNode);
+        return !!(dst && dst.def && dst.def.cldKind === "text_overlay" && e.toPort === "text");
+      });
+      if (wiresToOverlay) textVarBindings.push(b);
+    }
+    const variableNodeIds = new Set(textVarBindings.map((b) => b.nodeId));
+    if (baseBinding) variableNodeIds.add(baseBinding.nodeId);
+    const bakedBindings = params.filter((b) => !variableNodeIds.has(b.nodeId));
+
+    // URL-form invariant: every binding that *parameterizes* the URL must be Required.
+    // Cloudinary user-defined variables have no "default if undefined" qualifier, and
+    // the URL public_id slot has no fallback either, so callers can't safely omit them
+    // without a server-side wrapper — which defeats the point of URL form. Optional
+    // bindings that don't parameterize the URL (overlay images, splice segments) are
+    // already baked into the chain at publish time and stay fine.
+    const optionalParameterizing = [...textVarBindings, baseBinding].filter(
+      (b) => b && b.required === false
+    );
+    if (optionalParameterizing.length) {
+      for (const b of optionalParameterizing) {
+        const node = nodes.find((n) => n.id === b.nodeId);
+        const title = (node && node.def && node.def.title) || "Input";
+        const apiName = (b.paramName && String(b.paramName)) || b.nodeId;
+        blockers.push({
+          nodeId: b.nodeId,
+          blockType: node ? node.def.type : "",
+          blockTitle: title,
+          reason:
+            'Optional param "' + apiName +
+            '" parameterizes the URL — URL form requires Required (or Ignored).',
+        });
+      }
+    }
+
+    if (reasons.length || blockers.length) {
+      return { ok: false, reasons, blockers, outSpec };
+    }
+    return {
+      ok: true,
+      reasons: [],
+      blockers: [],
+      outSpec,
+      primaryNodeId: primary ? primary.id : null,
+      baseBinding,
+      textVarBindings,
+      bakedBindings,
+    };
+  }
+
+  /**
+   * Build the named-transformation preview for the active applet.
+   *
+   * Strategy: temporarily mutate the canvas (set bound `input_text` prompts to
+   * `$(<varname>)` and the primary base's `publicId` to `{<paramName>}`), call
+   * the existing chain builder, then restore. This keeps the URL grammar in
+   * lock-step with `buildDeliveryUrlForOutput` — there's a single source of
+   * truth for transformation serialization. Mutations + restoration happen
+   * synchronously inside one tick so no other code observes the temp state.
+   *
+   * @returns {{ ok: false, reasons: string[] } | { ok: true, slug: string, chain: string,
+   *            urlTemplate: string, exampleUrl: string, variables: object[],
+   *            baseBinding: object|null, bakedBindings: object[] }}
+   */
+  function buildNamedTransformationPreview(appletNameRaw, bindings) {
+    const cls = classifyAppletForNamedTransformation(bindings);
+    if (!cls.ok) return { ok: false, reasons: cls.reasons, blockers: cls.blockers || [] };
+
+    const slug = slugifyForCloudinaryNamedTransformation(appletNameRaw);
+    const params = (bindings || []).filter((b) => !b.ignored);
+    let keyMap = new Map();
+    try { keyMap = resolveAppletBindingParamKeys(params); } catch (e) {}
+    const paramKey = (b) => keyMap.get(b.nodeId) || apiParamKeyForInput(b);
+
+    const restorers = [];
+    const captureSetting = (node, key) => {
+      if (!node || !node.settings) return;
+      const had = Object.prototype.hasOwnProperty.call(node.settings, key);
+      const prev = node.settings[key];
+      restorers.push(() => {
+        if (!node.settings) return;
+        if (had) node.settings[key] = prev;
+        else delete node.settings[key];
+      });
+    };
+
+    const usedVarNames = new Set();
+    let baseParamName = "";
+    if (cls.baseBinding) {
+      baseParamName = paramKey(cls.baseBinding);
+    }
+    const variableParams = [];
+    for (const b of cls.textVarBindings) {
+      const apiKey = paramKey(b);
+      const varName = cloudinaryVariableNameFromParamKey(apiKey, usedVarNames);
+      const node = nodes.find((n) => n.id === b.nodeId);
+      if (!node || !node.settings) continue;
+      captureSetting(node, "prompt");
+      node.settings.prompt = "$(" + varName + ")";
+      variableParams.push({
+        paramName: apiKey,
+        varName,
+        kind: b.kind,
+        sample: namedTransformationSampleForKind(b.kind),
+      });
+    }
+
+    if (baseParamName) {
+      const baseNode = nodes.find((n) => n.id === cls.baseBinding.nodeId);
+      if (baseNode && baseNode.settings) {
+        captureSetting(baseNode, "publicId");
+        baseNode.settings.publicId = "{" + baseParamName + "}";
+      }
+    }
+
+    let chain = "";
+    let ctx = null;
+    let ext = "mp4";
+    try {
+      ctx = deliveryInputContextFromOutput(cls.outSpec.nodeId);
+      const outNode = nodes.find((n) => n.id === cls.outSpec.nodeId);
+      const imageTerminal = !!(outNode && isImageOutputBlockType(outNode.def.type));
+      const collected = collectPrimaryChainTransformationPieces(cls.outSpec.nodeId);
+      const pieces = collected.pieces;
+      const idsOnPath = collected.idsOnPath;
+      if (pipelineHasVideoStillFrame(idsOnPath)) {
+        pieces.push(...stillFramePlaybackTail());
+      } else if (imageTerminal) {
+        pieces.push(...imageTerminalPlaybackPieces(ctx ? ctx.resourceType : "video"));
+      }
+      chain = pieces.map(transformationPieceToUrlSegment).filter(Boolean).join("/");
+      ext = inferDeliveryFileExtension(idsOnPath, ctx ? ctx.resourceType : "video", imageTerminal);
+    } finally {
+      for (let i = restorers.length - 1; i >= 0; i--) {
+        try { restorers[i](); } catch (e) {}
+      }
+    }
+
+    const basePathLiteral = ctx ? normalizePublicIdPath(ctx.publicId) : "";
+    if (!basePathLiteral && !baseParamName) {
+      return { ok: false, reasons: ["The primary input has no public_id — set one to preview the URL."] };
+    }
+    const cloudName = encodeURIComponent((ctx && ctx.cloudName) || VIDEOFACTORY_CLOUD_NAME);
+    const rtPath = resourceTypePath(ctx && ctx.resourceType);
+    const uploadBase = "https://res.cloudinary.com/" + cloudName + "/" + rtPath + "/upload";
+
+    const varDefsTemplate = variableParams
+      .map((v) => "$" + v.varName + "_!{" + v.paramName + "}!")
+      .join("/");
+    const varDefsExample = variableParams
+      .map((v) => "$" + v.varName + "_!" + encodeURIComponent(v.sample) + "!")
+      .join("/");
+
+    const baseTemplate = baseParamName
+      ? "{" + baseParamName + "}"
+      : (basePathLiteral || "{public_id}");
+    const baseExample = baseParamName
+      ? namedTransformationSampleForKind(cls.baseBinding.kind)
+      : (basePathLiteral || "{public_id}");
+
+    const extPart = ext ? "." + ext : "";
+    const compose = (varSeg, baseSeg) => {
+      const segs = [];
+      if (varSeg) segs.push(varSeg);
+      segs.push("t_" + slug);
+      return uploadBase + "/" + segs.join("/") + "/" + baseSeg + extPart;
+    };
+
+    return {
+      ok: true,
+      reasons: [],
+      slug,
+      chain,
+      urlTemplate: compose(varDefsTemplate, baseTemplate),
+      exampleUrl: compose(varDefsExample, baseExample),
+      variables: variableParams,
+      baseBinding: cls.baseBinding
+        ? {
+            paramName: baseParamName,
+            nodeId: cls.baseBinding.nodeId,
+            kind: cls.baseBinding.kind,
+          }
+        : null,
+      bakedBindings: cls.bakedBindings.map((b) => ({
+        paramName: paramKey(b),
+        nodeId: b.nodeId,
+        kind: b.kind,
+      })),
+    };
+  }
+
   function appletEditorResolvedVersion() {
     const name = String(document.getElementById("applet-edit-name")?.value || "").trim();
     if (!name) return "1";
@@ -6820,16 +7364,183 @@
     } catch (e2) {
       keyMap = new Map();
     }
-    const paramLines = inputs.map((inp) => {
+    const paramLines = inputs.map((inp, idx) => {
       const key = keyMap.get(inp.nodeId) || apiParamKeyForInput(inp);
       const ph = placeholderMockValueForKind(inp.kind).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-      return '    "' + key + '": "' + ph + '"';
+      const trailingComma = idx < inputs.length - 1 ? "," : "";
+      let comment = "";
+      if (inp.required === false) {
+        const fb = canvasFallbackValueForBinding(inp);
+        comment = fb
+          ? '  // optional, falls back to canvas value: "' + fb.replace(/"/g, '\\"') + '"'
+          : "  // optional, falls back to canvas value";
+      }
+      return '    "' + key + '": "' + ph + '"' + trailingComma + comment;
     });
-    const bodyInner = paramLines.length ? paramLines.join(",\n") : "";
+    const bodyInner = paramLines.length ? paramLines.join("\n") : "";
     const body = "{\n  \"params\": {\n" + (bodyInner ? bodyInner + "\n  " : "") + "}\n}";
     el.textContent =
       "POST /applets/" + slugPart + "/run\nContent-Type: application/json\n\n" + body;
     updateAppletExampleResponseReadout();
+    updateAppletNamedTransformationReadout();
+  }
+
+  /**
+   * Resolve the canvas-time fallback for an applet binding — what the executor uses when
+   * a caller omits an Optional param. Reads the source block's settings directly so the
+   * applet's "default" stays in lock-step with whatever the author sees on the canvas
+   * (no separate field to drift). Returns "" if the source isn't an input block we
+   * recognise (e.g. mock generators have no user-settable fallback value).
+   */
+  function canvasFallbackValueForBinding(inp) {
+    if (!inp || !inp.nodeId) return "";
+    const node = nodes.find((n) => n.id === inp.nodeId);
+    if (!node || !node.def) return "";
+    const s = node.settings || {};
+    const defs = node.def.defaultSettings || {};
+    if (node.def.type === "input_text") {
+      const t = s.prompt != null ? String(s.prompt) : (defs.prompt != null ? String(defs.prompt) : "");
+      return t.trim();
+    }
+    if (node.def.type === "input_image" || node.def.type === "input_video") {
+      const pid =
+        s.publicId != null && String(s.publicId).trim()
+          ? String(s.publicId).trim()
+          : (defs.publicId != null ? String(defs.publicId).trim() : "");
+      return pid.replace(/^\/+/, "");
+    }
+    return "";
+  }
+
+  /**
+   * Top-of-form badges showing which invocation forms the active applet supports.
+   * "API" is always on (every applet can be invoked server-side); "URL" mirrors the
+   * Class A classifier — published as a Cloudinary named transformation when the graph
+   * collapses to a single URL chain. Updated alongside the named-transformation
+   * readout so badges and section stay in lock-step.
+   */
+  function updateAppletSupportedFormsBadges() {
+    const apiEl = document.querySelector('.applet-supported-badge[data-form="api"]');
+    const urlEl = document.querySelector('.applet-supported-badge[data-form="url"]');
+    if (!apiEl || !urlEl) return;
+    apiEl.classList.add("is-on");
+    apiEl.classList.remove("is-off");
+    apiEl.title = "POST /applets/<slug>/run — applet always exposes a server-side API.";
+    let inputs = [];
+    try {
+      inputs = collectAppletInputsFromBindings();
+    } catch (e) {
+      inputs = [];
+    }
+    let cls = null;
+    try {
+      cls = classifyAppletForNamedTransformation(inputs);
+    } catch (e) {
+      cls = null;
+    }
+    const urlOn = !!(cls && cls.ok);
+    urlEl.classList.toggle("is-on", urlOn);
+    urlEl.hidden = !urlOn;
+    urlEl.title = urlOn
+      ? "Publishable as a Cloudinary named transformation — callers can build a URL directly."
+      : "";
+  }
+
+  /**
+   * Highlight `{paramName}` applet-param placeholders inside an already-escaped URL
+   * readout — the only tokens worth pulling the eye toward in the URL template (the
+   * slug, `$varname_!…!` definitions, and `$(varname)` references stay neutral so the
+   * placeholders pop on their own).
+   */
+  function highlightNamedTransformationCode(html) {
+    return String(html).replace(/\{([a-zA-Z0-9_]+)\}/g, function (_m, n) {
+      return '<span class="applet-named-tx-placeholder">{' + n + "}</span>";
+    });
+  }
+
+  /**
+   * Refresh the "Named transformation" panel — the URL-form deliverable for the active
+   * applet. Class A applets get a slug + chain + URL template + example URL preview;
+   * Class B applets get a banner explaining why URL form isn't available.
+   */
+  function updateAppletNamedTransformationReadout() {
+    updateAppletSupportedFormsBadges();
+    const el = document.getElementById("applet-named-tx-readout");
+    const pill = document.getElementById("applet-named-tx-pill");
+    if (!el) return;
+    const name = String(document.getElementById("applet-edit-name")?.value || "").trim() || "workflow_name";
+    let inputs = [];
+    try {
+      inputs = collectAppletInputsFromBindings();
+    } catch (e) {
+      inputs = [];
+    }
+    let preview;
+    try {
+      preview = buildNamedTransformationPreview(name, inputs);
+    } catch (e) {
+      preview = { ok: false, reasons: ["Could not build preview: " + (e && e.message ? e.message : String(e))] };
+    }
+    if (!preview || !preview.ok) {
+      if (pill) {
+        pill.textContent = "API only";
+        pill.className = "applet-named-tx-pill applet-named-tx-pill-off";
+      }
+      const blockers = (preview && preview.blockers) || [];
+      const reasons = (preview && preview.reasons) || [];
+      const hasAny = blockers.length || reasons.length;
+      const blockersHtml = blockers.length
+        ? '<ul class="applet-named-tx-blocker-list">' +
+          blockers
+            .map(
+              (b) =>
+                '<li class="applet-named-tx-blocker">' +
+                '<div class="applet-named-tx-blocker-head">' +
+                "<code>" + escapeHtml(b.nodeId) + "</code>" +
+                ' <span class="applet-named-tx-blocker-title">' +
+                escapeHtml(b.blockTitle) +
+                "</span>" +
+                "</div>" +
+                '<p class="applet-named-tx-blocker-reason">' +
+                escapeHtml(b.reason) +
+                "</p>" +
+                "</li>"
+            )
+            .join("") +
+          "</ul>"
+        : "";
+      const reasonsHtml = reasons.length
+        ? '<ul class="applet-named-tx-banner-list">' +
+          reasons.map((r) => "<li>" + escapeHtml(r) + "</li>").join("") +
+          "</ul>"
+        : "";
+      const fallbackHtml = hasAny
+        ? ""
+        : '<p class="applet-named-tx-meta">This flow can\'t be expressed as a single Cloudinary URL transformation.</p>';
+      el.innerHTML =
+        '<div class="applet-named-tx-banner">' +
+        '<p class="applet-named-tx-banner-title">URL form unavailable — applet runs eagerly via the API.</p>' +
+        (blockers.length
+          ? '<p class="applet-named-tx-banner-sub">' +
+            blockers.length +
+            " block" +
+            (blockers.length > 1 ? "s force" : " forces") +
+            " server-side execution:</p>"
+          : "") +
+        blockersHtml +
+        reasonsHtml +
+        fallbackHtml +
+        "</div>";
+      return;
+    }
+
+    if (pill) {
+      pill.textContent = "URL form";
+      pill.className = "applet-named-tx-pill applet-named-tx-pill-on";
+    }
+
+    const templateHtml = highlightNamedTransformationCode(escapeHtml(preview.urlTemplate));
+    el.innerHTML = '<pre class="applet-named-tx-code">' + templateHtml + "</pre>";
   }
 
   function collectAppletInputsFromBindings() {
@@ -7050,10 +7761,11 @@
     const inputs = [];
     for (const inp of rawInputs) {
       const ignored = inp.ignored === true;
+      const required = ignored ? false : inp.required === true;
       const row = {
         nodeId: inp.nodeId,
         kind: inp.kind,
-        required: ignored ? false : inp.required === true,
+        required,
       };
       if (ignored) row.ignored = true;
       if (!ignored) {
