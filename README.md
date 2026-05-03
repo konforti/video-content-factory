@@ -94,6 +94,23 @@ When you save a flow as an applet, the studio:
    }
    ```
 
+When the workflow collapses to a single Cloudinary URL chain — every block
+on the path is a transformation, no generative steps and no AI sidecar
+producers — the applet additionally publishes as a **named transformation**
+(`t_<slug>`) on the cloud account. Callers can then invoke it as a
+stateless URL with the applet's parameters spliced in, no server
+round-trip:
+
+```
+https://res.cloudinary.com/<cloud>/image/upload/$headline_!Hello%20world!/t_<slug>/folder/asset_id.jpg
+```
+
+Workflows that materialise new assets (image → video, text → image, AI
+text, auto-transcription, auto-chapters, AI details) stay API-only —
+there's no URL grammar for "call a model and upload the result." The
+publish surface shows which forms an applet supports and, when URL form
+isn't available, the specific block that forces server-side execution.
+
 You author the workflow visually, but you ship a workflow-as-an-API.
 Each parameter is **required**, **optional**, or **ignored**, and gets a
 human-chosen API name.
