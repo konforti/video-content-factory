@@ -69,6 +69,17 @@
       grid-template-columns: 60px 1fr;
     }
 
+    /* Applet playground takes over the whole stage — the canvas-centric topbar
+     * (Run flow / Save flow / Applet button / brand crumb) doesn't apply when
+     * exercising a published applet's API, so we hide the header row and let
+     * the playground use the full vertical space. */
+    .app[data-app-mode="applet"] {
+      grid-template-rows: 0 1fr;
+    }
+    .app[data-app-mode="applet"] header.topbar {
+      display: none;
+    }
+
     header.topbar {
       grid-area: header;
       display: flex;
@@ -2856,6 +2867,13 @@
       color: var(--text-faint);
     }
 
+    .playground-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
     .playground-title {
       font-size: 14px;
       font-weight: 600;
@@ -2864,6 +2882,21 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      min-width: 0;
+    }
+
+    /* Reuse the bindings-editor .applet-supported-badge palette but compact a touch
+     * for the playground header — same green pill, slightly smaller padding. */
+    .playground-supported-forms {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+
+    .playground-supported-forms .applet-supported-badge {
+      padding: 2px 7px;
+      font-size: 9.5px;
     }
 
     .playground-header-actions {
@@ -2977,6 +3010,47 @@
       width: 100%;
     }
 
+    /* Image/video input row: text field on the left, "Browse" button (Cloudinary
+     * Media Library widget) flush against it on the right. The button mirrors the
+     * canvas-side .input-ml-browse styling, scaled down a touch for the panel. */
+    .playground-input-row {
+      display: flex;
+      align-items: stretch;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .playground-input-row .playground-input {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .playground-input-browse {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 0 10px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-soft);
+      background: #fff;
+      border: 1px solid var(--border-hair);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: color 0.14s, border-color 0.14s, background 0.14s;
+    }
+
+    .playground-input-browse:hover {
+      color: var(--text);
+      border-color: var(--border-soft);
+      background: var(--bg-muted);
+    }
+
+    .playground-input-browse svg {
+      flex-shrink: 0;
+    }
+
     .playground-textarea {
       font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
       font-size: 11.5px;
@@ -3008,6 +3082,104 @@
       overflow: auto;
       white-space: nowrap;
       margin-bottom: 12px;
+    }
+
+    /* API snippet panel — curl/fetch tabs above a copyable code block. Lives in the
+     * left playground column under About; gives integrators a paste-ready call. */
+    .playground-panel-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .playground-panel-title-row .playground-panel-title {
+      margin-bottom: 0;
+    }
+
+    .playground-api-tabs {
+      display: flex;
+      gap: 2px;
+      background: var(--bg-muted);
+      border: 1px solid var(--border-hair);
+      border-radius: 999px;
+      padding: 2px;
+    }
+
+    .playground-api-tab {
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: transparent;
+      border: none;
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+      font-size: 10.5px;
+      color: var(--text-soft);
+      cursor: pointer;
+      transition: background 0.14s, color 0.14s;
+    }
+
+    .playground-api-tab:hover {
+      color: var(--text);
+    }
+
+    .playground-api-tab.is-active {
+      background: #fff;
+      color: var(--text);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    }
+
+    .playground-api-snippet-wrap {
+      position: relative;
+    }
+
+    .playground-api-snippet {
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+      font-size: 11px;
+      line-height: 1.55;
+      color: var(--text-soft);
+      background: var(--bg-muted);
+      border: 1px solid var(--border-hair);
+      padding: 10px 12px;
+      padding-right: 64px;
+      border-radius: var(--radius-sm);
+      overflow: auto;
+      white-space: pre;
+      margin: 0;
+      max-height: 320px;
+    }
+
+    .playground-api-copy {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--text-soft);
+      background: #fff;
+      border: 1px solid var(--border-hair);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: color 0.14s, border-color 0.14s, background 0.14s;
+    }
+
+    .playground-api-copy:hover {
+      color: var(--text);
+      border-color: var(--border-soft);
+    }
+
+    .playground-api-copy.is-copied {
+      color: #166534;
+      border-color: rgba(34, 197, 94, 0.42);
+      background: rgba(34, 197, 94, 0.10);
+    }
+
+    .playground-api-copy svg {
+      flex-shrink: 0;
     }
 
     .playground-output-placeholder {
@@ -3353,7 +3525,22 @@
         <div class="playground-header">
           <div class="playground-header-meta">
             <span class="playground-crumb">Applet playground</span>
-            <h2 class="playground-title" id="playground-title">Applet</h2>
+            <div class="playground-title-row">
+              <h2 class="playground-title" id="playground-title">Applet</h2>
+              <div class="playground-supported-forms" id="playground-supported-forms" aria-label="Supported invocation forms">
+                <span
+                  class="applet-supported-badge is-on"
+                  data-form="api"
+                  title="POST /applets/<slug>/run — applet always exposes a server-side API."
+                >API</span>
+                <span
+                  class="applet-supported-badge"
+                  data-form="url"
+                  hidden
+                  title="Publishable as a Cloudinary named transformation — callers can build a URL directly."
+                >URL</span>
+              </div>
+            </div>
           </div>
           <div class="playground-header-actions">
             <button type="button" class="btn-flow" id="playground-edit-flow" title="Open this applet's flow on the canvas">
@@ -3379,6 +3566,46 @@
               <div class="playground-panel-title">About</div>
               <p class="playground-description" id="playground-description"></p>
               <div class="playground-endpoint" id="playground-endpoint"></div>
+            </div>
+            <div class="playground-panel" id="playground-api-panel">
+              <div class="playground-panel-title-row">
+                <div class="playground-panel-title">API snippet</div>
+                <div class="playground-api-tabs" role="tablist">
+                  <button
+                    type="button"
+                    class="playground-api-tab is-active"
+                    data-snippet="curl"
+                    role="tab"
+                    aria-selected="true"
+                  >curl</button>
+                  <button
+                    type="button"
+                    class="playground-api-tab"
+                    data-snippet="js"
+                    role="tab"
+                    aria-selected="false"
+                  >fetch</button>
+                </div>
+              </div>
+              <div class="playground-api-snippet-wrap">
+                <pre
+                  class="playground-api-snippet"
+                  id="playground-api-snippet"
+                  aria-live="polite"
+                ></pre>
+                <button
+                  type="button"
+                  class="playground-api-copy"
+                  id="playground-api-copy"
+                  title="Copy snippet"
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                  </svg>
+                  <span class="playground-api-copy-label">Copy</span>
+                </button>
+              </div>
             </div>
             <div class="playground-panel">
               <div class="playground-panel-title">Inputs</div>
@@ -6129,6 +6356,14 @@
           const sheet = nodesLayer.querySelector(`.cld-form[data-node-id="${nid}"]`);
           const inp = sheet && sheet.querySelector('[data-setting-key="publicId"]');
           if (inp) inp.value = target.settings.publicId;
+          /* Reflect the picked asset in the applet playground input row too — the
+           * canvas form lives behind the playground overlay, so the user only sees
+           * the playground field and would otherwise be confused that the text
+           * input still showed the old public ID. */
+          const playgroundInput = document.querySelector(
+            '#playground-inputs [data-playground-node-id="' + nid + '"]'
+          );
+          if (playgroundInput) playgroundInput.value = target.settings.publicId;
           refreshOutputDeliveryUi();
           notifyAppletEditorFlowMaybeDirty();
         },
@@ -7103,11 +7338,6 @@
 
   function setActiveLibraryTab(tab) {
     const normalized = tab === "applets" ? "applets" : "flows";
-    /* If the user clicks a tab while the sidebar is collapsed, expand it — the icon
-     * rail is meant for navigation, and clicking should reveal the contents. */
-    if (sidebarCollapsed) {
-      setSidebarCollapsed(false);
-    }
     /* Switching to Applets always returns to the list view; the chat assistant is
      * scoped to the Flows context for now. */
     if (normalized === "applets" && chatOpen) {
@@ -7135,29 +7365,39 @@
   }
 
   /* ===== Sidebar collapse =================================================
-   * Two-state sidebar: 240px expanded vs 60px icon rail. State persists in
-   * localStorage so the next session opens in the same shape. CSS owns the
-   * visual reflow via `.app[data-sidebar="collapsed"]`. */
+   * Two-state sidebar: 240px expanded vs 60px icon rail. State lives in the URL
+   * (`?sidebar=open`) so it's shareable and survives back/forward — not in
+   * localStorage. CSS owns the visual reflow via `.app[data-sidebar="collapsed"]`.
+   *
+   * Default (no param) = collapsed.
+   * Open paths: clicking a tab icon, or the topbar expand arrow.
+   * Collapse path: only the in-sidebar collapse arrow. */
 
-  const SIDEBAR_COLLAPSED_KEY = "videofactory.sidebar.collapsed.v1";
-  let sidebarCollapsed = false;
+  const SIDEBAR_QUERY_PARAM = "sidebar";
+  const SIDEBAR_QUERY_OPEN = "open";
+  let sidebarCollapsed = true;
 
   function setSidebarCollapsed(collapsed) {
     sidebarCollapsed = !!collapsed;
     const root = document.querySelector(".app");
     if (root) root.setAttribute("data-sidebar", sidebarCollapsed ? "collapsed" : "expanded");
     try {
-      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, sidebarCollapsed ? "1" : "0");
+      const url = new URL(window.location.href);
+      if (sidebarCollapsed) url.searchParams.delete(SIDEBAR_QUERY_PARAM);
+      else url.searchParams.set(SIDEBAR_QUERY_PARAM, SIDEBAR_QUERY_OPEN);
+      window.history.replaceState({}, "", url.pathname + url.search + url.hash);
     } catch (e) {}
     /* Reflow sidebar internals — list/chat panels were `display:none` until now. */
     if (!sidebarCollapsed) syncChatUi();
   }
 
-  function readSidebarCollapsedFromStorage() {
+  /** Source of truth for the boot/popstate state: URL query param. */
+  function readSidebarCollapsedFromLocation() {
     try {
-      return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1";
+      const q = new URLSearchParams(window.location.search).get(SIDEBAR_QUERY_PARAM);
+      return q !== SIDEBAR_QUERY_OPEN;
     } catch (e) {
-      return false;
+      return true;
     }
   }
 
@@ -8320,10 +8560,15 @@
 
   paletteSearch.addEventListener("input", () => renderLibrary(paletteSearch.value));
 
-  /* Library tab switcher: Flows · Applets. */
+  /* Library tab switcher: Flows · Applets. A user click also expands the sidebar
+   * if it's collapsed (so clicking an icon in the collapsed rail reveals the panel).
+   * Programmatic `setActiveLibraryTab` calls (e.g. the boot-time switch when
+   * opening `?applet=<slug>`) deliberately don't expand — the URL's `?sidebar=`
+   * state stays authoritative. */
   document.querySelectorAll(".palette-tab").forEach((tabEl) => {
     tabEl.addEventListener("click", () => {
       const t = tabEl.getAttribute("data-library-tab");
+      if (sidebarCollapsed) setSidebarCollapsed(false);
       setActiveLibraryTab(t || "flows");
     });
   });
@@ -10302,6 +10547,13 @@
         ta.setAttribute("data-playground-param", paramName);
         field.appendChild(ta);
       } else if (kind === "image" || kind === "video") {
+        /* Inline picker row: free-text public-ID + a Browse button that opens the
+         * Cloudinary Media Library widget scoped to this account. The widget's
+         * insertHandler writes back to node.settings.publicId; we also patch the
+         * text input value directly so the playground reflects the choice without
+         * a re-render. */
+        const row = document.createElement("div");
+        row.className = "playground-input-row";
         const input = document.createElement("input");
         input.className = "playground-input";
         input.type = "text";
@@ -10313,10 +10565,24 @@
         input.setAttribute("data-playground-node-id", node.id);
         input.setAttribute("data-playground-kind", kind);
         input.setAttribute("data-playground-param", paramName);
+        const browseBtn = document.createElement("button");
+        browseBtn.type = "button";
+        browseBtn.className = "playground-input-browse";
+        browseBtn.title = "Pick from your media library";
+        browseBtn.setAttribute("data-playground-browse-node-id", node.id);
+        browseBtn.innerHTML =
+          '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+          '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>' +
+          '<circle cx="8.5" cy="8.5" r="1.5"/>' +
+          '<polyline points="21 15 16 10 5 21"/>' +
+          "</svg>" +
+          "<span>Browse</span>";
+        row.appendChild(input);
+        row.appendChild(browseBtn);
         const hint = document.createElement("div");
         hint.className = "playground-field-hint";
-        hint.textContent = "Cloudinary public ID on this cloud.";
-        field.appendChild(input);
+        hint.textContent = "Cloudinary public ID on this cloud, or pick from your media library.";
+        field.appendChild(row);
         field.appendChild(hint);
       } else {
         const hint = document.createElement("div");
@@ -10340,11 +10606,109 @@
     }
     const endpointEl = document.getElementById("playground-endpoint");
     if (endpointEl) endpointEl.textContent = playgroundEndpointForSlug(rec && rec.slug);
+    updatePlaygroundSupportedFormBadges(rec);
+    renderPlaygroundApiSnippet(rec);
     const outHost = document.getElementById("playground-output");
     if (outHost) {
       outHost.innerHTML =
         '<div class="playground-output-placeholder">Press <b>Run applet</b> to exercise the API with the inputs above.</div>';
     }
+  }
+
+  /**
+   * Toggle the API / URL pills next to the playground title. API is always on
+   * (every applet exposes the run endpoint); URL only when the flow snapshot
+   * classifies as a Class A named-transformation candidate. We re-use the same
+   * classifier the bindings editor uses so the playground and the editor agree
+   * on whether a URL form is available.
+   */
+  function updatePlaygroundSupportedFormBadges(rec) {
+    const apiEl = document.querySelector('#playground-supported-forms .applet-supported-badge[data-form="api"]');
+    const urlEl = document.querySelector('#playground-supported-forms .applet-supported-badge[data-form="url"]');
+    if (!apiEl || !urlEl) return;
+    apiEl.classList.add("is-on");
+    let urlOn = false;
+    try {
+      const inputs = normalizeAppletInputs((rec && rec.inputs) || []).filter((r) => !r.ignored);
+      const cls = classifyAppletForNamedTransformation(inputs);
+      urlOn = !!(cls && cls.ok);
+    } catch (e) {
+      urlOn = false;
+    }
+    urlEl.classList.toggle("is-on", urlOn);
+    urlEl.hidden = !urlOn;
+  }
+
+  /** Active snippet language for the playground API panel — flips between curl/fetch. */
+  let playgroundApiSnippetLang = "curl";
+
+  /**
+   * Build a paste-ready API call for the active applet — either a curl invocation
+   * or a JS fetch() snippet — using the saved `rec.inputs` (not the bindings DOM,
+   * which the playground doesn't have visible). Mirrors the same param-key
+   * resolver and placeholder values the bindings editor's API readout uses, so
+   * what you copy from the playground matches what you'd see in the editor.
+   */
+  function buildPlaygroundApiSnippet(rec, lang) {
+    const slug = (rec && rec.slug) ? String(rec.slug) : currentAppletSlug || "<slug>";
+    const inputs = normalizeAppletInputs((rec && rec.inputs) || []).filter((r) => !r.ignored);
+    let keyMap = new Map();
+    try {
+      keyMap = resolveAppletBindingParamKeys(inputs);
+    } catch (e) {
+      keyMap = new Map();
+    }
+    const params = {};
+    for (const inp of inputs) {
+      const key = keyMap.get(inp.nodeId) || apiParamKeyForInput(inp) || inp.nodeId;
+      params[key] = placeholderMockValueForKind(inp.kind);
+    }
+    const body = { params };
+    const bodyText = JSON.stringify(body, null, 2);
+    const endpoint = "https://api.videofactory.app/applets/" + encodeURIComponent(slug) + "/run";
+    if (lang === "js") {
+      return (
+        'await fetch("' + endpoint + '", {\n' +
+        '  method: "POST",\n' +
+        '  headers: {\n' +
+        '    "Content-Type": "application/json",\n' +
+        '    "Authorization": "Bearer <YOUR_API_TOKEN>"\n' +
+        '  },\n' +
+        '  body: JSON.stringify(' +
+          bodyText.replace(/\n/g, "\n  ") +
+        ')\n' +
+        '});'
+      );
+    }
+    /* curl — single-quoted body, indented for readability. */
+    return (
+      "curl -X POST '" + endpoint + "' \\\n" +
+      "  -H 'Content-Type: application/json' \\\n" +
+      "  -H 'Authorization: Bearer <YOUR_API_TOKEN>' \\\n" +
+      "  -d '" + bodyText + "'"
+    );
+  }
+
+  /** Render the current snippet language into the playground API panel. */
+  function renderPlaygroundApiSnippet(rec) {
+    const el = document.getElementById("playground-api-snippet");
+    if (!el) return;
+    /* Cache the rec on the panel so the tab toggle can re-render without
+     * re-resolving the applet store. */
+    if (rec) el.__rec = rec;
+    const target = rec || el.__rec;
+    if (!target) {
+      el.textContent = "";
+      return;
+    }
+    el.textContent = buildPlaygroundApiSnippet(target, playgroundApiSnippetLang);
+    /* Reflect active state on tabs. */
+    const tabs = document.querySelectorAll(".playground-api-tab");
+    tabs.forEach((t) => {
+      const on = t.getAttribute("data-snippet") === playgroundApiSnippetLang;
+      t.classList.toggle("is-active", on);
+      t.setAttribute("aria-selected", on ? "true" : "false");
+    });
   }
 
   /** Switch the main stage to the Applet Playground for `slug`. Loads the applet's
@@ -10399,6 +10763,11 @@
     appMode = "flow";
     currentAppletSlug = "";
     setAppletIdInUrl("");
+    /* Drop the cached applet record on the snippet panel so reopening another
+     * applet starts fresh, and reset the snippet tab back to the default. */
+    const snippetEl = document.getElementById("playground-api-snippet");
+    if (snippetEl) snippetEl.__rec = null;
+    playgroundApiSnippetLang = "curl";
     syncAppModeChrome();
     syncLibraryChrome();
     renderLibrary(document.getElementById("palette-search").value);
@@ -10747,6 +11116,68 @@
     runCurrentAppletFromPlayground();
   });
 
+  /* Delegated handler: any "Browse" button inside the playground inputs panel
+   * opens the Cloudinary Media Library widget for that input's bound node. The
+   * widget's insertHandler (set up in ensureMediaLibraryWidget) writes back to
+   * both the canvas node settings and the playground input field. */
+  document.getElementById("playground-inputs").addEventListener("click", (e) => {
+    const btn = e.target.closest && e.target.closest(".playground-input-browse");
+    if (!btn) return;
+    e.preventDefault();
+    const nid = btn.getAttribute("data-playground-browse-node-id");
+    if (!nid) return;
+    openInputAssetPicker(nid);
+  });
+
+  /* API snippet panel: tab clicks swap curl ↔ fetch; copy button writes the
+   * current snippet to the clipboard with a brief visual confirmation. */
+  document.querySelectorAll(".playground-api-tab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const lang = tab.getAttribute("data-snippet");
+      if (!lang || lang === playgroundApiSnippetLang) return;
+      playgroundApiSnippetLang = lang;
+      renderPlaygroundApiSnippet();
+    });
+  });
+
+  const playgroundApiCopyBtn = document.getElementById("playground-api-copy");
+  if (playgroundApiCopyBtn) {
+    playgroundApiCopyBtn.addEventListener("click", () => {
+      const code = document.getElementById("playground-api-snippet");
+      const text = code ? code.textContent : "";
+      if (!text) return;
+      const showCopied = () => {
+        playgroundApiCopyBtn.classList.add("is-copied");
+        const labelEl = playgroundApiCopyBtn.querySelector(".playground-api-copy-label");
+        const prev = labelEl ? labelEl.textContent : "";
+        if (labelEl) labelEl.textContent = "Copied";
+        setTimeout(() => {
+          playgroundApiCopyBtn.classList.remove("is-copied");
+          if (labelEl) labelEl.textContent = prev || "Copy";
+        }, 1400);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(showCopied).catch(() => {
+          /* Fallback if clipboard write rejects (e.g. permissions): select & execCommand. */
+          try {
+            const ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            document.execCommand("copy");
+            ta.remove();
+            showCopied();
+          } catch (e) {
+            showFlowToast("Could not copy to clipboard.");
+          }
+        });
+      }
+    });
+  }
+
   document.getElementById("applet-edit-back").addEventListener("click", () => {
     document.getElementById("applet-edit-dialog").close();
   });
@@ -10810,7 +11241,7 @@
     markFlowAsClean();
   }
 
-  setSidebarCollapsed(readSidebarCollapsedFromStorage());
+  setSidebarCollapsed(readSidebarCollapsedFromLocation());
   syncAppModeChrome();
   syncLibraryChrome();
   syncChatUi();
@@ -10873,6 +11304,8 @@
   })();
 
   window.addEventListener("popstate", () => {
+    /* Sidebar open/closed is encoded in the URL, so back/forward must re-sync it. */
+    setSidebarCollapsed(readSidebarCollapsedFromLocation());
     const appletSlug = getAppletIdFromLocation();
     if (appletSlug) {
       const appletStore = readAppletStore();
