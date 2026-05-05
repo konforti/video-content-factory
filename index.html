@@ -54,7 +54,7 @@
 
     .app {
       display: grid;
-      grid-template-columns: 200px 1fr;
+      grid-template-columns: 240px 1fr;
       grid-template-rows: 44px 1fr;
       height: 100%;
       grid-template-areas:
@@ -300,8 +300,83 @@
       z-index: 15;
     }
 
+    /* Block rail is a flow-author affordance — in Applet Playground mode the canvas is
+     * covered by the overlay so dragging blocks would be nonsense; hide the rail entirely. */
+    .app[data-app-mode="applet"] .block-rail,
+    .app[data-app-mode="applet"] #block-popover {
+      display: none !important;
+    }
+
+    /* Top-of-sidebar segmented control — pivot between saved Transformations (flows)
+     * and saved Applets. Sits on a muted "track" so the chips look like a real
+     * picker instead of text links; the active chip pops with white fill + soft
+     * shadow + accent-tinted icon. */
+    .palette-tabs {
+      display: flex;
+      gap: 3px;
+      padding: 4px;
+      margin: 10px 10px 8px;
+      background: var(--bg-muted);
+      border: 1px solid var(--border-hair);
+      border-radius: 12px;
+    }
+
+    .palette-tab {
+      flex: 1;
+      appearance: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-soft);
+      font: inherit;
+      font-size: 11.5px;
+      font-weight: 500;
+      letter-spacing: -0.005em;
+      padding: 7px 8px;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: background 0.14s, color 0.14s, border-color 0.14s, box-shadow 0.14s, transform 0.1s;
+      text-align: center;
+      min-width: 0;
+    }
+
+    .palette-tab svg {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+      opacity: 0.7;
+      transition: opacity 0.14s, color 0.14s;
+    }
+
+    .palette-tab:hover {
+      color: var(--text);
+    }
+
+    .palette-tab:hover svg {
+      opacity: 0.9;
+    }
+
+    .palette-tab:active {
+      transform: scale(0.98);
+    }
+
+    .palette-tab.is-active {
+      background: var(--bg-panel);
+      color: var(--text);
+      border-color: var(--border-hair);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .palette-tab.is-active svg {
+      opacity: 1;
+      color: var(--accent-focus);
+    }
+
     .palette-header {
-      padding: 10px 11px;
+      padding: 0 11px 10px;
       border-bottom: 1px solid var(--border-hair);
     }
 
@@ -311,6 +386,7 @@
       letter-spacing: 0.06em;
       color: var(--text-faint);
       margin-bottom: 8px;
+      padding-left: 2px;
     }
 
     .palette-search {
@@ -419,6 +495,89 @@
       font-weight: 500;
       letter-spacing: -0.01em;
       color: var(--text);
+    }
+
+    /* Sidebar rows for saved Flows / Applets — selectable list items.
+     * Differs from `.palette-item` (which is draggable): clicking loads the flow or
+     * opens the applet playground, and `.is-active` highlights the current entry. */
+    .library-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 8px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-hair);
+      background: #fff;
+      cursor: pointer;
+      transition: border-color 0.14s, box-shadow 0.14s, background 0.14s;
+      user-select: none;
+    }
+
+    .library-row:hover {
+      border-color: var(--border-soft);
+      box-shadow: var(--shadow-bar);
+    }
+
+    .library-row.is-active {
+      border-color: rgba(99, 102, 241, 0.45);
+      background: rgba(99, 102, 241, 0.06);
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+    }
+
+    .library-row-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--text-soft);
+      background: var(--bg-muted);
+    }
+
+    .library-row-icon svg {
+      width: 13px;
+      height: 13px;
+    }
+
+    .library-row-meta {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .library-row-name {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .library-row-sub {
+      font-size: 10px;
+      color: var(--text-faint);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .library-empty {
+      padding: 14px 8px;
+      font-size: 11px;
+      color: var(--text-faint);
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .library-empty-hint {
+      margin-top: 4px;
+      color: var(--text-soft);
+      font-size: 10.5px;
     }
 
     .main-wrap {
@@ -1219,6 +1378,159 @@
       padding: 0 2px;
     }
 
+    /* Floating vertical block rail — pinned inside `.main-wrap` near the top-left of the
+     * canvas. "Add block" (+) opens the full palette; category shortcuts below it open
+     * the same popover scoped to a single section. Flow-mode only (hidden in applet
+     * playground via `.app[data-app-mode="applet"]`). */
+    .block-rail {
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 5px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-hair);
+      box-shadow: var(--shadow-dock);
+      z-index: 20;
+    }
+
+    .block-rail[hidden] {
+      display: none;
+    }
+
+    .block-rail-btn {
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--text-soft);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.12s, color 0.12s, transform 0.1s;
+      position: relative;
+    }
+
+    .block-rail-btn:hover {
+      background: rgba(0, 0, 0, 0.05);
+      color: var(--text);
+    }
+
+    .block-rail-btn:active {
+      transform: scale(0.94);
+    }
+
+    .block-rail-btn.is-active {
+      background: rgba(99, 102, 241, 0.12);
+      color: var(--accent-focus);
+    }
+
+    .block-rail-btn-primary,
+    .block-rail-btn-primary:hover {
+      background: var(--run-bg);
+      color: #fafafa;
+    }
+
+    .block-rail-btn-primary:hover {
+      background: var(--run-bg-hover);
+    }
+
+    .block-rail-btn-primary.is-active {
+      background: var(--run-bg-hover);
+      color: #fafafa;
+    }
+
+    .block-rail-btn svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    .block-rail-divider {
+      width: 22px;
+      height: 1px;
+      background: var(--border-hair);
+      margin: 4px 0;
+      flex-shrink: 0;
+    }
+
+    /* Popover anchored beside the block rail — hosts the draggable palette for either a
+     * single category or the full list. Positioned via inline styles from JS so it hugs
+     * the button that opened it. */
+    .block-popover {
+      position: absolute;
+      z-index: 30;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-hair);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-dock);
+      width: 260px;
+      max-height: calc(100% - 28px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .block-popover[hidden] {
+      display: none;
+    }
+
+    .block-popover-head {
+      padding: 10px 11px;
+      border-bottom: 1px solid var(--border-hair);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .block-popover-title {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+    }
+
+    .block-popover-search {
+      width: 100%;
+      padding: 6px 9px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-hair);
+      background: var(--bg-muted);
+      color: var(--text);
+      font-size: 11px;
+      outline: none;
+      font-family: inherit;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .block-popover-search::placeholder {
+      color: var(--text-faint);
+    }
+
+    .block-popover-search:focus {
+      border-color: rgba(99, 102, 241, 0.35);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
+    }
+
+    .block-popover-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-height: 0;
+    }
+
     .wire-preview {
       fill: none;
       stroke: #a1a1aa;
@@ -1996,6 +2308,291 @@
     .applet-output-bind-row:not(.applet-output-readout-warn) .applet-output-delivery-field label {
       cursor: default;
     }
+
+    /* Applet Playground — an alternate main-stage view that replaces the canvas when the
+     * user opens a saved applet from the sidebar. Hosts the input form + Run button on the
+     * left and the response / preview on the right. Sits absolutely inside `.main-wrap`
+     * so it overlays the canvas cleanly without disturbing layout. */
+    .applet-playground {
+      position: absolute;
+      inset: 0;
+      background: var(--bg-app);
+      display: flex;
+      flex-direction: column;
+      z-index: 8;
+      overflow: hidden;
+    }
+
+    .applet-playground[hidden] {
+      display: none;
+    }
+
+    .playground-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border-hair);
+      background: var(--bg-panel);
+      flex-shrink: 0;
+    }
+
+    .playground-header-meta {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .playground-crumb {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+    }
+
+    .playground-title {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .playground-header-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .playground-body {
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 20px;
+      padding: 20px 24px;
+      overflow: auto;
+      align-content: start;
+    }
+
+    @media (max-width: 900px) {
+      .playground-body {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .playground-col {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .playground-panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-hair);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      box-shadow: var(--shadow-bar);
+    }
+
+    .playground-panel-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      margin-bottom: 12px;
+    }
+
+    .playground-description {
+      font-size: 12px;
+      color: var(--text-soft);
+      line-height: 1.55;
+      margin-bottom: 4px;
+    }
+
+    .playground-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 12px;
+    }
+
+    .playground-field:last-child {
+      margin-bottom: 0;
+    }
+
+    .playground-field-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .playground-field-kind {
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      background: var(--bg-muted);
+      border: 1px solid var(--border-hair);
+      padding: 1px 6px;
+      border-radius: 999px;
+    }
+
+    .playground-field-required {
+      font-size: 10px;
+      font-weight: 500;
+      color: #b45309;
+    }
+
+    .playground-field-hint {
+      font-size: 10.5px;
+      color: var(--text-faint);
+      line-height: 1.4;
+    }
+
+    .playground-input,
+    .playground-textarea {
+      font-family: inherit;
+      font-size: 12px;
+      padding: 7px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-hair);
+      background: #fff;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.14s, box-shadow 0.14s;
+      width: 100%;
+    }
+
+    .playground-textarea {
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+      font-size: 11.5px;
+      min-height: 64px;
+      resize: vertical;
+    }
+
+    .playground-input:focus,
+    .playground-textarea:focus {
+      border-color: rgba(99, 102, 241, 0.45);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+    }
+
+    .playground-run-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding-top: 4px;
+    }
+
+    .playground-endpoint {
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+      font-size: 11px;
+      color: var(--text-soft);
+      background: var(--bg-muted);
+      border: 1px solid var(--border-hair);
+      padding: 6px 9px;
+      border-radius: var(--radius-sm);
+      overflow: auto;
+      white-space: nowrap;
+      margin-bottom: 12px;
+    }
+
+    .playground-output-placeholder {
+      font-size: 11.5px;
+      color: var(--text-faint);
+      padding: 28px 12px;
+      text-align: center;
+      line-height: 1.5;
+      border: 1px dashed var(--border-soft);
+      border-radius: var(--radius-sm);
+      background: var(--bg-muted);
+    }
+
+    .playground-output-kind {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      background: var(--bg-muted);
+      border: 1px solid var(--border-hair);
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+    }
+
+    .playground-output-url {
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+      font-size: 10.5px;
+      color: var(--text-soft);
+      word-break: break-all;
+      background: var(--bg-muted);
+      border: 1px solid var(--border-hair);
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 10px;
+      line-height: 1.45;
+    }
+
+    .playground-output-preview {
+      border: 1px solid var(--border-hair);
+      border-radius: var(--radius-sm);
+      background: #000;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .playground-output-preview img,
+    .playground-output-preview video {
+      display: block;
+      max-width: 100%;
+      max-height: 360px;
+      width: auto;
+      height: auto;
+    }
+
+    .playground-output-preview.is-text {
+      background: var(--bg-muted);
+      color: var(--text);
+      padding: 14px;
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+      font-size: 12px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 80px;
+      text-align: left;
+      justify-content: flex-start;
+      align-items: flex-start;
+    }
+
+    .playground-response-json {
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+      font-size: 10.5px;
+      line-height: 1.5;
+      color: var(--text-soft);
+      background: var(--bg-muted);
+      border: 1px solid var(--border-hair);
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      max-height: 200px;
+      overflow: auto;
+      margin-top: 10px;
+      white-space: pre;
+    }
   </style>
 </head>
 <body>
@@ -2046,9 +2643,31 @@
     </header>
 
     <aside class="palette">
+      <div class="palette-tabs" role="tablist" aria-label="Library">
+        <button type="button" class="palette-tab is-active" role="tab" data-library-tab="flows" aria-selected="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="5" cy="12" r="2"/>
+            <circle cx="19" cy="6" r="2"/>
+            <circle cx="19" cy="18" r="2"/>
+            <path d="M7 12h7"/>
+            <path d="M14 12l3-5"/>
+            <path d="M14 12l3 5"/>
+          </svg>
+          Flows
+        </button>
+        <button type="button" class="palette-tab" role="tab" data-library-tab="applets" aria-selected="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="1.2"/>
+            <rect x="14" y="3" width="7" height="7" rx="1.2"/>
+            <rect x="14" y="14" width="7" height="7" rx="1.2"/>
+            <rect x="3" y="14" width="7" height="7" rx="1.2"/>
+          </svg>
+          Applets
+        </button>
+      </div>
       <div class="palette-header">
-        <h2>Add blocks</h2>
-        <input type="search" class="palette-search" id="palette-search" placeholder="Search…" autocomplete="off" />
+        <h2 id="palette-heading">Transformations</h2>
+        <input type="search" class="palette-search" id="palette-search" placeholder="Search flows…" autocomplete="off" />
       </div>
       <div class="palette-list" id="palette-list"></div>
     </aside>
@@ -2060,6 +2679,66 @@
           <path id="wire-preview" class="wire-preview" style="display: none" />
         </svg>
         <div id="nodes-layer"></div>
+      </div>
+
+      <!-- Floating block rail — primary "+" opens the full palette; category shortcuts
+           below open the same popover scoped to one section. Flow mode only. -->
+      <nav class="block-rail" aria-label="Add blocks">
+        <button type="button" class="block-rail-btn block-rail-btn-primary" id="block-rail-add" title="Add block" aria-label="Add block">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
+        <span class="block-rail-divider" aria-hidden="true"></span>
+        <button type="button" class="block-rail-btn" data-block-section="inputs" title="Inputs" aria-label="Input blocks">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </button>
+        <button type="button" class="block-rail-btn" data-block-section="ai" title="AI (mock)" aria-label="AI blocks">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v2"/>
+            <path d="M12 19v2"/>
+            <path d="M3 12h2"/>
+            <path d="M19 12h2"/>
+            <path d="M5.6 5.6l1.4 1.4"/>
+            <path d="M17 17l1.4 1.4"/>
+            <path d="M5.6 18.4l1.4-1.4"/>
+            <path d="M17 7l1.4-1.4"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+        <button type="button" class="block-rail-btn" data-block-section="transforms" title="Transforms, editing & accessibility" aria-label="Transform blocks">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="4" y1="21" x2="4" y2="14"/>
+            <line x1="4" y1="10" x2="4" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12" y2="3"/>
+            <line x1="20" y1="21" x2="20" y2="16"/>
+            <line x1="20" y1="12" x2="20" y2="3"/>
+            <line x1="1" y1="14" x2="7" y2="14"/>
+            <line x1="9" y1="8" x2="15" y2="8"/>
+            <line x1="17" y1="16" x2="23" y2="16"/>
+          </svg>
+        </button>
+        <button type="button" class="block-rail-btn" data-block-section="outputs" title="Outputs" aria-label="Output blocks">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 9v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9"/>
+            <polyline points="7 6 12 1 17 6"/>
+            <line x1="12" y1="1" x2="12" y2="15"/>
+          </svg>
+        </button>
+      </nav>
+
+      <div class="block-popover" id="block-popover" hidden role="dialog" aria-label="Block palette">
+        <div class="block-popover-head">
+          <span class="block-popover-title" id="block-popover-title">All blocks</span>
+          <input type="search" class="block-popover-search" id="block-popover-search" placeholder="Search…" autocomplete="off" />
+        </div>
+        <div class="block-popover-list" id="block-popover-list"></div>
       </div>
       <nav class="canvas-dock" aria-label="Canvas tools">
         <button type="button" class="dock-btn active" id="dock-select" title="Select (V)">
@@ -2085,6 +2764,59 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
         </button>
       </nav>
+
+      <!-- Applet Playground — replaces the canvas view when an applet is opened from the sidebar. -->
+      <section id="applet-playground" class="applet-playground" hidden aria-hidden="true" aria-label="Applet playground">
+        <div class="playground-header">
+          <div class="playground-header-meta">
+            <span class="playground-crumb">Applet playground</span>
+            <h2 class="playground-title" id="playground-title">Applet</h2>
+          </div>
+          <div class="playground-header-actions">
+            <button type="button" class="btn-flow" id="playground-edit-flow" title="Open this applet's flow on the canvas">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 20h9"/>
+                <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+              </svg>
+              Edit flow
+            </button>
+            <button type="button" class="btn-flow" id="playground-applet-editor" title="Open applet binding editor">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              Bindings
+            </button>
+            <button type="button" class="btn" id="playground-close" title="Back to canvas">Close</button>
+          </div>
+        </div>
+        <div class="playground-body">
+          <div class="playground-col">
+            <div class="playground-panel" id="playground-meta-panel">
+              <div class="playground-panel-title">About</div>
+              <p class="playground-description" id="playground-description"></p>
+              <div class="playground-endpoint" id="playground-endpoint"></div>
+            </div>
+            <div class="playground-panel">
+              <div class="playground-panel-title">Inputs</div>
+              <div id="playground-inputs"></div>
+              <div class="playground-run-row">
+                <button type="button" class="btn-run" id="playground-run">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+                  Run applet
+                </button>
+                <button type="button" class="btn" id="playground-reset" title="Reset inputs to applet defaults">Reset</button>
+              </div>
+            </div>
+          </div>
+          <div class="playground-col">
+            <div class="playground-panel">
+              <div class="playground-panel-title">Response</div>
+              <div id="playground-output"></div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
 
     <dialog id="flow-save-dialog" class="flow-dialog">
@@ -2273,6 +3005,13 @@
   /** Saved applet manifests (flow snapshot + typed inputs); local only */
   const APPLET_STORE_KEY = "videofactory.applets.store.v1";
   const APPLET_RECORD_VERSION = 1;
+  /** URL param carrying the active applet slug for the Playground view. */
+  const APPLET_QUERY_PARAM = "applet";
+
+  /** "flow" = canvas authoring; "applet" = applet playground view over the canvas. */
+  let appMode = "flow";
+  /** Slug of the applet currently loaded in the playground (empty unless `appMode === "applet"`). */
+  let currentAppletSlug = "";
 
   /** @type {string|null} slug when editing existing; null when creating */
   let appletEditingSlug = null;
@@ -5741,18 +6480,111 @@
     return false;
   }
 
-  function buildPalette(filter) {
+  /** Which sidebar tab is active: "flows" (saved transformations) or "applets" (saved
+   * applets). Drives the rendering in the shared `#palette-list` container + the
+   * placeholder text of `#palette-search`. Blocks live in a floating canvas rail now,
+   * not in the sidebar. */
+  let activeLibraryTab = "flows";
+
+  function libraryHeadingForTab(tab) {
+    if (tab === "applets") return "Applets";
+    return "Transformations";
+  }
+
+  function librarySearchPlaceholderForTab(tab) {
+    if (tab === "applets") return "Search applets…";
+    return "Search flows…";
+  }
+
+  /** Reflect `appMode` onto the `.app` container so CSS can hide flow-only UI (Blocks
+   * tab, drop target, etc.) while the Applet Playground is active. */
+  function syncAppModeChrome() {
+    const root = document.querySelector(".app");
+    if (!root) return;
+    root.setAttribute("data-app-mode", appMode === "applet" ? "applet" : "flow");
+  }
+
+  /** Update the sidebar heading + search placeholder + tab highlight to match `activeLibraryTab`. */
+  function syncLibraryChrome() {
+    const tabs = document.querySelectorAll(".palette-tab");
+    tabs.forEach((t) => {
+      const on = t.getAttribute("data-library-tab") === activeLibraryTab;
+      t.classList.toggle("is-active", on);
+      t.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    const heading = document.getElementById("palette-heading");
+    if (heading) heading.textContent = libraryHeadingForTab(activeLibraryTab);
+    const search = document.getElementById("palette-search");
+    if (search) search.placeholder = librarySearchPlaceholderForTab(activeLibraryTab);
+  }
+
+  function setActiveLibraryTab(tab) {
+    const normalized = tab === "applets" ? "applets" : "flows";
+    if (normalized === activeLibraryTab) return;
+    activeLibraryTab = normalized;
+    const search = document.getElementById("palette-search");
+    if (search) search.value = "";
+    syncLibraryChrome();
+    renderLibrary("");
+  }
+
+  /** Dispatcher: re-renders the sidebar list based on the active tab. */
+  function renderLibrary(filter) {
+    if (activeLibraryTab === "applets") renderAppletsLibrary(filter);
+    else renderFlowsLibrary(filter);
+  }
+
+  /* ===== Block Rail + Popover ============================================
+   * Blocks were previously a sidebar tab; they now live on a floating canvas-side
+   * rail. `blockPopoverSection` is the active filter ("all" or one of the PALETTE
+   * section ids, with "transforms" also folding in editing/accessibility/other so the
+   * rail stays at five buttons). `renderBlockPopoverList` is the former
+   * `renderBlocksLibrary` retargeted at the popover's own list container.
+   * ---------------------------------------------------------------------- */
+
+  /** Section ids grouped under the "Transforms" rail icon (canvas-side only — in the
+   * popover list we still render with their original section headings so the user
+   * sees the actual subcategory). */
+  const BLOCK_RAIL_TRANSFORMS_SECTIONS = new Set([
+    "transforms",
+    "editing",
+    "accessibility",
+    "other",
+  ]);
+
+  /** "all" | "inputs" | "ai" | "transforms" | "outputs" — matches rail buttons. */
+  let blockPopoverSection = "all";
+
+  function blockRailSectionLabel(section) {
+    if (section === "inputs") return "Inputs";
+    if (section === "ai") return "AI (mock)";
+    if (section === "transforms") return "Transforms";
+    if (section === "outputs") return "Outputs";
+    return "All blocks";
+  }
+
+  function blockRailSectionMatches(section, sectionId) {
+    if (section === "all") return true;
+    if (section === "transforms") return BLOCK_RAIL_TRANSFORMS_SECTIONS.has(sectionId);
+    return section === sectionId;
+  }
+
+  function renderBlockPopoverList(filter) {
+    const host = document.getElementById("block-popover-list");
+    if (!host) return;
     const q = (filter || "").toLowerCase();
-    paletteList.innerHTML = "";
-    const items = TYPES.filter((t) => paletteItemMatchesQuery(t, q));
+    host.innerHTML = "";
+    const items = TYPES.filter(
+      (t) =>
+        blockRailSectionMatches(blockPopoverSection, paletteSectionIdForBlockType(t.type)) &&
+        paletteItemMatchesQuery(t, q)
+    );
     if (items.length === 0) {
-      paletteList.innerHTML = '<div class="palette-empty">No blocks match.</div>';
+      host.innerHTML = '<div class="palette-empty">No blocks match.</div>';
       return;
     }
     const bySection = new Map();
-    for (const sec of PALETTE_SECTION_ORDER) {
-      bySection.set(sec.id, []);
-    }
+    for (const sec of PALETTE_SECTION_ORDER) bySection.set(sec.id, []);
     for (const t of items) {
       const sid = paletteSectionIdForBlockType(t.type);
       const bucket = bySection.get(sid);
@@ -5762,28 +6594,245 @@
         if (other) other.push(t);
       }
     }
+    /* Skip category headings when the popover is already filtered to a single rail
+     * section — the popover title bar already names it, so per-subsection labels just
+     * add visual noise. */
+    const showHeadings = blockPopoverSection === "all" || blockPopoverSection === "transforms";
     for (const sec of PALETTE_SECTION_ORDER) {
       const list = bySection.get(sec.id) || [];
       if (!list.length) continue;
-      const heading = document.createElement("div");
-      heading.className = "palette-category";
-      heading.textContent = sec.label;
-      paletteList.appendChild(heading);
+      if (showHeadings) {
+        const heading = document.createElement("div");
+        heading.className = "palette-category";
+        heading.textContent = sec.label;
+        host.appendChild(heading);
+      }
       for (const t of list) {
         const div = document.createElement("div");
         div.className = "palette-item";
         div.draggable = true;
         div.dataset.type = t.type;
-        div.innerHTML = `
-        <div class="palette-icon" style="background:${t.iconBg};color:${t.glyphColor}">${blockIconInner(t)}</div>
-        <div class="meta"><strong>${t.title}</strong></div>`;
+        div.innerHTML =
+          '<div class="palette-icon" style="background:' +
+          t.iconBg +
+          ";color:" +
+          t.glyphColor +
+          '">' +
+          blockIconInner(t) +
+          "</div>" +
+          '<div class="meta"><strong>' +
+          t.title +
+          "</strong></div>";
         div.addEventListener("dragstart", (e) => {
           e.dataTransfer.setData("application/x-node-type", t.type);
           e.dataTransfer.effectAllowed = "copy";
+          /* Close the popover as the drag starts so the user can see the canvas drop
+           * target they're about to hit. Deferred to the next tick so the browser has
+           * finished capturing the drag image before its source element is hidden. */
+          setTimeout(closeBlockPopover, 0);
         });
-        paletteList.appendChild(div);
+        host.appendChild(div);
       }
     }
+  }
+
+  function isBlockPopoverOpen() {
+    const el = document.getElementById("block-popover");
+    return !!(el && !el.hidden);
+  }
+
+  function positionBlockPopoverNear(anchorBtn) {
+    const popover = document.getElementById("block-popover");
+    if (!popover || !anchorBtn) return;
+    const mainWrap = document.querySelector(".main-wrap");
+    if (!mainWrap) return;
+    const wrapRect = mainWrap.getBoundingClientRect();
+    const btnRect = anchorBtn.getBoundingClientRect();
+    /* Anchor horizontally to the right edge of the rail with a small gap. */
+    const gap = 8;
+    const left = btnRect.right - wrapRect.left + gap;
+    /* Vertically align the popover's top with the clicked button, then clamp so it
+     * doesn't spill below the canvas. */
+    let top = btnRect.top - wrapRect.top;
+    const popHeight = Math.min(
+      popover.offsetHeight || 320,
+      wrapRect.height - 28
+    );
+    if (top + popHeight > wrapRect.height - 14) {
+      top = Math.max(14, wrapRect.height - popHeight - 14);
+    }
+    popover.style.left = left + "px";
+    popover.style.top = top + "px";
+  }
+
+  function syncBlockRailActiveState() {
+    const buttons = document.querySelectorAll(".block-rail-btn");
+    const open = isBlockPopoverOpen();
+    buttons.forEach((b) => {
+      if (!open) {
+        b.classList.remove("is-active");
+        return;
+      }
+      const sec = b.getAttribute("data-block-section");
+      const isPrimary = b.id === "block-rail-add";
+      if (blockPopoverSection === "all") {
+        b.classList.toggle("is-active", isPrimary);
+      } else {
+        b.classList.toggle("is-active", sec === blockPopoverSection);
+      }
+    });
+  }
+
+  function openBlockPopover(section, anchorBtn) {
+    const popover = document.getElementById("block-popover");
+    if (!popover) return;
+    blockPopoverSection = section === "all" ? "all" : section || "all";
+    const title = document.getElementById("block-popover-title");
+    if (title) title.textContent = blockRailSectionLabel(blockPopoverSection);
+    const search = document.getElementById("block-popover-search");
+    if (search) search.value = "";
+    renderBlockPopoverList("");
+    popover.hidden = false;
+    /* Position after show so offsetHeight is real. */
+    requestAnimationFrame(() => positionBlockPopoverNear(anchorBtn));
+    syncBlockRailActiveState();
+    if (search) requestAnimationFrame(() => search.focus());
+  }
+
+  function closeBlockPopover() {
+    const popover = document.getElementById("block-popover");
+    if (!popover) return;
+    popover.hidden = true;
+    syncBlockRailActiveState();
+  }
+
+  /** Small inline SVGs for the sidebar library rows. */
+  function libraryRowIconSvg(kind) {
+    if (kind === "applet") {
+      return (
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+        '<rect x="3" y="3" width="7" height="7" rx="1"/>' +
+        '<rect x="14" y="3" width="7" height="7" rx="1"/>' +
+        '<rect x="14" y="14" width="7" height="7" rx="1"/>' +
+        '<rect x="3" y="14" width="7" height="7" rx="1"/>' +
+        "</svg>"
+      );
+    }
+    return (
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<circle cx="5" cy="12" r="2"/>' +
+      '<circle cx="19" cy="6" r="2"/>' +
+      '<circle cx="19" cy="18" r="2"/>' +
+      '<path d="M7 12h7"/>' +
+      '<path d="M14 12l3-5"/>' +
+      '<path d="M14 12l3 5"/>' +
+      "</svg>"
+    );
+  }
+
+  function renderFlowsLibrary(filter) {
+    const q = (filter || "").toLowerCase();
+    paletteList.innerHTML = "";
+    const store = readFlowStore();
+    const allNames = Object.keys(store.flows || {}).sort((a, b) => a.localeCompare(b));
+    const names = q ? allNames.filter((n) => n.toLowerCase().includes(q)) : allNames;
+    if (!allNames.length) {
+      paletteList.innerHTML =
+        '<div class="library-empty">No saved transformations yet.<div class="library-empty-hint">Build a flow and press <b>Save flow</b>.</div></div>';
+      return;
+    }
+    if (!names.length) {
+      paletteList.innerHTML = '<div class="library-empty">No flows match.</div>';
+      return;
+    }
+    const activeFlow = appMode === "applet" ? "" : getActiveSavedFlowName();
+    for (const name of names) {
+      const doc = store.flows[name];
+      const when = formatFlowSavedAt(doc && doc.savedAt);
+      const row = document.createElement("div");
+      row.className = "library-row";
+      if (name === activeFlow) row.classList.add("is-active");
+      row.setAttribute("data-flow-name", encodeURIComponent(name));
+      row.setAttribute("role", "button");
+      row.setAttribute("tabindex", "0");
+      row.title = name;
+      row.innerHTML =
+        '<div class="library-row-icon">' +
+        libraryRowIconSvg("flow") +
+        "</div>" +
+        '<div class="library-row-meta">' +
+        '<span class="library-row-name">' +
+        escapeHtml(name) +
+        "</span>" +
+        (when
+          ? '<span class="library-row-sub">' + escapeHtml(when) + "</span>"
+          : "") +
+        "</div>";
+      paletteList.appendChild(row);
+    }
+  }
+
+  function renderAppletsLibrary(filter) {
+    const q = (filter || "").toLowerCase();
+    paletteList.innerHTML = "";
+    const store = readAppletStore();
+    const applets = store.applets || {};
+    const allSlugs = Object.keys(applets).sort((a, b) => a.localeCompare(b));
+    const slugs = q
+      ? allSlugs.filter((s) => {
+          const rec = applets[s];
+          const name = (rec && rec.name) || s;
+          const desc = (rec && rec.description) || "";
+          return (
+            s.toLowerCase().includes(q) ||
+            String(name).toLowerCase().includes(q) ||
+            String(desc).toLowerCase().includes(q)
+          );
+        })
+      : allSlugs;
+    if (!allSlugs.length) {
+      paletteList.innerHTML =
+        '<div class="library-empty">No applets yet.<div class="library-empty-hint">Open <b>Applet</b> on a saved flow to create one.</div></div>';
+      return;
+    }
+    if (!slugs.length) {
+      paletteList.innerHTML = '<div class="library-empty">No applets match.</div>';
+      return;
+    }
+    const activeSlug = appMode === "applet" ? currentAppletSlug : "";
+    for (const slug of slugs) {
+      const rec = applets[slug];
+      const name = (rec && rec.name) || slug;
+      const when = formatFlowSavedAt(rec && rec.updatedAt);
+      const outKind = rec && rec.output && rec.output.kind ? rec.output.kind : "";
+      const sub = outKind ? "→ " + outKind + (when ? " · " + when : "") : when;
+      const row = document.createElement("div");
+      row.className = "library-row";
+      if (slug === activeSlug) row.classList.add("is-active");
+      row.setAttribute("data-applet-slug", encodeURIComponent(slug));
+      row.setAttribute("role", "button");
+      row.setAttribute("tabindex", "0");
+      row.title = name;
+      row.innerHTML =
+        '<div class="library-row-icon">' +
+        libraryRowIconSvg("applet") +
+        "</div>" +
+        '<div class="library-row-meta">' +
+        '<span class="library-row-name">' +
+        escapeHtml(name) +
+        "</span>" +
+        (sub
+          ? '<span class="library-row-sub">' + escapeHtml(sub) + "</span>"
+          : "") +
+        "</div>";
+      paletteList.appendChild(row);
+    }
+  }
+
+  /** Legacy name — still called on startup and by the search input handler. Now a thin
+   * wrapper over the multi-tab dispatcher. */
+  function buildPalette(filter) {
+    renderLibrary(filter);
   }
 
   canvasBg.addEventListener("dragover", (e) => {
@@ -6065,7 +7114,84 @@
     notifyAppletEditorFlowMaybeDirty();
   });
 
-  paletteSearch.addEventListener("input", () => buildPalette(paletteSearch.value));
+  paletteSearch.addEventListener("input", () => renderLibrary(paletteSearch.value));
+
+  /* Library tab switcher: Flows · Applets. */
+  document.querySelectorAll(".palette-tab").forEach((tabEl) => {
+    tabEl.addEventListener("click", () => {
+      const t = tabEl.getAttribute("data-library-tab");
+      setActiveLibraryTab(t || "flows");
+    });
+  });
+
+  /* Block rail: "+" opens the full palette; category shortcuts scope the popover. */
+  document.querySelectorAll(".block-rail-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (appMode === "applet") return;
+      const section = btn.id === "block-rail-add" ? "all" : btn.getAttribute("data-block-section") || "all";
+      /* Clicking the same button a second time toggles the popover closed. */
+      if (isBlockPopoverOpen() && blockPopoverSection === section) {
+        closeBlockPopover();
+        return;
+      }
+      openBlockPopover(section, btn);
+    });
+  });
+
+  document.getElementById("block-popover-search").addEventListener("input", (e) => {
+    renderBlockPopoverList(e.target.value);
+  });
+
+  /* Dismiss the popover on outside click / Escape. Clicks inside the popover or on
+   * any rail button are handled by their own listeners (rail toggles, popover list
+   * dragstart closes on drag). */
+  document.addEventListener("mousedown", (e) => {
+    if (!isBlockPopoverOpen()) return;
+    const popover = document.getElementById("block-popover");
+    const rail = document.querySelector(".block-rail");
+    if (popover && popover.contains(e.target)) return;
+    if (rail && rail.contains(e.target)) return;
+    closeBlockPopover();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && isBlockPopoverOpen()) {
+      closeBlockPopover();
+    }
+  });
+
+  /* Clicking a row in the library list:
+   *   - Flows tab   → load the saved flow into the canvas.
+   *   - Applets tab → open the applet in the Playground view. */
+  paletteList.addEventListener("click", (e) => {
+    if (activeLibraryTab === "flows") {
+      const row = e.target.closest(".library-row[data-flow-name]");
+      if (!row) return;
+      const enc = row.getAttribute("data-flow-name") || "";
+      const name = enc ? decodeURIComponent(enc) : "";
+      if (!name) return;
+      if (appMode === "applet") exitAppletPlayground({ keepFlow: true });
+      const ok = loadFlowByName(name);
+      if (ok) renderLibrary(paletteSearch.value);
+    } else if (activeLibraryTab === "applets") {
+      const row = e.target.closest(".library-row[data-applet-slug]");
+      if (!row) return;
+      const enc = row.getAttribute("data-applet-slug") || "";
+      const slug = enc ? decodeURIComponent(enc) : "";
+      if (!slug) return;
+      enterAppletPlayground(slug);
+    }
+  });
+
+  /* Keyboard: Enter / Space on a focused library row activates it. */
+  paletteList.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
+    const row = e.target.closest && e.target.closest(".library-row");
+    if (!row) return;
+    e.preventDefault();
+    row.click();
+  });
 
   window.addEventListener("resize", () => {
     applyTransform();
@@ -7837,6 +8963,331 @@
     }
   }
 
+  /* ===== Applet Playground ================================================
+   * A read-once-run-many surface over a saved applet: loads the applet's
+   * `flowSnapshot` onto the canvas, renders kind-typed input controls for each
+   * binding, and wires a Run button that overrides the corresponding input
+   * blocks' settings before computing the terminal output (URL + preview).
+   * The authoring canvas stays behind the overlay — closing the Playground
+   * keeps the loaded flow so the user can iterate in either surface.
+   * ---------------------------------------------------------------------- */
+
+  function setAppletIdInUrl(slugOrEmpty) {
+    try {
+      const url = new URL(window.location.href);
+      const trimmed = String(slugOrEmpty || "").trim();
+      if (trimmed) url.searchParams.set(APPLET_QUERY_PARAM, trimmed);
+      else url.searchParams.delete(APPLET_QUERY_PARAM);
+      window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+    } catch (e) {}
+  }
+
+  function getAppletIdFromLocation() {
+    try {
+      const q = new URLSearchParams(window.location.search).get(APPLET_QUERY_PARAM);
+      return q != null ? String(q).trim() : "";
+    } catch (e) {
+      return "";
+    }
+  }
+
+  function playgroundEndpointForSlug(slug) {
+    const s = String(slug || "").trim();
+    return s ? "POST /applets/" + s + "/run" : "POST /applets/<slug>/run";
+  }
+
+  /** For each applet input row, find the current canvas node and render a typed control. */
+  function renderAppletPlaygroundInputs(rec) {
+    const host = document.getElementById("playground-inputs");
+    if (!host) return;
+    host.innerHTML = "";
+    const rows = normalizeAppletInputs((rec && rec.inputs) || []).filter((r) => !r.ignored);
+    if (!rows.length) {
+      host.innerHTML =
+        '<div class="playground-output-placeholder">This applet has no bound inputs.</div>';
+      return;
+    }
+    for (const row of rows) {
+      const node = nodes.find((n) => n.id === row.nodeId);
+      const kind = row.kind || (node ? appletKindFromBlockType(node.def.type) || "node" : "node");
+      const paramName = row.paramName || apiParamKeyForInput(row) || row.nodeId;
+      const field = document.createElement("div");
+      field.className = "playground-field";
+      const head = document.createElement("div");
+      head.className = "playground-field-head";
+      head.innerHTML =
+        "<code>" +
+        escapeHtml(paramName) +
+        "</code>" +
+        '<span class="playground-field-kind">' +
+        escapeHtml(kind) +
+        "</span>" +
+        (row.required
+          ? '<span class="playground-field-required">required</span>'
+          : "");
+      field.appendChild(head);
+
+      if (!node) {
+        const miss = document.createElement("div");
+        miss.className = "playground-field-hint";
+        miss.textContent =
+          "Bound node " + row.nodeId + " is missing from the canvas. Edit the flow to reconnect.";
+        field.appendChild(miss);
+        host.appendChild(field);
+        continue;
+      }
+
+      if (kind === "text") {
+        const ta = document.createElement("textarea");
+        ta.className = "playground-textarea";
+        ta.rows = 3;
+        ta.placeholder = "Text…";
+        ta.value = node.settings && node.settings.prompt != null ? String(node.settings.prompt) : "";
+        ta.setAttribute("data-playground-node-id", node.id);
+        ta.setAttribute("data-playground-kind", "text");
+        ta.setAttribute("data-playground-param", paramName);
+        field.appendChild(ta);
+      } else if (kind === "image" || kind === "video") {
+        const input = document.createElement("input");
+        input.className = "playground-input";
+        input.type = "text";
+        input.placeholder = kind === "video" ? "folder/video_id" : "folder/image_id";
+        input.value =
+          node.settings && node.settings.publicId != null
+            ? String(node.settings.publicId)
+            : "";
+        input.setAttribute("data-playground-node-id", node.id);
+        input.setAttribute("data-playground-kind", kind);
+        input.setAttribute("data-playground-param", paramName);
+        const hint = document.createElement("div");
+        hint.className = "playground-field-hint";
+        hint.textContent = "Cloudinary public ID on this cloud.";
+        field.appendChild(input);
+        field.appendChild(hint);
+      } else {
+        const hint = document.createElement("div");
+        hint.className = "playground-field-hint";
+        hint.textContent = "Bound to node " + node.id + " (kind: " + kind + ").";
+        field.appendChild(hint);
+      }
+
+      host.appendChild(field);
+    }
+  }
+
+  function renderAppletPlaygroundChrome(rec) {
+    const titleEl = document.getElementById("playground-title");
+    if (titleEl) titleEl.textContent = (rec && rec.name) || currentAppletSlug || "Applet";
+    const descEl = document.getElementById("playground-description");
+    if (descEl) {
+      const d = rec && rec.description ? String(rec.description).trim() : "";
+      descEl.textContent = d || "No description for this applet yet.";
+      descEl.classList.toggle("is-muted", !d);
+    }
+    const endpointEl = document.getElementById("playground-endpoint");
+    if (endpointEl) endpointEl.textContent = playgroundEndpointForSlug(rec && rec.slug);
+    const outHost = document.getElementById("playground-output");
+    if (outHost) {
+      outHost.innerHTML =
+        '<div class="playground-output-placeholder">Press <b>Run applet</b> to exercise the API with the inputs above.</div>';
+    }
+  }
+
+  /** Switch the main stage to the Applet Playground for `slug`. Loads the applet's
+   * flow snapshot onto the canvas (so Edit flow works without a second fetch). */
+  function enterAppletPlayground(slug) {
+    const store = readAppletStore();
+    const rec = store.applets[slug];
+    if (!rec) {
+      showFlowToast('Applet "' + slug + '" was not found.');
+      return false;
+    }
+    const doc = rec.flowSnapshot;
+    if (!doc) {
+      showFlowToast("Applet is missing its flow snapshot.");
+      return false;
+    }
+    try {
+      applyFlowDocument(doc);
+    } catch (err) {
+      showFlowToast(err.message || String(err));
+      return false;
+    }
+    appMode = "applet";
+    currentAppletSlug = slug;
+    appletEditingSlug = slug;
+    setFlowIdInUrl(rec.name || slug);
+    setAppletIdInUrl(slug);
+    /* Hide the canvas block popover if it was open — rail is about to go away. */
+    closeBlockPopover();
+    const overlay = document.getElementById("applet-playground");
+    if (overlay) {
+      overlay.hidden = false;
+      overlay.setAttribute("aria-hidden", "false");
+    }
+    renderAppletPlaygroundChrome(rec);
+    renderAppletPlaygroundInputs(rec);
+    /* Refresh library UI so Blocks tab hides, the active applet row highlights, and
+     * the flow row doesn't — syncLibraryChrome coerces the tab off "blocks" if needed. */
+    syncAppModeChrome();
+    syncLibraryChrome();
+    renderLibrary(document.getElementById("palette-search").value);
+    return true;
+  }
+
+  /** Hide the playground overlay. Canvas state is preserved. */
+  function exitAppletPlayground(opts) {
+    const overlay = document.getElementById("applet-playground");
+    if (overlay) {
+      overlay.hidden = true;
+      overlay.setAttribute("aria-hidden", "true");
+    }
+    appMode = "flow";
+    currentAppletSlug = "";
+    setAppletIdInUrl("");
+    syncAppModeChrome();
+    syncLibraryChrome();
+    renderLibrary(document.getElementById("palette-search").value);
+  }
+
+  /** Apply playground form values back onto their bound input nodes' settings. */
+  function applyPlaygroundInputsToCanvas() {
+    const host = document.getElementById("playground-inputs");
+    if (!host) return;
+    const controls = host.querySelectorAll("[data-playground-node-id]");
+    controls.forEach((ctrl) => {
+      const nid = ctrl.getAttribute("data-playground-node-id");
+      const kind = ctrl.getAttribute("data-playground-kind");
+      const node = nodes.find((n) => n.id === nid);
+      if (!node) return;
+      node.settings = node.settings || {};
+      const val = ctrl.value;
+      if (kind === "text") {
+        node.settings.prompt = String(val == null ? "" : val);
+      } else if (kind === "image" || kind === "video") {
+        node.settings.publicId = String(val == null ? "" : val).trim();
+      }
+    });
+    renderNodes();
+    refreshOutputDeliveryUi();
+  }
+
+  /** Render the applet's response pane — URL + preview for video/image, text for text. */
+  function renderPlaygroundResponse(rec) {
+    const host = document.getElementById("playground-output");
+    if (!host) return;
+    host.innerHTML = "";
+    const out = rec && rec.output ? rec.output : null;
+    if (!out || !out.nodeId || !out.kind) {
+      host.innerHTML =
+        '<div class="playground-output-placeholder">This applet has no terminal output configured.</div>';
+      return;
+    }
+    const terminalNode = nodes.find((n) => n.id === out.nodeId);
+    if (!terminalNode) {
+      host.innerHTML =
+        '<div class="playground-output-placeholder">Terminal output node missing from the flow snapshot.</div>';
+      return;
+    }
+    const kindBadge = document.createElement("div");
+    kindBadge.className = "playground-output-kind";
+    kindBadge.textContent = out.kind;
+    host.appendChild(kindBadge);
+
+    if (out.kind === "text") {
+      const pre = document.createElement("div");
+      pre.className = "playground-output-preview is-text";
+      const s = terminalNode.settings || {};
+      /* Text outputs show their resolved settings.text (if already populated) or fall back
+       * to a sensible placeholder — same policy as runFlow's text-output toast. */
+      pre.textContent =
+        typeof s.text === "string" && s.text
+          ? s.text
+          : "(no text produced — wire a text source upstream)";
+      host.appendChild(pre);
+      const json = document.createElement("pre");
+      json.className = "playground-response-json";
+      json.textContent = JSON.stringify({ result: { kind: "text", text: pre.textContent } }, null, 2);
+      host.appendChild(json);
+      return;
+    }
+
+    const url = buildDeliveryUrlForOutput(out.nodeId);
+    if (!url) {
+      host.innerHTML +=
+        '<div class="playground-output-placeholder">Set a public ID on every required input.</div>';
+      return;
+    }
+    const urlBox = document.createElement("div");
+    urlBox.className = "playground-output-url";
+    urlBox.textContent = url;
+    host.appendChild(urlBox);
+
+    const preview = document.createElement("div");
+    preview.className = "playground-output-preview";
+    if (out.kind === "image") {
+      const img = document.createElement("img");
+      img.src = url;
+      img.alt = "Applet output";
+      img.loading = "lazy";
+      preview.appendChild(img);
+    } else {
+      const video = document.createElement("video");
+      video.src = url;
+      video.controls = true;
+      video.playsInline = true;
+      video.muted = true;
+      preview.appendChild(video);
+    }
+    host.appendChild(preview);
+
+    const json = document.createElement("pre");
+    json.className = "playground-response-json";
+    json.textContent = JSON.stringify(
+      {
+        result: {
+          kind: out.kind,
+          url,
+        },
+      },
+      null,
+      2
+    );
+    host.appendChild(json);
+  }
+
+  function runCurrentAppletFromPlayground() {
+    if (!currentAppletSlug) return;
+    const store = readAppletStore();
+    const rec = store.applets[currentAppletSlug];
+    if (!rec) {
+      showFlowToast("Applet no longer exists.");
+      return;
+    }
+    applyPlaygroundInputsToCanvas();
+    renderPlaygroundResponse(rec);
+    showFlowToast("Applet ran.");
+  }
+
+  function resetPlaygroundInputsFromSnapshot() {
+    if (!currentAppletSlug) return;
+    const store = readAppletStore();
+    const rec = store.applets[currentAppletSlug];
+    if (!rec) return;
+    try {
+      applyFlowDocument(rec.flowSnapshot);
+    } catch (err) {
+      showFlowToast(err.message || String(err));
+      return;
+    }
+    renderAppletPlaygroundInputs(rec);
+    const outHost = document.getElementById("playground-output");
+    if (outHost) {
+      outHost.innerHTML =
+        '<div class="playground-output-placeholder">Inputs reset to applet defaults.</div>';
+    }
+  }
+
   /**
    * Open `dlg` as a popover anchored to `anchorBtn` (used for Save flow / Load flow).
    * Uses non-modal `dlg.show()` so there's no backdrop or inert behind it; closes on
@@ -8009,6 +9460,41 @@
     openAppletEditorForCurrentWorkflow();
   });
 
+  /* Playground header actions. */
+  document.getElementById("playground-close").addEventListener("click", () => {
+    exitAppletPlayground({ keepFlow: true });
+  });
+
+  document.getElementById("playground-edit-flow").addEventListener("click", () => {
+    /* Leave the flow loaded on the canvas and just drop the overlay so the user can edit
+     * the underlying transformation that powers this applet. The floating block rail
+     * becomes visible again automatically (appMode flips back to "flow"). */
+    exitAppletPlayground({ keepFlow: true });
+  });
+
+  document.getElementById("playground-applet-editor").addEventListener("click", () => {
+    /* Bindings editor doubles as the canonical "edit applet metadata" surface — reuse it
+     * instead of building a second form. It reads the current flow's applet record. */
+    openAppletEditorForCurrentWorkflow();
+  });
+
+  document.getElementById("playground-run").addEventListener("click", () => {
+    runCurrentAppletFromPlayground();
+  });
+
+  document.getElementById("playground-reset").addEventListener("click", () => {
+    resetPlaygroundInputsFromSnapshot();
+  });
+
+  document.getElementById("playground-inputs").addEventListener("keydown", (e) => {
+    /* Enter inside a single-line input → Run applet (textareas keep their native newline). */
+    if (e.key !== "Enter" || e.shiftKey) return;
+    const t = e.target;
+    if (!t || t.tagName !== "INPUT") return;
+    e.preventDefault();
+    runCurrentAppletFromPlayground();
+  });
+
   document.getElementById("applet-edit-back").addEventListener("click", () => {
     document.getElementById("applet-edit-dialog").close();
   });
@@ -8072,6 +9558,8 @@
     markFlowAsClean();
   }
 
+  syncAppModeChrome();
+  syncLibraryChrome();
   buildPalette("");
   (function ensureAppletDialogsClosed() {
     for (const id of ["applet-edit-dialog"]) {
@@ -8098,9 +9586,22 @@
     if (builtinJustUpgraded) {
       try {
         setFlowIdInUrl("");
+        setAppletIdInUrl("");
       } catch (e2) {}
       seedDemo();
       return;
+    }
+    /* Applet URL takes precedence — if `?applet=<slug>` is valid, open the Playground
+     * (the applet record carries its own flow snapshot). Otherwise fall back to the
+     * saved flow path. */
+    const appletSlug = getAppletIdFromLocation();
+    if (appletSlug) {
+      const appletStore = readAppletStore();
+      if (Object.prototype.hasOwnProperty.call(appletStore.applets || {}, appletSlug)) {
+        setActiveLibraryTab("applets");
+        if (enterAppletPlayground(appletSlug)) return;
+      }
+      setAppletIdInUrl("");
     }
     const store = readFlowStore();
     const flowId = getFlowIdFromLocation();
@@ -8118,6 +9619,15 @@
   })();
 
   window.addEventListener("popstate", () => {
+    const appletSlug = getAppletIdFromLocation();
+    if (appletSlug) {
+      const appletStore = readAppletStore();
+      if (Object.prototype.hasOwnProperty.call(appletStore.applets || {}, appletSlug)) {
+        if (enterAppletPlayground(appletSlug)) return;
+      }
+    } else if (appMode === "applet") {
+      exitAppletPlayground({ keepFlow: true });
+    }
     const store = readFlowStore();
     const flowId = getFlowIdFromLocation();
     if (flowId && Object.prototype.hasOwnProperty.call(store.flows, flowId)) {
