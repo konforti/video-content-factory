@@ -60,6 +60,13 @@
       grid-template-areas:
         "sidebar header"
         "sidebar main";
+      transition: grid-template-columns 0.18s ease;
+    }
+
+    /* Collapsed sidebar: thin rail (60px) showing only the tab icons + tiny labels.
+     * Search, sub-tabs, list, chat composer all hide via CSS rules below. */
+    .app[data-sidebar="collapsed"] {
+      grid-template-columns: 60px 1fr;
     }
 
     header.topbar {
@@ -298,6 +305,79 @@
       display: flex;
       flex-direction: column;
       z-index: 15;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    /* Collapse handle strip at the top of the sidebar — slim row with a chevron that
+     * tucks the panel into a 60px icon rail. The expand counterpart lives on the
+     * topbar (`.topbar-expand`) and only surfaces when the sidebar is collapsed. */
+    .palette-rail-head {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 8px 8px 0;
+      flex-shrink: 0;
+    }
+
+    .palette-collapse {
+      width: 26px;
+      height: 26px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-faint);
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.14s, color 0.14s, border-color 0.14s;
+    }
+
+    .palette-collapse:hover {
+      background: rgba(0, 0, 0, 0.04);
+      color: var(--text);
+      border-color: var(--border-hair);
+    }
+
+    .palette-collapse svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .topbar-expand {
+      width: 28px;
+      height: 28px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-faint);
+      border-radius: 8px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.14s, color 0.14s, border-color 0.14s;
+      margin-right: 4px;
+      flex-shrink: 0;
+    }
+
+    .topbar-expand:hover {
+      background: rgba(0, 0, 0, 0.04);
+      color: var(--text);
+      border-color: var(--border-hair);
+    }
+
+    .topbar-expand svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .app[data-sidebar="collapsed"] .topbar-expand {
+      display: inline-flex;
+    }
+
+    .app[data-sidebar="collapsed"] .palette-collapse {
+      display: none;
     }
 
     /* Block rail is a flow-author affordance — in Applet Playground mode the canvas is
@@ -315,10 +395,11 @@
       display: flex;
       gap: 3px;
       padding: 4px;
-      margin: 10px 10px 8px;
+      margin: 6px 10px 8px;
       background: var(--bg-muted);
       border: 1px solid var(--border-hair);
       border-radius: 12px;
+      flex-shrink: 0;
     }
 
     .palette-tab {
@@ -375,6 +456,420 @@
       color: var(--accent-focus);
     }
 
+    /* Collapsed sidebar — vertical stack of icon-over-label tabs. Track loses its
+     * pill background and chips become full-width rounded buttons so the rail looks
+     * intentional rather than a squished horizontal control. */
+    .app[data-sidebar="collapsed"] .palette-tabs {
+      flex-direction: column;
+      background: transparent;
+      border: none;
+      padding: 0;
+      margin: 4px 6px;
+      gap: 4px;
+    }
+
+    .app[data-sidebar="collapsed"] .palette-tab {
+      flex: 0 0 auto;
+      flex-direction: column;
+      gap: 4px;
+      padding: 8px 4px;
+      font-size: 9.5px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      border-radius: 10px;
+    }
+
+    .app[data-sidebar="collapsed"] .palette-tab svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .app[data-sidebar="collapsed"] .palette-tab.is-active {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: rgba(99, 102, 241, 0.18);
+      color: var(--accent-focus);
+      box-shadow: none;
+    }
+
+    /* Hide list / search / chat composer when collapsed — only the tab stack is
+     * meaningful at this width. Click any tab to expand. */
+    .app[data-sidebar="collapsed"] #palette-header,
+    .app[data-sidebar="collapsed"] #palette-list,
+    .app[data-sidebar="collapsed"] #chat-panel {
+      display: none !important;
+    }
+
+    /* Inline chat toggle in the header — shown only when the Flows tab is active
+     * (the assistant is canvas/flow-focused). Compact circular icon button. */
+    .palette-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .palette-header-row h2 {
+      margin-bottom: 0;
+    }
+
+    .palette-chat-toggle {
+      width: 24px;
+      height: 24px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-soft);
+      border-radius: 999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.14s, color 0.14s, border-color 0.14s;
+    }
+
+    .palette-chat-toggle[hidden] {
+      display: none;
+    }
+
+    .palette-chat-toggle:hover {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: rgba(99, 102, 241, 0.25);
+      color: var(--accent-focus);
+    }
+
+    .palette-chat-toggle svg {
+      width: 13px;
+      height: 13px;
+    }
+
+    /* Chat panel — slides in over the list when the chat-toggle is clicked. Header
+     * with an X-to-close at the top, scrolling messages, sticky composer at the
+     * bottom of the sidebar. */
+    .chat-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .chat-panel[hidden] {
+      display: none;
+    }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 11px;
+      border-bottom: 1px solid var(--border-hair);
+      flex-shrink: 0;
+    }
+
+    .chat-header-meta {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+      color: var(--text);
+    }
+
+    .chat-header-icon {
+      width: 14px;
+      height: 14px;
+      color: var(--accent-focus);
+      flex-shrink: 0;
+    }
+
+    .chat-header-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+    }
+
+    .chat-close {
+      width: 22px;
+      height: 22px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-faint);
+      border-radius: 999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.14s, color 0.14s, border-color 0.14s;
+    }
+
+    .chat-close:hover {
+      background: rgba(0, 0, 0, 0.05);
+      color: var(--text);
+      border-color: var(--border-hair);
+    }
+
+    .chat-close svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 12px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 0;
+    }
+
+    .chat-empty {
+      padding: 18px 6px;
+      font-size: 11.5px;
+      color: var(--text-faint);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .chat-empty-hint {
+      margin-top: 4px;
+      color: var(--text-soft);
+      font-size: 10.5px;
+    }
+
+    .chat-msg {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-width: 95%;
+    }
+
+    .chat-msg.is-user {
+      align-self: flex-end;
+      align-items: flex-end;
+    }
+
+    .chat-msg.is-bot {
+      align-self: flex-start;
+      align-items: flex-start;
+    }
+
+    .chat-bubble {
+      padding: 7px 10px;
+      border-radius: 12px;
+      font-size: 11.5px;
+      line-height: 1.45;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+
+    .chat-msg.is-user .chat-bubble {
+      background: var(--accent-focus);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .chat-msg.is-bot .chat-bubble {
+      background: var(--bg-muted);
+      color: var(--text);
+      border: 1px solid var(--border-hair);
+      border-bottom-left-radius: 4px;
+    }
+
+    .chat-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .chat-action {
+      appearance: none;
+      text-align: left;
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border-hair);
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+      font-size: 11px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: border-color 0.14s, box-shadow 0.14s, background 0.14s;
+    }
+
+    .chat-action:hover {
+      border-color: rgba(99, 102, 241, 0.4);
+      box-shadow: 0 1px 4px rgba(99, 102, 241, 0.1);
+    }
+
+    .chat-action.is-applied {
+      background: rgba(34, 197, 94, 0.06);
+      border-color: rgba(34, 197, 94, 0.4);
+      color: #166534;
+    }
+
+    .chat-action-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: rgba(99, 102, 241, 0.08);
+      color: var(--accent-focus);
+    }
+
+    .chat-action-icon svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .chat-action-meta {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .chat-action-title {
+      font-weight: 500;
+      font-size: 11.5px;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-action-sub {
+      font-size: 10px;
+      color: var(--text-faint);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-composer {
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      padding: 8px 10px 6px;
+      border-top: 1px solid var(--border-hair);
+      background: var(--bg-panel);
+    }
+
+    .chat-input {
+      flex: 1;
+      resize: none;
+      min-height: 72px;
+      max-height: 220px;
+      padding: 9px 11px;
+      border-radius: 10px;
+      border: 1px solid var(--border-hair);
+      background: var(--bg-muted);
+      color: var(--text);
+      font: inherit;
+      font-size: 11.5px;
+      line-height: 1.4;
+      outline: none;
+      transition: border-color 0.14s, background 0.14s, box-shadow 0.14s;
+    }
+
+    .chat-input:focus {
+      background: #fff;
+      border-color: rgba(99, 102, 241, 0.45);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .chat-send {
+      width: 30px;
+      height: 30px;
+      border: none;
+      border-radius: 999px;
+      background: var(--run-bg);
+      color: #fafafa;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.14s, transform 0.1s;
+    }
+
+    .chat-send:hover {
+      background: var(--run-bg-hover);
+    }
+
+    .chat-send:active {
+      transform: scale(0.96);
+    }
+
+    .chat-send svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Tiny disclaimer pinned at the very bottom of the chat sidebar — sets
+     * expectation that the assistant is mock/beta and offers a feedback path. */
+    .chat-beta-note {
+      flex-shrink: 0;
+      margin: 0;
+      padding: 6px 12px 10px;
+      background: var(--bg-panel);
+      font-size: 10px;
+      line-height: 1.4;
+      color: var(--text-faint);
+      text-align: center;
+      letter-spacing: 0.01em;
+    }
+
+    .chat-beta-link {
+      color: var(--accent-focus);
+      text-decoration: none;
+      border-bottom: 1px dotted rgba(99, 102, 241, 0.4);
+      transition: border-color 0.14s, color 0.14s;
+    }
+
+    .chat-beta-link:hover {
+      color: var(--text);
+      border-bottom-color: var(--text);
+    }
+
+    .chat-typing {
+      align-self: flex-start;
+      display: inline-flex;
+      gap: 3px;
+      padding: 8px 12px;
+      background: var(--bg-muted);
+      border: 1px solid var(--border-hair);
+      border-radius: 12px;
+      border-bottom-left-radius: 4px;
+    }
+
+    .chat-typing span {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--text-faint);
+      animation: chat-typing-bounce 1.1s infinite ease-in-out;
+    }
+
+    .chat-typing span:nth-child(2) { animation-delay: 0.15s; }
+    .chat-typing span:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes chat-typing-bounce {
+      0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+      40% { transform: translateY(-3px); opacity: 1; }
+    }
+
     .palette-header {
       padding: 0 11px 10px;
       border-bottom: 1px solid var(--border-hair);
@@ -418,6 +913,13 @@
       display: flex;
       flex-direction: column;
       gap: 2px;
+    }
+
+    /* Author CSS sets `display: flex` above, which would otherwise stomp the UA
+     * `[hidden] { display: none }` rule when JS toggles `el.hidden = true`. */
+    .palette-list[hidden],
+    .palette-header[hidden] {
+      display: none !important;
     }
 
     .palette-category {
@@ -1378,14 +1880,15 @@
       padding: 0 2px;
     }
 
-    /* Floating vertical block rail — pinned inside `.main-wrap` near the top-left of the
-     * canvas. "Add block" (+) opens the full palette; category shortcuts below it open
-     * the same popover scoped to a single section. Flow-mode only (hidden in applet
-     * playground via `.app[data-app-mode="applet"]`). */
+    /* Floating vertical block rail — pinned inside `.main-wrap` and vertically centered
+     * along the canvas's left edge. "Add block" (+) opens the full palette; category
+     * shortcuts below it open the same popover scoped to a single section. Flow-mode only
+     * (hidden in applet playground via `.app[data-app-mode="applet"]`). */
     .block-rail {
       position: absolute;
       left: 14px;
-      top: 14px;
+      top: 50%;
+      transform: translateY(-50%);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -2599,6 +3102,17 @@
   <div class="app">
     <header class="topbar">
       <div class="topbar-left">
+        <button
+          type="button"
+          class="topbar-expand"
+          id="topbar-expand"
+          aria-label="Expand sidebar"
+          title="Expand sidebar"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
         <div class="brand">
           <div class="brand-mark" aria-hidden="true"></div>
           <span class="brand-name">Studio</span>
@@ -2643,6 +3157,13 @@
     </header>
 
     <aside class="palette">
+      <div class="palette-rail-head">
+        <button type="button" class="palette-collapse" id="palette-collapse" aria-label="Collapse sidebar" title="Collapse sidebar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+      </div>
       <div class="palette-tabs" role="tablist" aria-label="Library">
         <button type="button" class="palette-tab is-active" role="tab" data-library-tab="flows" aria-selected="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -2653,7 +3174,7 @@
             <path d="M14 12l3-5"/>
             <path d="M14 12l3 5"/>
           </svg>
-          Flows
+          <span class="palette-tab-label">Flows</span>
         </button>
         <button type="button" class="palette-tab" role="tab" data-library-tab="applets" aria-selected="false">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -2662,14 +3183,76 @@
             <rect x="14" y="14" width="7" height="7" rx="1.2"/>
             <rect x="3" y="14" width="7" height="7" rx="1.2"/>
           </svg>
-          Applets
+          <span class="palette-tab-label">Applets</span>
         </button>
       </div>
-      <div class="palette-header">
-        <h2 id="palette-heading">Transformations</h2>
+      <div class="palette-header" id="palette-header">
+        <div class="palette-header-row">
+          <h2 id="palette-heading">Transformations</h2>
+          <button
+            type="button"
+            class="palette-chat-toggle"
+            id="palette-chat-toggle"
+            aria-label="Open chat assistant"
+            title="Open chat assistant"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+          </button>
+        </div>
         <input type="search" class="palette-search" id="palette-search" placeholder="Search flows…" autocomplete="off" />
       </div>
       <div class="palette-list" id="palette-list"></div>
+
+      <!-- Chat panel — slides in over the list when the chat-toggle is clicked.
+           Header stays at the top with an X to close, messages scroll, and the
+           composer sits pinned at the bottom of the sidebar. -->
+      <div class="chat-panel" id="chat-panel" hidden>
+        <div class="chat-header">
+          <div class="chat-header-meta">
+            <svg class="chat-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span class="chat-header-title">Assistant</span>
+          </div>
+          <button
+            type="button"
+            class="chat-close"
+            id="chat-close"
+            aria-label="Close chat"
+            title="Close (Esc)"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <div class="chat-messages" id="chat-messages" role="log" aria-live="polite"></div>
+        <form class="chat-composer" id="chat-composer" autocomplete="off">
+          <textarea
+            id="chat-input"
+            class="chat-input"
+            rows="1"
+            placeholder="Ask, e.g. 'build a hero video flow'…"
+            aria-label="Chat message"
+          ></textarea>
+          <button type="submit" class="chat-send" id="chat-send" aria-label="Send" title="Send (Enter)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="12" y1="19" x2="12" y2="5"/>
+              <polyline points="5 12 12 5 19 12"/>
+            </svg>
+          </button>
+        </form>
+        <p class="chat-beta-note">
+          Currently in Beta.
+          <a
+            href="mailto:feedback@videofactory.app?subject=Studio%20chat%20feedback"
+            class="chat-beta-link"
+          >Share feedback here.</a>
+        </p>
+      </div>
     </aside>
 
     <div class="main-wrap">
@@ -6520,11 +7103,28 @@
 
   function setActiveLibraryTab(tab) {
     const normalized = tab === "applets" ? "applets" : "flows";
-    if (normalized === activeLibraryTab) return;
+    /* If the user clicks a tab while the sidebar is collapsed, expand it — the icon
+     * rail is meant for navigation, and clicking should reveal the contents. */
+    if (sidebarCollapsed) {
+      setSidebarCollapsed(false);
+    }
+    /* Switching to Applets always returns to the list view; the chat assistant is
+     * scoped to the Flows context for now. */
+    if (normalized === "applets" && chatOpen) {
+      chatOpen = false;
+      try {
+        localStorage.setItem(CHAT_OPEN_KEY, "0");
+      } catch (e) {}
+    }
+    if (normalized === activeLibraryTab) {
+      syncChatUi();
+      return;
+    }
     activeLibraryTab = normalized;
     const search = document.getElementById("palette-search");
     if (search) search.value = "";
     syncLibraryChrome();
+    syncChatUi();
     renderLibrary("");
   }
 
@@ -6532,6 +7132,610 @@
   function renderLibrary(filter) {
     if (activeLibraryTab === "applets") renderAppletsLibrary(filter);
     else renderFlowsLibrary(filter);
+  }
+
+  /* ===== Sidebar collapse =================================================
+   * Two-state sidebar: 240px expanded vs 60px icon rail. State persists in
+   * localStorage so the next session opens in the same shape. CSS owns the
+   * visual reflow via `.app[data-sidebar="collapsed"]`. */
+
+  const SIDEBAR_COLLAPSED_KEY = "videofactory.sidebar.collapsed.v1";
+  let sidebarCollapsed = false;
+
+  function setSidebarCollapsed(collapsed) {
+    sidebarCollapsed = !!collapsed;
+    const root = document.querySelector(".app");
+    if (root) root.setAttribute("data-sidebar", sidebarCollapsed ? "collapsed" : "expanded");
+    try {
+      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, sidebarCollapsed ? "1" : "0");
+    } catch (e) {}
+    /* Reflow sidebar internals — list/chat panels were `display:none` until now. */
+    if (!sidebarCollapsed) syncChatUi();
+  }
+
+  function readSidebarCollapsedFromStorage() {
+    try {
+      return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /* ===== Chat panel toggle ================================================
+   * Chat slides in over the list view inside the sidebar; the inline header
+   * button (`#palette-chat-toggle`) opens it, the X (`#chat-close`) returns to
+   * the list. Currently scoped to the Flows tab — the toggle hides on Applets
+   * since the assistant is canvas/flow-focused. */
+
+  const CHAT_OPEN_KEY = "videofactory.chat.open.v1";
+  let chatOpen = readChatOpenFromStorage();
+
+  function readChatOpenFromStorage() {
+    try {
+      return localStorage.getItem(CHAT_OPEN_KEY) === "1";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /** Reflect `chatOpen` + `activeLibraryTab` onto the sidebar — toggle visibility
+   * of the chat panel, the list view, and the inline chat-toggle button. */
+  function syncChatUi() {
+    const headerEl = document.getElementById("palette-header");
+    const listEl = document.getElementById("palette-list");
+    const chatEl = document.getElementById("chat-panel");
+    const toggleEl = document.getElementById("palette-chat-toggle");
+    if (!headerEl || !listEl || !chatEl) return;
+    const isFlows = activeLibraryTab === "flows";
+    /* Toggle button is only meaningful while the Flows tab is active and the
+     * chat is closed (once it's open, the X in the chat header takes over). */
+    if (toggleEl) toggleEl.hidden = !isFlows || chatOpen;
+    const showChat = isFlows && chatOpen;
+    chatEl.hidden = !showChat;
+    headerEl.hidden = showChat;
+    listEl.hidden = showChat;
+    if (showChat) {
+      renderChatHistory();
+      requestAnimationFrame(() => scrollChatToBottom());
+    }
+  }
+
+  function setChatOpen(open) {
+    const next = !!open;
+    if (next === chatOpen) return;
+    chatOpen = next;
+    try {
+      localStorage.setItem(CHAT_OPEN_KEY, chatOpen ? "1" : "0");
+    } catch (e) {}
+    syncChatUi();
+    if (chatOpen) {
+      requestAnimationFrame(() => {
+        const inp = document.getElementById("chat-input");
+        if (inp) inp.focus();
+      });
+    }
+  }
+
+  /* ===== Chat (mock assistant) ============================================
+   * Conversational pane that suggests/executes canvas actions. Backend is a
+   * keyword-driven mock — every intent ships with one or more "action chips"
+   * that, when clicked, mutate the canvas (add a block, build a starter
+   * pipeline, configure a setting). Replace `generateChatReply` with a real
+   * LLM round-trip later; the action vocabulary stays the same.
+   * ---------------------------------------------------------------------- */
+
+  const CHAT_HISTORY_KEY = "videofactory.chat.history.v1";
+  const CHAT_HISTORY_MAX = 50;
+  /** @type {Array<{id:string, role:"user"|"bot", text:string, actions?:Array<ChatAction>, ts:number}>} */
+  let chatHistory = readChatHistoryFromStorage();
+  let chatActionCounter = 0;
+
+  function readChatHistoryFromStorage() {
+    try {
+      const raw = localStorage.getItem(CHAT_HISTORY_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function persistChatHistory() {
+    try {
+      const trimmed = chatHistory.slice(-CHAT_HISTORY_MAX);
+      localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(trimmed));
+    } catch (e) {}
+  }
+
+  function nextChatActionId() {
+    chatActionCounter += 1;
+    return "ca_" + Date.now().toString(36) + "_" + chatActionCounter;
+  }
+
+  function pushChatMessage(role, text, actions) {
+    const msg = {
+      id: nextChatActionId(),
+      role,
+      text: String(text || ""),
+      actions: Array.isArray(actions) && actions.length ? actions : undefined,
+      ts: Date.now(),
+    };
+    chatHistory.push(msg);
+    if (chatHistory.length > CHAT_HISTORY_MAX) {
+      chatHistory = chatHistory.slice(-CHAT_HISTORY_MAX);
+    }
+    persistChatHistory();
+    appendChatMessageDom(msg);
+    requestAnimationFrame(() => scrollChatToBottom());
+    return msg;
+  }
+
+  function scrollChatToBottom() {
+    const host = document.getElementById("chat-messages");
+    if (host) host.scrollTop = host.scrollHeight;
+  }
+
+  function chatActionIconSvg(kind) {
+    if (kind === "build-flow") {
+      return (
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+        '<circle cx="5" cy="12" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="19" cy="18" r="2"/>' +
+        '<path d="M7 12h7"/><path d="M14 12l3-5"/><path d="M14 12l3 5"/>' +
+        "</svg>"
+      );
+    }
+    if (kind === "configure") {
+      return (
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+        '<circle cx="12" cy="12" r="3"/>' +
+        '<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>' +
+        "</svg>"
+      );
+    }
+    /* default: add-block / "+" */
+    return (
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>' +
+      "</svg>"
+    );
+  }
+
+  function appendChatMessageDom(msg) {
+    const host = document.getElementById("chat-messages");
+    if (!host) return;
+    /* Wipe the empty placeholder if it's there. */
+    const empty = host.querySelector(".chat-empty");
+    if (empty) empty.remove();
+    const wrap = document.createElement("div");
+    wrap.className = "chat-msg " + (msg.role === "user" ? "is-user" : "is-bot");
+    wrap.setAttribute("data-msg-id", msg.id);
+    if (msg.text) {
+      const bubble = document.createElement("div");
+      bubble.className = "chat-bubble";
+      bubble.textContent = msg.text;
+      wrap.appendChild(bubble);
+    }
+    if (msg.actions && msg.actions.length) {
+      const list = document.createElement("div");
+      list.className = "chat-actions";
+      for (const action of msg.actions) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "chat-action";
+        btn.setAttribute("data-chat-action-id", action.id);
+        btn.innerHTML =
+          '<span class="chat-action-icon">' +
+          chatActionIconSvg(action.kind) +
+          "</span>" +
+          '<span class="chat-action-meta">' +
+          '<span class="chat-action-title">' +
+          escapeHtml(action.title || action.kind) +
+          "</span>" +
+          (action.sub
+            ? '<span class="chat-action-sub">' + escapeHtml(action.sub) + "</span>"
+            : "") +
+          "</span>";
+        list.appendChild(btn);
+      }
+      wrap.appendChild(list);
+    }
+    host.appendChild(wrap);
+  }
+
+  function renderChatHistory() {
+    const host = document.getElementById("chat-messages");
+    if (!host) return;
+    host.innerHTML = "";
+    if (!chatHistory.length) {
+      const empty = document.createElement("div");
+      empty.className = "chat-empty";
+      empty.innerHTML =
+        "Ask the assistant anything about your flow." +
+        '<div class="chat-empty-hint">Try: <em>build a hero video</em>, <em>add a transcribe block</em>, or <em>set height to 720</em>.</div>';
+      host.appendChild(empty);
+      return;
+    }
+    for (const msg of chatHistory) appendChatMessageDom(msg);
+  }
+
+  function showChatTyping() {
+    const host = document.getElementById("chat-messages");
+    if (!host) return;
+    const empty = host.querySelector(".chat-empty");
+    if (empty) empty.remove();
+    const t = document.createElement("div");
+    t.className = "chat-typing";
+    t.id = "chat-typing-indicator";
+    t.innerHTML = "<span></span><span></span><span></span>";
+    host.appendChild(t);
+    requestAnimationFrame(() => scrollChatToBottom());
+  }
+
+  function hideChatTyping() {
+    const t = document.getElementById("chat-typing-indicator");
+    if (t) t.remove();
+  }
+
+  /* ----- Mock responder & action vocabulary ----- */
+
+  /** All known action shapes:
+   *   { kind: "add-block", blockType, settings? }     — drop a block at canvas centre
+   *   { kind: "build-flow", nodes: [{type, settings?}], wire: true }
+   *   { kind: "configure", target?: "selected"|nodeId, settings: {key:value} }
+   * Each gets a stable `id` so we can look it up by data-attribute on click. */
+  function makeAction(spec) {
+    return Object.assign({ id: nextChatActionId() }, spec);
+  }
+
+  /** Resolve a friendly human label for a TYPES entry (fallback to type id). */
+  function blockTitleForType(type) {
+    const def = TYPES.find((t) => t.type === type);
+    return def ? def.title : type;
+  }
+
+  function chatLookupBlockTypeFromKeyword(text) {
+    const t = String(text || "").toLowerCase();
+    /* Order matters — match more specific phrases first. */
+    if (/\b(transcribe|transcript|subtitle|caption)/.test(t)) return "cld_transcribe";
+    if (/\b(chapter|auto[- ]?chapter)/.test(t)) return "cld_auto_chapters";
+    if (/\b(ai[- ]?detail|metadata)/.test(t)) return "cld_ai_details";
+    if (/\b(splice|concat|join|combine)/.test(t)) return "splice";
+    if (/\b(trim|cut|clip)/.test(t)) return "cld_trim";
+    if (/\b(preview|highlight reel)/.test(t)) return "cld_video_preview";
+    if (/\b(resize|scale|width|height|dimensions?)/.test(t)) return "cld_resize";
+    if (/\b(crop|aspect)/.test(t)) return "cld_crop";
+    if (/\b(blur)/.test(t)) return "cld_blur";
+    if (/\b(grayscale|black\s*and\s*white|b&w)/.test(t)) return "cld_effect";
+    if (/\b(input.*video|video.*input|upload.*video)/.test(t)) return "input_video";
+    if (/\b(input.*image|image.*input|photo)/.test(t)) return "input_image";
+    if (/\b(input.*text|text.*input|prompt)/.test(t)) return "input_text";
+    if (/\b(player|video player)/.test(t)) return "output_video_player";
+    if (/\b(output.*image|image.*output)/.test(t)) return "output_image";
+    if (/\b(output.*text|text.*output)/.test(t)) return "output_text";
+    if (/\b(output|delivery|export)/.test(t)) return "output";
+    return null;
+  }
+
+  /** Pull a height/width number from "set height to 720" / "make it 1080p". */
+  function chatExtractDimension(text) {
+    const t = String(text || "");
+    const heightMatch = /\b(?:height|h)\s*(?:to|=|:)?\s*(\d{2,4})/i.exec(t);
+    if (heightMatch) return { key: "height", value: heightMatch[1] };
+    const widthMatch = /\b(?:width|w)\s*(?:to|=|:)?\s*(\d{2,4})/i.exec(t);
+    if (widthMatch) return { key: "width", value: widthMatch[1] };
+    const pMatch = /\b(\d{3,4})\s*p\b/i.exec(t);
+    if (pMatch) return { key: "height", value: pMatch[1] };
+    return null;
+  }
+
+  /** Keyword → response. Returns { text, actions[] }. */
+  function generateChatReply(userText) {
+    const t = String(userText || "").toLowerCase().trim();
+    if (!t) {
+      return { text: "Tell me what you want to build or change.", actions: [] };
+    }
+
+    /* "Build / make / create" → starter pipelines. */
+    if (/\b(build|make|create|start|new)\b/.test(t)) {
+      if (/\b(hero|landing)/.test(t)) {
+        return {
+          text:
+            "Here's a hero video pipeline — Input · video → resize to 1080p → Output. Click to drop it on the canvas.",
+          actions: [
+            makeAction({
+              kind: "build-flow",
+              title: "Hero video flow",
+              sub: "input_video → cld_resize (h=1080) → output",
+              nodes: [
+                { type: "input_video" },
+                { type: "cld_resize", settings: { height: "1080" } },
+                { type: "output" },
+              ],
+            }),
+          ],
+        };
+      }
+      if (/\b(thumbnail|still|frame|poster)/.test(t)) {
+        return {
+          text:
+            "A thumbnail pipeline grabs a still frame from a video. Try this start:",
+          actions: [
+            makeAction({
+              kind: "build-flow",
+              title: "Video thumbnail flow",
+              sub: "input_video → cld_video_preview → output_image",
+              nodes: [
+                { type: "input_video" },
+                { type: "cld_video_preview" },
+                { type: "output_image" },
+              ],
+            }),
+          ],
+        };
+      }
+      if (/\b(transcribe|caption|subtitle)/.test(t)) {
+        return {
+          text: "Auto-transcription gives you a text track. Drop this pipeline:",
+          actions: [
+            makeAction({
+              kind: "build-flow",
+              title: "Transcribe flow",
+              sub: "input_video → cld_transcribe → output_text",
+              nodes: [
+                { type: "input_video" },
+                { type: "cld_transcribe" },
+                { type: "output_text" },
+              ],
+            }),
+          ],
+        };
+      }
+      /* Generic build with both pipelines as options. */
+      return {
+        text: "Pick a starting shape — both wire input → transform → output:",
+        actions: [
+          makeAction({
+            kind: "build-flow",
+            title: "Hero video (1080p)",
+            sub: "input_video → cld_resize → output",
+            nodes: [
+              { type: "input_video" },
+              { type: "cld_resize", settings: { height: "1080" } },
+              { type: "output" },
+            ],
+          }),
+          makeAction({
+            kind: "build-flow",
+            title: "Thumbnail",
+            sub: "input_video → cld_video_preview → output_image",
+            nodes: [
+              { type: "input_video" },
+              { type: "cld_video_preview" },
+              { type: "output_image" },
+            ],
+          }),
+        ],
+      };
+    }
+
+    /* "Add" or block name on its own → drop a block. */
+    if (/\b(add|insert|drop|append)\b/.test(t) || chatLookupBlockTypeFromKeyword(t)) {
+      const blockType = chatLookupBlockTypeFromKeyword(t);
+      if (blockType) {
+        return {
+          text:
+            'Adding a "' +
+            blockTitleForType(blockType) +
+            '" block. You can drag-wire it to your existing flow after.',
+          actions: [
+            makeAction({
+              kind: "add-block",
+              title: "Add " + blockTitleForType(blockType),
+              sub: "Block type: " + blockType,
+              blockType,
+            }),
+          ],
+        };
+      }
+    }
+
+    /* "Set / change / configure" with a dimension → tweak the selected node. */
+    const dim = chatExtractDimension(t);
+    if (dim && /\b(set|change|update|configure|make)\b/.test(t)) {
+      return {
+        text:
+          "Sets " +
+          dim.key +
+          " to " +
+          dim.value +
+          " on the selected block (must be a transform like resize / crop).",
+        actions: [
+          makeAction({
+            kind: "configure",
+            title: "Set " + dim.key + "=" + dim.value,
+            sub: "Applies to selected canvas block",
+            target: "selected",
+            settings: { [dim.key]: dim.value },
+          }),
+        ],
+      };
+    }
+
+    /* Help / who are you. */
+    if (/\b(help|what.*can|how.*work)\b/.test(t)) {
+      return {
+        text:
+          "I'm a mock assistant for the canvas. I can build starter flows, add blocks, and tweak settings on the selected block. Try: 'build a hero video', 'add a resize block', 'set height to 720'.",
+        actions: [],
+      };
+    }
+
+    /* Fallback. */
+    return {
+      text:
+        "I'm not sure how to handle that yet. I can build starter pipelines or add specific blocks. Try one of these:",
+      actions: [
+        makeAction({
+          kind: "build-flow",
+          title: "Hero video flow",
+          sub: "input → resize → output",
+          nodes: [
+            { type: "input_video" },
+            { type: "cld_resize", settings: { height: "1080" } },
+            { type: "output" },
+          ],
+        }),
+        makeAction({
+          kind: "add-block",
+          title: "Add Resize block",
+          sub: "Block type: cld_resize",
+          blockType: "cld_resize",
+        }),
+      ],
+    };
+  }
+
+  function findChatAction(actionId) {
+    for (let i = chatHistory.length - 1; i >= 0; i--) {
+      const msg = chatHistory[i];
+      if (!msg.actions) continue;
+      for (const a of msg.actions) {
+        if (a.id === actionId) return a;
+      }
+    }
+    return null;
+  }
+
+  function markChatActionApplied(actionId, label) {
+    const btn = document.querySelector('.chat-action[data-chat-action-id="' + actionId + '"]');
+    if (!btn) return;
+    btn.classList.add("is-applied");
+    btn.disabled = true;
+    if (label) {
+      const titleEl = btn.querySelector(".chat-action-title");
+      if (titleEl) titleEl.textContent = label;
+    }
+  }
+
+  /** Drop a block at the centre of the visible canvas. */
+  function chatExecAddBlock(action) {
+    const def = TYPES.find((t) => t.type === action.blockType);
+    if (!def) {
+      showFlowToast("Unknown block type: " + action.blockType);
+      return false;
+    }
+    const cw = canvasBg.clientWidth;
+    const ch = canvasBg.clientHeight;
+    const wx = (cw / 2 - panX) / zoom;
+    const wy = (ch / 2 - panY) / zoom;
+    const node = addNode(def, wx, wy);
+    if (action.settings && typeof action.settings === "object") {
+      node.settings = Object.assign({}, node.settings || {}, action.settings);
+      renderNodes();
+    }
+    markChatActionApplied(action.id, "Added " + def.title);
+    showFlowToast('Added "' + def.title + '" to canvas.');
+    return true;
+  }
+
+  /** Replace the canvas with a 3-block input → transform → output starter pipeline. */
+  function chatExecBuildFlow(action) {
+    if (!Array.isArray(action.nodes) || !action.nodes.length) return false;
+    if (
+      nodes.length > 0 &&
+      !confirm("Replace the current canvas with this pipeline?")
+    ) {
+      return false;
+    }
+    const built = [];
+    let x = 100;
+    const y = 200;
+    for (const spec of action.nodes) {
+      const def = TYPES.find((t) => t.type === spec.type);
+      if (!def) continue;
+      const settings = Object.assign({}, cloneSettings(def), spec.settings || {});
+      built.push({
+        id: allocateNodeId(def),
+        def,
+        x,
+        y,
+        settings,
+      });
+      x += 280;
+    }
+    nodes = built;
+    edges = [];
+    for (let i = 0; i < built.length - 1; i++) {
+      edges.push({
+        id: "e_" + edgeIdSeq++,
+        fromNode: built[i].id,
+        fromPort: "out",
+        toNode: built[i + 1].id,
+        toPort: "in",
+      });
+    }
+    selectedNodeId = built.length ? built[0].id : null;
+    selectedEdgeId = null;
+    renderNodes();
+    fitView();
+    markChatActionApplied(action.id, "Built " + (action.title || "flow"));
+    showFlowToast('Built "' + (action.title || "flow") + '" on canvas.');
+    return true;
+  }
+
+  /** Apply settings to the selected node (or a specified target). */
+  function chatExecConfigure(action) {
+    const targetId = action.target === "selected" ? selectedNodeId : action.target;
+    const node = nodes.find((n) => n.id === targetId);
+    if (!node) {
+      showFlowToast("Select a block on the canvas first.");
+      return false;
+    }
+    node.settings = Object.assign({}, node.settings || {}, action.settings || {});
+    renderNodes();
+    refreshOutputDeliveryUi();
+    markChatActionApplied(action.id, "Configured " + node.def.title);
+    showFlowToast("Configured " + node.def.title + ".");
+    return true;
+  }
+
+  function executeChatAction(actionId) {
+    const action = findChatAction(actionId);
+    if (!action) return;
+    if (appMode === "applet") {
+      showFlowToast("Exit the applet playground first to edit the canvas.");
+      return;
+    }
+    if (action.kind === "add-block") chatExecAddBlock(action);
+    else if (action.kind === "build-flow") chatExecBuildFlow(action);
+    else if (action.kind === "configure") chatExecConfigure(action);
+  }
+
+  function handleChatSubmit(rawText) {
+    const text = String(rawText || "").trim();
+    if (!text) return;
+    pushChatMessage("user", text, []);
+    const inp = document.getElementById("chat-input");
+    if (inp) {
+      inp.value = "";
+      autoResizeChatInput(inp);
+    }
+    showChatTyping();
+    /* Tiny delay so the typing indicator isn't a flash. */
+    window.setTimeout(() => {
+      hideChatTyping();
+      const reply = generateChatReply(text);
+      pushChatMessage("bot", reply.text, reply.actions);
+    }, 280);
+  }
+
+  function autoResizeChatInput(el) {
+    if (!el) return;
+    el.style.height = "auto";
+    /* Mirrors `.chat-input { max-height: 220px }` — keep the JS cap aligned with
+     * the CSS so we don't briefly grow past the visual limit. */
+    el.style.height = Math.min(Math.max(el.scrollHeight, 72), 220) + "px";
   }
 
   /* ===== Block Rail + Popover ============================================
@@ -7191,6 +8395,56 @@
     if (!row) return;
     e.preventDefault();
     row.click();
+  });
+
+  /* Collapse / expand toggles. */
+  document.getElementById("palette-collapse").addEventListener("click", () => {
+    setSidebarCollapsed(true);
+  });
+  document.getElementById("topbar-expand").addEventListener("click", () => {
+    setSidebarCollapsed(false);
+  });
+
+  /* Chat open / close. Escape closes when focus is inside the chat panel — this
+   * keeps Escape on the canvas (which clears selection) untouched when chat is
+   * irrelevant. */
+  document.getElementById("palette-chat-toggle").addEventListener("click", () => {
+    setChatOpen(true);
+  });
+  document.getElementById("chat-close").addEventListener("click", () => {
+    setChatOpen(false);
+  });
+  document.getElementById("chat-panel").addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && chatOpen) {
+      e.stopPropagation();
+      setChatOpen(false);
+    }
+  });
+
+  /* Chat composer wiring. */
+  const chatComposerEl = document.getElementById("chat-composer");
+  const chatInputEl = document.getElementById("chat-input");
+  if (chatComposerEl && chatInputEl) {
+    chatComposerEl.addEventListener("submit", (e) => {
+      e.preventDefault();
+      handleChatSubmit(chatInputEl.value);
+    });
+    /* Enter sends; Shift+Enter inserts a newline. Auto-grow up to a few lines. */
+    chatInputEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleChatSubmit(chatInputEl.value);
+      }
+    });
+    chatInputEl.addEventListener("input", () => autoResizeChatInput(chatInputEl));
+  }
+
+  /* Action chip clicks dispatch to the matching exec handler. */
+  document.getElementById("chat-messages").addEventListener("click", (e) => {
+    const btn = e.target.closest && e.target.closest(".chat-action");
+    if (!btn) return;
+    const id = btn.getAttribute("data-chat-action-id");
+    if (id) executeChatAction(id);
   });
 
   window.addEventListener("resize", () => {
@@ -9289,7 +10543,9 @@
   }
 
   /**
-   * Open `dlg` as a popover anchored to `anchorBtn` (used for Save flow / Load flow).
+   * Open `dlg` as a centered floating panel (used for Save flow / Load flow). `anchorBtn`
+   * is kept in the signature so callers can still reason about a logical trigger and so
+   * outside-click handling skips it, but positioning is viewport-centered, not anchored.
    * Uses non-modal `dlg.show()` so there's no backdrop or inert behind it; closes on
    * outside click or Escape. If the dialog is already open, this toggles it closed.
    */
@@ -9303,15 +10559,11 @@
     if (typeof dlg.show === "function") dlg.show();
     else if (typeof dlg.showModal === "function") dlg.showModal();
     else dlg.setAttribute("open", "");
-    const r = anchorBtn.getBoundingClientRect();
     const dr = dlg.getBoundingClientRect();
-    const pad = 6;
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    let left = r.left;
-    let top = r.bottom + pad;
-    if (left + dr.width > vw - 8) left = Math.max(8, vw - dr.width - 8);
-    if (top + dr.height > vh - 8) top = Math.max(8, r.top - dr.height - pad);
+    const left = Math.max(8, Math.round((vw - dr.width) / 2));
+    const top = Math.max(8, Math.round((vh - dr.height) / 2));
     dlg.style.top = top + "px";
     dlg.style.left = left + "px";
     function onDocPointer(e) {
@@ -9558,8 +10810,10 @@
     markFlowAsClean();
   }
 
+  setSidebarCollapsed(readSidebarCollapsedFromStorage());
   syncAppModeChrome();
   syncLibraryChrome();
+  syncChatUi();
   buildPalette("");
   (function ensureAppletDialogsClosed() {
     for (const id of ["applet-edit-dialog"]) {
