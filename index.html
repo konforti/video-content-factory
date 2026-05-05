@@ -524,9 +524,19 @@
       margin-bottom: 0;
     }
 
-    .palette-chat-toggle {
+    /* Action group on the right side of the sidebar heading row (e.g. import,
+     * chat toggle). Lays out small icon buttons in a tight horizontal cluster. */
+    .palette-header-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+
+    .palette-header-icon-btn {
       width: 24px;
       height: 24px;
+      padding: 0;
       border: 1px solid transparent;
       background: transparent;
       color: var(--text-soft);
@@ -539,17 +549,22 @@
       transition: background 0.14s, color 0.14s, border-color 0.14s;
     }
 
-    .palette-chat-toggle[hidden] {
+    .palette-header-icon-btn[hidden] {
       display: none;
     }
 
-    .palette-chat-toggle:hover {
+    .palette-header-icon-btn:hover {
       background: rgba(99, 102, 241, 0.1);
       border-color: rgba(99, 102, 241, 0.25);
       color: var(--accent-focus);
     }
 
-    .palette-chat-toggle svg {
+    .palette-header-icon-btn:focus-visible {
+      outline: 2px solid var(--accent-focus);
+      outline-offset: 1px;
+    }
+
+    .palette-header-icon-btn svg {
       width: 13px;
       height: 13px;
     }
@@ -1091,6 +1106,81 @@
       margin-top: 4px;
       color: var(--text-soft);
       font-size: 10.5px;
+    }
+
+    /* Hover-revealed action icons on a saved-flow library row (Export, Delete).
+     * The container reserves space so the row layout doesn't shift when the
+     * actions appear; child buttons fade in on row hover/focus-within. */
+    .library-row-actions {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      flex-shrink: 0;
+      opacity: 0;
+      transition: opacity 0.12s ease;
+      pointer-events: none;
+    }
+
+    .library-row:hover .library-row-actions,
+    .library-row:focus-within .library-row-actions {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    /* Always show actions on the active row so deletion is reachable without hover. */
+    .library-row.is-active .library-row-actions {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    /* Keep the action group visible while a Delete button is armed (showing "?")
+     * so the second confirmation click stays reachable after the pointer leaves. */
+    .library-row:has(.library-row-delete.is-pending) .library-row-actions {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .library-row-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      padding: 0;
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--text-soft);
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+      font: inherit;
+    }
+
+    .library-row-action svg {
+      width: 13px;
+      height: 13px;
+    }
+
+    .library-row-action:hover {
+      background: rgba(0, 0, 0, 0.05);
+      color: var(--text);
+      border-color: var(--border-hair);
+    }
+
+    .library-row-action:focus-visible {
+      outline: 2px solid var(--accent-focus);
+      outline-offset: 1px;
+    }
+
+    .library-row-delete:hover {
+      color: #b45309;
+    }
+
+    .library-row-delete.is-pending,
+    .library-row-delete.is-pending:hover {
+      background: #b45309;
+      color: #fff;
+      border-color: #b45309;
+      font-size: 11px;
+      font-weight: 600;
     }
 
     .main-wrap {
@@ -2183,95 +2273,6 @@
       flex-wrap: wrap;
     }
 
-    /* Action button pinned to the start of `.flow-dialog-actions` while the rest stay
-       right-aligned (e.g. "Import from file…" on the left, "Close" on the right). */
-    .flow-dialog-actions .flow-dialog-action-leading {
-      margin-right: auto;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .flow-dialog-actions .flow-dialog-action-leading svg {
-      flex-shrink: 0;
-      opacity: 0.85;
-    }
-
-    .flow-load-list {
-      max-height: min(320px, 42vh);
-      overflow-y: auto;
-      margin: 0 0 14px;
-      border: 1px solid var(--border-hair);
-      border-radius: var(--radius-sm);
-      background: var(--bg-muted);
-    }
-
-    .flow-load-empty {
-      margin: 0;
-      padding: 16px 14px;
-      font-size: 12px;
-      color: var(--text-soft);
-      line-height: 1.45;
-    }
-
-    .flow-load-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 10px 12px;
-      border-bottom: 1px solid var(--border-hair);
-    }
-
-    .flow-load-row:last-child {
-      border-bottom: none;
-    }
-
-    .flow-load-meta {
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .flow-load-name {
-      font-size: 12px;
-      font-weight: 500;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .flow-load-when {
-      font-size: 10px;
-      color: var(--text-soft);
-    }
-
-    .flow-load-row-actions {
-      display: flex;
-      gap: 6px;
-      flex-shrink: 0;
-    }
-
-    .flow-load-row-actions .btn {
-      padding: 5px 9px;
-      font-size: 11px;
-    }
-
-    .flow-load-delete {
-      color: #b45309;
-    }
-
-    .flow-load-delete:hover {
-      color: #92400e;
-    }
-
-    .flow-load-delete.is-pending,
-    .flow-load-delete.is-pending:hover {
-      background: #b45309;
-      color: #fff;
-      border-color: #b45309;
-    }
-
     /* Applets hub + editor: dock to the right under the header (not centered) */
     /* Closed <dialog> must stay hidden: author `display:flex` overrides UA `dialog:not(:open){display:none}` */
     .flow-dialog.flow-dialog-applet-panel:not(:open) {
@@ -2770,6 +2771,15 @@
       font-size: 11px;
       font-weight: 600;
       color: var(--text);
+      line-height: 1.45;
+    }
+
+    /* Subtle hint paragraph used inside applet editor sub-panels (e.g. "No inputs.").
+     * Padding + soft color match the surrounding bindings/removed-from-canvas blocks. */
+    .applet-hint-empty {
+      padding: 16px 14px;
+      color: var(--text-soft);
+      font-size: 12px;
       line-height: 1.45;
     }
 
@@ -3294,7 +3304,7 @@
             id="brand-flow-name"
             role="button"
             tabindex="0"
-            title="Your flows"
+            title="Open Flows in sidebar"
           >Untitled</span>
         </div>
       </div>
@@ -3361,17 +3371,32 @@
       <div class="palette-header" id="palette-header">
         <div class="palette-header-row">
           <h2 id="palette-heading">Transformations</h2>
-          <button
-            type="button"
-            class="palette-chat-toggle"
-            id="palette-chat-toggle"
-            aria-label="Open chat assistant"
-            title="Open chat assistant"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-          </button>
+          <div class="palette-header-actions">
+            <button
+              type="button"
+              class="palette-header-icon-btn"
+              id="palette-import-toggle"
+              aria-label="Import flow from JSON"
+              title="Import flow from JSON"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </button>
+            <button
+              type="button"
+              class="palette-header-icon-btn palette-chat-toggle"
+              id="palette-chat-toggle"
+              aria-label="Open chat assistant"
+              title="Open chat assistant"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </button>
+          </div>
         </div>
         <input type="search" class="palette-search" id="palette-search" placeholder="Search flows…" autocomplete="off" />
       </div>
@@ -3641,24 +3666,7 @@
       </div>
     </dialog>
 
-    <dialog id="flow-load-dialog" class="flow-dialog">
-      <div class="flow-dialog-inner">
-        <h3 class="flow-dialog-title">Your flows</h3>
-        <div id="flow-load-list" class="flow-load-list" role="list"></div>
-        <input type="file" id="flow-import-input" accept="application/json,.json" hidden />
-        <div class="flow-dialog-actions">
-          <button type="button" class="btn flow-dialog-action-leading" id="btn-import-flow" title="Import flow from JSON">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/>
-              <line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>
-            Import from file…
-          </button>
-          <button type="button" class="btn" id="flow-load-close">Close</button>
-        </div>
-      </div>
-    </dialog>
+    <input type="file" id="flow-import-input" accept="application/json,.json" hidden />
 
     <dialog id="applet-edit-dialog" class="flow-dialog flow-dialog-applet-panel">
       <div class="flow-dialog-inner">
@@ -3795,7 +3803,7 @@
     const el = document.getElementById("brand-flow-name");
     if (!el) return;
     const trimmed = String(nameOrEmpty || "").trim();
-    el.title = "Your flows";
+    el.title = "Open Flows in sidebar";
     if (trimmed) {
       el.textContent = trimmed;
       el.classList.remove("is-untitled");
@@ -7425,11 +7433,15 @@
     const listEl = document.getElementById("palette-list");
     const chatEl = document.getElementById("chat-panel");
     const toggleEl = document.getElementById("palette-chat-toggle");
+    const importEl = document.getElementById("palette-import-toggle");
     if (!headerEl || !listEl || !chatEl) return;
     const isFlows = activeLibraryTab === "flows";
     /* Toggle button is only meaningful while the Flows tab is active and the
      * chat is closed (once it's open, the X in the chat header takes over). */
     if (toggleEl) toggleEl.hidden = !isFlows || chatOpen;
+    /* Import is a flow-only action — hide it on the Applets tab. (The whole
+     * header is hidden when chat is open, so no need to handle that here.) */
+    if (importEl) importEl.hidden = !isFlows;
     const showChat = isFlows && chatOpen;
     chatEl.hidden = !showChat;
     headerEl.hidden = showChat;
@@ -8174,19 +8186,52 @@
     );
   }
 
+  /** Inline-action SVGs for a saved-flow row in the sidebar (export / delete). */
+  function libraryFlowExportIconSvg() {
+    return (
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>' +
+      '<polyline points="7 10 12 15 17 10"/>' +
+      '<line x1="12" y1="15" x2="12" y2="3"/>' +
+      "</svg>"
+    );
+  }
+
+  function libraryFlowDeleteIconSvg() {
+    return (
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<polyline points="3 6 5 6 21 6"/>' +
+      '<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>' +
+      '<path d="M10 11v6"/>' +
+      '<path d="M14 11v6"/>' +
+      '<path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>' +
+      "</svg>"
+    );
+  }
+
   function renderFlowsLibrary(filter) {
     const q = (filter || "").toLowerCase();
     paletteList.innerHTML = "";
+    /* Re-rendering tears down the inline-confirm Delete button, so reset the pending state
+     * to keep arming-from-the-old-button logic from leaking into the new DOM. */
+    clearPendingFlowDelete();
     const store = readFlowStore();
     const allNames = Object.keys(store.flows || {}).sort((a, b) => a.localeCompare(b));
     const names = q ? allNames.filter((n) => n.toLowerCase().includes(q)) : allNames;
     if (!allNames.length) {
-      paletteList.innerHTML =
-        '<div class="library-empty">No saved transformations yet.<div class="library-empty-hint">Build a flow and press <b>Save flow</b>.</div></div>';
+      const empty = document.createElement("div");
+      empty.className = "library-empty";
+      empty.innerHTML =
+        "No saved transformations yet." +
+        '<div class="library-empty-hint">Build a flow and press <b>Save flow</b>, or use the <b>Import</b> icon above.</div>';
+      paletteList.appendChild(empty);
       return;
     }
     if (!names.length) {
-      paletteList.innerHTML = '<div class="library-empty">No flows match.</div>';
+      const empty = document.createElement("div");
+      empty.className = "library-empty";
+      empty.textContent = "No flows match.";
+      paletteList.appendChild(empty);
       return;
     }
     const activeFlow = appMode === "applet" ? "" : getActiveSavedFlowName();
@@ -8194,7 +8239,7 @@
       const doc = store.flows[name];
       const when = formatFlowSavedAt(doc && doc.savedAt);
       const row = document.createElement("div");
-      row.className = "library-row";
+      row.className = "library-row library-row-flow";
       if (name === activeFlow) row.classList.add("is-active");
       row.setAttribute("data-flow-name", encodeURIComponent(name));
       row.setAttribute("role", "button");
@@ -8211,6 +8256,14 @@
         (when
           ? '<span class="library-row-sub">' + escapeHtml(when) + "</span>"
           : "") +
+        "</div>" +
+        '<div class="library-row-actions">' +
+        '<button type="button" class="library-row-action library-row-export" title="Export as JSON" aria-label="Export flow as JSON">' +
+        libraryFlowExportIconSvg() +
+        "</button>" +
+        '<button type="button" class="library-row-action library-row-delete" title="Delete flow" aria-label="Delete flow">' +
+        libraryFlowDeleteIconSvg() +
+        "</button>" +
         "</div>";
       paletteList.appendChild(row);
     }
@@ -8610,16 +8663,40 @@
     }
   });
 
-  /* Clicking a row in the library list:
-   *   - Flows tab   → load the saved flow into the canvas.
-   *   - Applets tab → open the applet in the Playground view. */
+  /* Clicking inside the library list:
+   *   - Flows tab:
+   *       · Export icon  → download saved flow JSON (no row activation).
+   *       · Delete icon  → two-step inline confirm, then delete.
+   *       · Import row   → open the hidden file input picker.
+   *       · Row body     → load the saved flow into the canvas.
+   *   - Applets tab     → open the applet in the Playground view. */
   paletteList.addEventListener("click", (e) => {
     if (activeLibraryTab === "flows") {
+      const exportBtn = e.target.closest && e.target.closest(".library-row-export");
+      const deleteBtn = e.target.closest && e.target.closest(".library-row-delete");
       const row = e.target.closest(".library-row[data-flow-name]");
       if (!row) return;
       const enc = row.getAttribute("data-flow-name") || "";
       const name = enc ? decodeURIComponent(enc) : "";
       if (!name) return;
+      if (exportBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        clearPendingFlowDelete();
+        exportSavedFlowByName(name);
+        return;
+      }
+      if (deleteBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (pendingFlowDeleteName === name) {
+          clearPendingFlowDelete();
+          void deleteSavedFlowByName(name);
+        } else {
+          armPendingFlowDelete(name, deleteBtn);
+        }
+        return;
+      }
       if (appMode === "applet") exitAppletPlayground({ keepFlow: true });
       const ok = loadFlowByName(name);
       if (ok) renderLibrary(paletteSearch.value);
@@ -8633,9 +8710,12 @@
     }
   });
 
-  /* Keyboard: Enter / Space on a focused library row activates it. */
+  /* Keyboard: Enter / Space on a focused library row activates it. Action buttons
+   * (Export / Delete) and the import footer are real <button>s, so we let the browser
+   * dispatch their native click events instead of forwarding them to `row.click()`. */
   paletteList.addEventListener("keydown", (e) => {
     if (e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
+    if (e.target && e.target.closest && e.target.closest("button")) return;
     const row = e.target.closest && e.target.closest(".library-row");
     if (!row) return;
     e.preventDefault();
@@ -8655,6 +8735,12 @@
    * irrelevant. */
   document.getElementById("palette-chat-toggle").addEventListener("click", () => {
     setChatOpen(true);
+  });
+  document.getElementById("palette-import-toggle").addEventListener("click", () => {
+    const inp = document.getElementById("flow-import-input");
+    if (!inp) return;
+    inp.value = "";
+    inp.click();
   });
   document.getElementById("chat-close").addEventListener("click", () => {
     setChatOpen(false);
@@ -8993,25 +9079,24 @@
       writeFlowStore(store);
       if (getFlowIdFromLocation() === name) setFlowIdInUrl("");
       showFlowToast('Removed "' + name + '".');
-      renderSavedFlowsList();
+      if (activeLibraryTab === "flows") renderLibrary(paletteSearch.value);
     } catch (err) {
       showFlowToast("Could not update saved flows.");
     }
   }
 
-  /** Two-step inline confirm for the Delete button in the saved-flows list:
-   * first click arms the button, second click within the timeout actually deletes. */
+  /** Two-step inline confirm for the Delete button in the sidebar saved-flows list:
+   * first click arms the button (icon → "?"), second click within the timeout deletes. */
   let pendingFlowDeleteName = null;
   let pendingFlowDeleteTimer = null;
-  const PENDING_FLOW_DELETE_LABEL = "Confirm delete?";
   const PENDING_FLOW_DELETE_MS = 4000;
 
   function findFlowDeleteButton(name) {
     const enc = encodeURIComponent(name);
     const row = document.querySelector(
-      '.flow-load-row[data-flow-name="' + enc.replace(/"/g, '\\"') + '"]'
+      '.library-row-flow[data-flow-name="' + enc.replace(/"/g, '\\"') + '"]'
     );
-    return row ? row.querySelector(".flow-load-delete") : null;
+    return row ? row.querySelector(".library-row-delete") : null;
   }
 
   function clearPendingFlowDelete() {
@@ -9023,7 +9108,9 @@
       const btn = findFlowDeleteButton(pendingFlowDeleteName);
       if (btn) {
         btn.classList.remove("is-pending");
-        btn.textContent = "Delete";
+        btn.title = "Delete flow";
+        btn.setAttribute("aria-label", "Delete flow");
+        btn.innerHTML = libraryFlowDeleteIconSvg();
       }
       pendingFlowDeleteName = null;
     }
@@ -9034,7 +9121,9 @@
     if (!btn) return;
     pendingFlowDeleteName = name;
     btn.classList.add("is-pending");
-    btn.textContent = PENDING_FLOW_DELETE_LABEL;
+    btn.title = "Click again to confirm";
+    btn.setAttribute("aria-label", "Confirm delete flow");
+    btn.textContent = "?";
     pendingFlowDeleteTimer = setTimeout(() => {
       pendingFlowDeleteTimer = null;
       clearPendingFlowDelete();
@@ -9122,45 +9211,6 @@
       showFlowToast("Could not read the selected file.");
     };
     reader.readAsText(file);
-  }
-
-  function renderSavedFlowsList() {
-    const container = document.getElementById("flow-load-list");
-    if (!container) return;
-    clearPendingFlowDelete();
-    const store = readFlowStore();
-    const names = Object.keys(store.flows).sort((a, b) => a.localeCompare(b));
-    if (names.length === 0) {
-      container.innerHTML =
-        '<p class="flow-load-empty" role="listitem">No saved flows yet.</p>';
-      return;
-    }
-    container.innerHTML = names
-      .map((name) => {
-        const doc = store.flows[name];
-        const when = formatFlowSavedAt(doc && doc.savedAt);
-        const enc = encodeURIComponent(name);
-        return (
-          '<div class="flow-load-row" role="listitem" data-flow-name="' +
-          enc +
-          '">' +
-          '<div class="flow-load-meta">' +
-          '<span class="flow-load-name">' +
-          escapeHtml(name) +
-          "</span>" +
-          (when
-            ? '<span class="flow-load-when">' + escapeHtml(when) + "</span>"
-            : "") +
-          "</div>" +
-          '<div class="flow-load-row-actions">' +
-          '<button type="button" class="btn flow-load-open">Load</button>' +
-          '<button type="button" class="btn flow-load-export">Export</button>' +
-          '<button type="button" class="btn flow-load-delete">Delete</button>' +
-          "</div>" +
-          "</div>"
-        );
-      })
-      .join("");
   }
 
   function readAppletStore() {
@@ -9377,7 +9427,7 @@
     return (
       '<div class="applet-removed-from-canvas-wrap">' +
       '<p class="applet-removed-heading">Removed from canvas</p>' +
-      '<p class="flow-load-empty" style="margin:0 0 10px;font-size:11px;line-height:1.45;">Saving the applet drops these.</p>' +
+      '<p class="applet-hint-empty" style="margin:0 0 10px;font-size:11px;line-height:1.45;">Saving the applet drops these.</p>' +
       removedIds
         .map((id) => {
           const pr = appletEditorPersistedInputsMap.get(id);
@@ -9493,7 +9543,7 @@
     if (found.length === 0) {
       const removedIdsWhenEmpty = [...appletEditorPersistedBindingIds];
       container.innerHTML =
-        '<p class="flow-load-empty" style="margin:0">No inputs. Add blocks with no incoming wires, then <strong>Refresh</strong>.</p>' +
+        '<p class="applet-hint-empty" style="margin:0">No inputs. Add blocks with no incoming wires, then <strong>Refresh</strong>.</p>' +
         htmlAppletRemovedFromCanvasSection(removedIdsWhenEmpty);
       updateAppletApiMethodReadout();
       return;
@@ -10976,12 +11026,13 @@
     });
   }
 
-  function openFlowLoadDialog() {
-    const dlg = document.getElementById("flow-load-dialog");
-    const anchor = document.getElementById("brand-flow-name");
-    if (!dlg || !anchor) return;
-    renderSavedFlowsList();
-    openFlowDialogAsPopover(dlg, anchor);
+  /** Reveal the Flows list in the sidebar (expand the rail if collapsed and switch to
+   * the Flows tab) — used when the brand flow name in the topbar is clicked. */
+  function revealFlowsLibraryInSidebar() {
+    if (sidebarCollapsed) setSidebarCollapsed(false);
+    if (chatOpen) setChatOpen(false);
+    if (activeLibraryTab !== "flows") setActiveLibraryTab("flows");
+    else syncLibraryChrome();
   }
 
   document.getElementById("btn-save-flow").addEventListener("click", () => {
@@ -11006,79 +11057,28 @@
     }
   });
 
-  (function wireBrandFlowNameAsLoadTrigger() {
+  (function wireBrandFlowNameRevealsSidebar() {
     const el = document.getElementById("brand-flow-name");
     if (!el) return;
     el.addEventListener("click", () => {
-      openFlowLoadDialog();
+      revealFlowsLibraryInSidebar();
     });
     el.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
         e.preventDefault();
-        openFlowLoadDialog();
+        revealFlowsLibraryInSidebar();
       }
     });
   })();
 
-  document.getElementById("flow-load-close").addEventListener("click", () => {
-    document.getElementById("flow-load-dialog").close();
-  });
-
-  document.getElementById("flow-load-dialog").addEventListener("close", () => {
-    clearPendingFlowDelete();
-  });
-
   document.getElementById("flow-save-dialog").addEventListener("click", (e) => {
     if (e.target === e.currentTarget && typeof e.currentTarget.close === "function") e.currentTarget.close();
-  });
-  document.getElementById("flow-load-dialog").addEventListener("click", (e) => {
-    if (e.target === e.currentTarget && typeof e.currentTarget.close === "function") e.currentTarget.close();
-  });
-
-  document.getElementById("flow-load-list").addEventListener("click", (e) => {
-    const loadBtn = e.target.closest(".flow-load-open");
-    const delBtn = e.target.closest(".flow-load-delete");
-    const exportBtn = e.target.closest(".flow-load-export");
-    const row = e.target.closest(".flow-load-row");
-    if (!row) return;
-    const enc = row.getAttribute("data-flow-name");
-    const name = enc ? decodeURIComponent(enc) : "";
-    if (!name) return;
-    if (loadBtn) {
-      clearPendingFlowDelete();
-      const dlgLoad = document.getElementById("flow-load-dialog");
-      const loaded = loadFlowByName(name);
-      if (loaded && dlgLoad && dlgLoad.open) dlgLoad.close();
-    } else if (exportBtn) {
-      e.preventDefault();
-      clearPendingFlowDelete();
-      exportSavedFlowByName(name);
-    } else if (delBtn) {
-      e.preventDefault();
-      if (pendingFlowDeleteName === name) {
-        clearPendingFlowDelete();
-        void deleteSavedFlowByName(name);
-      } else {
-        armPendingFlowDelete(name, delBtn);
-      }
-    }
-  });
-
-  document.getElementById("btn-import-flow").addEventListener("click", () => {
-    const inp = document.getElementById("flow-import-input");
-    if (!inp) return;
-    inp.value = "";
-    inp.click();
   });
 
   document.getElementById("flow-import-input").addEventListener("change", (e) => {
     const inp = e.currentTarget;
     const file = inp && inp.files && inp.files[0];
-    if (file) {
-      importFlowFromFile(file);
-      const dlgLoad = document.getElementById("flow-load-dialog");
-      if (dlgLoad && dlgLoad.open) dlgLoad.close();
-    }
+    if (file) importFlowFromFile(file);
     inp.value = "";
   });
 
