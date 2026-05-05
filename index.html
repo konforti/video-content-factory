@@ -10912,11 +10912,12 @@
   }
 
   /**
-   * Open `dlg` as a centered floating panel (used for Save flow / Load flow). `anchorBtn`
-   * is kept in the signature so callers can still reason about a logical trigger and so
-   * outside-click handling skips it, but positioning is viewport-centered, not anchored.
-   * Uses non-modal `dlg.show()` so there's no backdrop or inert behind it; closes on
-   * outside click or Escape. If the dialog is already open, this toggles it closed.
+   * Open `dlg` as a floating popover anchored to `anchorBtn` (used for Save flow /
+   * Load flow). Positioned just below the button's left edge; if it would overflow
+   * the viewport horizontally we clamp left, and if it would overflow vertically
+   * we flip above the button. Uses non-modal `dlg.show()` so there's no backdrop
+   * or inert behind it; closes on outside click or Escape. If the dialog is
+   * already open, this toggles it closed.
    */
   function openFlowDialogAsPopover(dlg, anchorBtn) {
     if (!dlg || !anchorBtn) return false;
@@ -10928,11 +10929,15 @@
     if (typeof dlg.show === "function") dlg.show();
     else if (typeof dlg.showModal === "function") dlg.showModal();
     else dlg.setAttribute("open", "");
+    const r = anchorBtn.getBoundingClientRect();
     const dr = dlg.getBoundingClientRect();
+    const pad = 6;
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const left = Math.max(8, Math.round((vw - dr.width) / 2));
-    const top = Math.max(8, Math.round((vh - dr.height) / 2));
+    let left = r.left;
+    let top = r.bottom + pad;
+    if (left + dr.width > vw - 8) left = Math.max(8, vw - dr.width - 8);
+    if (top + dr.height > vh - 8) top = Math.max(8, r.top - dr.height - pad);
     dlg.style.top = top + "px";
     dlg.style.left = left + "px";
     function onDocPointer(e) {
