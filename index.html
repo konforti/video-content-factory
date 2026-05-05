@@ -70,7 +70,7 @@
     }
 
     /* Applet playground takes over the whole stage — the canvas-centric topbar
-     * (Run flow / Save flow / Applet button / brand crumb) doesn't apply when
+     * (Run Transformation / Save Transformation / Applet button / brand crumb) doesn't apply when
      * exercising a published applet's API, so we hide the header row and let
      * the playground use the full vertical space. */
     .app[data-app-mode="applet"] {
@@ -132,7 +132,7 @@
       flex-shrink: 0;
     }
 
-    .brand-flow-name {
+    .brand-transformation-name {
       font-weight: 400;
       color: var(--text-soft);
       max-width: 280px;
@@ -147,21 +147,21 @@
       transition: background 0.14s, color 0.14s;
     }
 
-    .brand-flow-name:hover,
-    .brand-flow-name:focus-visible {
+    .brand-transformation-name:hover,
+    .brand-transformation-name:focus-visible {
       background: rgba(0, 0, 0, 0.05);
       color: var(--text);
       outline: none;
     }
 
-    .brand-flow-name.is-untitled {
+    .brand-transformation-name.is-untitled {
       color: var(--text-faint);
       font-style: italic;
     }
 
-    /* Amber " · unsaved" suffix on the brand flow name whenever the canvas content has
+    /* Amber " · unsaved" suffix on the brand Transformation name whenever the canvas content has
        diverged from the last saved/loaded baseline. Matches the applet editor pattern. */
-    .brand-flow-name.is-unsaved::after {
+    .brand-transformation-name.is-unsaved::after {
       content: " · unsaved";
       font-weight: 500;
       color: #b45309;
@@ -253,6 +253,8 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
+      flex-shrink: 0;
+      white-space: nowrap;
       transition: background 0.14s;
     }
 
@@ -265,9 +267,9 @@
       opacity: 0.95;
     }
 
-    /* Bordered pill for Save flow / Import — more prominent than `.btn` ghost buttons,
+    /* Bordered pill for Save Transformation / Import — more prominent than `.btn` ghost buttons,
        lighter than `.btn-run` so the run action stays the primary CTA. */
-    .btn-flow {
+    .btn-transformation {
       font-family: inherit;
       font-size: 11px;
       font-weight: 500;
@@ -286,17 +288,17 @@
       transition: border-color 0.14s, box-shadow 0.14s, color 0.14s, transform 0.12s;
     }
 
-    .btn-flow:hover {
+    .btn-transformation:hover {
       border-color: var(--accent-focus);
       color: var(--accent-focus);
       box-shadow: 0 2px 8px rgba(99, 102, 241, 0.16);
     }
 
-    .btn-flow:active {
+    .btn-transformation:active {
       transform: scale(0.98);
     }
 
-    .btn-flow svg {
+    .btn-transformation svg {
       flex-shrink: 0;
       opacity: 0.85;
     }
@@ -391,14 +393,14 @@
       display: none;
     }
 
-    /* Block rail is a flow-author affordance — in Applet Playground mode the canvas is
+    /* Block rail is a Transformation-author affordance — in Applet Playground mode the canvas is
      * covered by the overlay so dragging blocks would be nonsense; hide the rail entirely. */
     .app[data-app-mode="applet"] .block-rail,
     .app[data-app-mode="applet"] #block-popover {
       display: none !important;
     }
 
-    /* Top-of-sidebar segmented control — pivot between saved Transformations (flows)
+    /* Top-of-sidebar segmented control — pivot between saved Transformations
      * and saved Applets. Sits on a muted "track" so the chips look like a real
      * picker instead of text links; the active chip pops with white fill + soft
      * shadow + accent-tinted icon. */
@@ -413,21 +415,24 @@
       flex-shrink: 0;
     }
 
+    /* `flex: 1 1 auto` lets the wider label ("Transformations") naturally claim
+     * more horizontal space than "Applets" instead of forcing a 50/50 split that
+     * truncates the longer word. */
     .palette-tab {
-      flex: 1;
+      flex: 1 1 auto;
       appearance: none;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 5px;
       border: 1px solid transparent;
       background: transparent;
       color: var(--text-soft);
       font: inherit;
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 500;
-      letter-spacing: -0.005em;
-      padding: 7px 8px;
+      letter-spacing: -0.01em;
+      padding: 6px 6px;
       border-radius: 9px;
       cursor: pointer;
       transition: background 0.14s, color 0.14s, border-color 0.14s, box-shadow 0.14s, transform 0.1s;
@@ -436,11 +441,20 @@
     }
 
     .palette-tab svg {
-      width: 14px;
-      height: 14px;
+      width: 13px;
+      height: 13px;
       flex-shrink: 0;
       opacity: 0.7;
       transition: opacity 0.14s, color 0.14s;
+    }
+
+    /* Label can shrink and ellipsize so a long word ("Transformations") never
+     * forces the pill to overflow or wrap. */
+    .palette-tab-label {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .palette-tab:hover {
@@ -481,18 +495,26 @@
 
     .app[data-sidebar="collapsed"] .palette-tab {
       flex: 0 0 auto;
-      flex-direction: column;
-      gap: 4px;
-      padding: 8px 4px;
-      font-size: 9.5px;
-      font-weight: 500;
-      letter-spacing: 0.01em;
+      align-self: center;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      padding: 0;
+      width: 36px;
+      height: 36px;
+      aspect-ratio: 1 / 1;
       border-radius: 10px;
     }
 
     .app[data-sidebar="collapsed"] .palette-tab svg {
       width: 18px;
       height: 18px;
+    }
+
+    /* Icon-only rail — accessible name lives on the button (`aria-label` +
+     * `title`), so we drop the visible label entirely instead of clipping it. */
+    .app[data-sidebar="collapsed"] .palette-tab-label {
+      display: none;
     }
 
     .app[data-sidebar="collapsed"] .palette-tab.is-active {
@@ -510,8 +532,8 @@
       display: none !important;
     }
 
-    /* Inline chat toggle in the header — shown only when the Flows tab is active
-     * (the assistant is canvas/flow-focused). Compact circular icon button. */
+    /* Inline chat toggle in the header — shown only when the Transformations tab is active
+     * (the assistant is canvas/Transformation-focused). Compact circular icon button. */
     .palette-header-row {
       display: flex;
       align-items: center;
@@ -1025,8 +1047,8 @@
       color: var(--text);
     }
 
-    /* Sidebar rows for saved Flows / Applets — selectable list items.
-     * Differs from `.palette-item` (which is draggable): clicking loads the flow or
+    /* Sidebar rows for saved Transformations / Applets — selectable list items.
+     * Differs from `.palette-item` (which is draggable): clicking loads the Transformation or
      * opens the applet playground, and `.is-active` highlights the current entry. */
     .library-row {
       display: flex;
@@ -1108,7 +1130,7 @@
       font-size: 10.5px;
     }
 
-    /* Hover-revealed action icons on a saved-flow library row (Export, Delete).
+    /* Hover-revealed action icons on a saved-Transformation library row (Export, Delete).
      * The container reserves space so the row layout doesn't shift when the
      * actions appear; child buttons fade in on row hover/focus-within. */
     .library-row-actions {
@@ -1983,7 +2005,7 @@
 
     /* Floating vertical block rail — pinned inside `.main-wrap` and vertically centered
      * along the canvas's left edge. "Add block" (+) opens the full palette; category
-     * shortcuts below it open the same popover scoped to a single section. Flow-mode only
+     * shortcuts below it open the same popover scoped to a single section. Transformation-mode only
      * (hidden in applet playground via `.app[data-app-mode="applet"]`). */
     .block-rail {
       position: absolute;
@@ -2164,7 +2186,7 @@
       border: 0;
     }
 
-    .flow-toast {
+    .transformation-toast {
       position: fixed;
       inset: auto auto 52px 50%;
       translate: -50% 0;
@@ -2187,13 +2209,13 @@
     }
 
     /* Popover = top layer above modal <dialog> backdrops; .visible = fallback */
-    .flow-toast:popover-open,
-    .flow-toast.visible {
+    .transformation-toast:popover-open,
+    .transformation-toast.visible {
       opacity: 1;
       visibility: visible;
     }
 
-    .flow-dialog {
+    .transformation-dialog {
       border: none;
       border-radius: var(--radius);
       padding: 0;
@@ -2203,43 +2225,43 @@
       box-shadow: var(--shadow-bar);
     }
 
-    .flow-dialog::backdrop {
+    .transformation-dialog::backdrop {
       background: rgba(15, 23, 42, 0.38);
       backdrop-filter: blur(2px);
     }
 
-    /* Popover variant: anchored next to the trigger element (Save flow button or the brand
-     * flow name for Load flow) instead of the default centered showModal() layout. Position
+    /* Popover variant: anchored next to the trigger element (Save Transformation button or the brand
+     * Transformation name for Load Transformation) instead of the default centered showModal() layout. Position
      * is set inline by JS based on the trigger's bounding rect. */
-    .flow-dialog.flow-dialog-popover {
+    .transformation-dialog.transformation-dialog-popover {
       position: fixed;
       margin: 0;
       inset: auto;
       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
     }
-    .flow-dialog.flow-dialog-popover::backdrop {
+    .transformation-dialog.transformation-dialog-popover::backdrop {
       display: none;
     }
 
-    .flow-dialog-inner {
+    .transformation-dialog-inner {
       padding: 18px 20px 16px;
     }
 
-    .flow-dialog-title {
+    .transformation-dialog-title {
       margin: 0 0 6px;
       font-size: 14px;
       font-weight: 600;
       letter-spacing: -0.02em;
     }
 
-    .flow-dialog-hint {
+    .transformation-dialog-hint {
       margin: 0 0 14px;
       font-size: 11px;
       line-height: 1.45;
       color: var(--text-soft);
     }
 
-    .flow-dialog-label {
+    .transformation-dialog-label {
       display: block;
       font-size: 10px;
       font-weight: 600;
@@ -2248,7 +2270,7 @@
       margin-bottom: 6px;
     }
 
-    .flow-dialog-input {
+    .transformation-dialog-input {
       width: 100%;
       box-sizing: border-box;
       padding: 8px 10px;
@@ -2262,11 +2284,11 @@
       margin-bottom: 16px;
     }
 
-    .flow-dialog-input:focus {
+    .transformation-dialog-input:focus {
       border-color: rgba(59, 130, 246, 0.55);
     }
 
-    .flow-dialog-actions {
+    .transformation-dialog-actions {
       display: flex;
       justify-content: flex-end;
       gap: 8px;
@@ -2275,16 +2297,16 @@
 
     /* Applets hub + editor: dock to the right under the header (not centered) */
     /* Closed <dialog> must stay hidden: author `display:flex` overrides UA `dialog:not(:open){display:none}` */
-    .flow-dialog.flow-dialog-applet-panel:not(:open) {
+    .transformation-dialog.transformation-dialog-applet-panel:not(:open) {
       display: none !important;
     }
 
-    .flow-dialog.flow-dialog-applet-panel:open {
+    .transformation-dialog.transformation-dialog-applet-panel:open {
       display: flex;
       flex-direction: column;
     }
 
-    .flow-dialog.flow-dialog-applet-panel {
+    .transformation-dialog.transformation-dialog-applet-panel {
       position: fixed;
       right: max(10px, env(safe-area-inset-right, 0px));
       left: auto;
@@ -2302,19 +2324,19 @@
         0 0 0 1px rgba(99, 102, 241, 0.14);
     }
 
-    .flow-dialog.flow-dialog-applet-panel .flow-dialog-inner {
+    .transformation-dialog.transformation-dialog-applet-panel .transformation-dialog-inner {
       overflow-y: auto;
       flex: 1;
       min-height: 0;
       -webkit-overflow-scrolling: touch;
     }
 
-    #applet-edit-dialog.flow-dialog-applet-panel {
+    #applet-edit-dialog.transformation-dialog-applet-panel {
       width: min(520px, calc(100vw - 20px));
       max-width: min(520px, calc(100vw - 20px));
     }
 
-    .flow-dialog-textarea {
+    .transformation-dialog-textarea {
       width: 100%;
       box-sizing: border-box;
       min-height: 56px;
@@ -2331,7 +2353,7 @@
       margin-bottom: 12px;
     }
 
-    .flow-dialog-textarea:focus {
+    .transformation-dialog-textarea:focus {
       border-color: rgba(59, 130, 246, 0.55);
     }
 
@@ -2661,7 +2683,7 @@
       margin: 0 0 6px;
     }
 
-    .applet-edit-title-row .flow-dialog-title {
+    .applet-edit-title-row .transformation-dialog-title {
       margin: 0;
     }
 
@@ -2705,7 +2727,7 @@
       font-size: 12px;
     }
 
-    .flow-dialog-label.applet-label-dirty {
+    .transformation-dialog-label.applet-label-dirty {
       color: #b45309;
     }
 
@@ -3300,26 +3322,26 @@
           <span class="brand-name">Studio</span>
           <span class="brand-divider" aria-hidden="true">/</span>
           <span
-            class="brand-flow-name"
-            id="brand-flow-name"
+            class="brand-transformation-name"
+            id="brand-transformation-name"
             role="button"
             tabindex="0"
-            title="Open Flows in sidebar"
+            title="Open Transformations in sidebar"
           >Untitled</span>
         </div>
       </div>
       <div class="toolbar">
-        <button type="button" class="btn-run" id="btn-run-flow" title="Run flow (⌘↵)">
+        <button type="button" class="btn-run" id="btn-run-transformation" title="Run Transformation (⌘↵)">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
-          Run flow
+          Run Transformation
         </button>
-        <button type="button" class="btn-flow" id="btn-save-flow">
+        <button type="button" class="btn-transformation" id="btn-save-transformation">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
             <polyline points="17 21 17 13 7 13 7 21"/>
             <polyline points="7 3 7 8 15 8"/>
           </svg>
-          Save flow
+          Save Transformation
         </button>
         <span class="toolbar-divider" aria-hidden="true"></span>
         <button
@@ -3347,7 +3369,7 @@
         </button>
       </div>
       <div class="palette-tabs" role="tablist" aria-label="Library">
-        <button type="button" class="palette-tab is-active" role="tab" data-library-tab="flows" aria-selected="true">
+        <button type="button" class="palette-tab is-active" role="tab" data-library-tab="transformations" aria-selected="true" aria-label="Transformations" title="Transformations">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="5" cy="12" r="2"/>
             <circle cx="19" cy="6" r="2"/>
@@ -3356,9 +3378,9 @@
             <path d="M14 12l3-5"/>
             <path d="M14 12l3 5"/>
           </svg>
-          <span class="palette-tab-label">Flows</span>
+          <span class="palette-tab-label">Transformations</span>
         </button>
-        <button type="button" class="palette-tab" role="tab" data-library-tab="applets" aria-selected="false">
+        <button type="button" class="palette-tab" role="tab" data-library-tab="applets" aria-selected="false" aria-label="Applets" title="Applets">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="3" y="3" width="7" height="7" rx="1.2"/>
             <rect x="14" y="3" width="7" height="7" rx="1.2"/>
@@ -3376,8 +3398,8 @@
               type="button"
               class="palette-header-icon-btn"
               id="palette-import-toggle"
-              aria-label="Import flow from JSON"
-              title="Import flow from JSON"
+              aria-label="Import Transformation from JSON"
+              title="Import Transformation from JSON"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -3398,7 +3420,7 @@
             </button>
           </div>
         </div>
-        <input type="search" class="palette-search" id="palette-search" placeholder="Search flows…" autocomplete="off" />
+        <input type="search" class="palette-search" id="palette-search" placeholder="Search Transformations…" autocomplete="off" />
       </div>
       <div class="palette-list" id="palette-list"></div>
 
@@ -3432,7 +3454,7 @@
             id="chat-input"
             class="chat-input"
             rows="1"
-            placeholder="Ask, e.g. 'build a hero video flow'…"
+            placeholder="Ask, e.g. 'build a hero video Transformation'…"
             aria-label="Chat message"
           ></textarea>
           <button type="submit" class="chat-send" id="chat-send" aria-label="Send" title="Send (Enter)">
@@ -3462,7 +3484,7 @@
       </div>
 
       <!-- Floating block rail — primary "+" opens the full palette; category shortcuts
-           below open the same popover scoped to one section. Flow mode only. -->
+           below open the same popover scoped to one section. Transformation mode only. -->
       <nav class="block-rail" aria-label="Add blocks">
         <button type="button" class="block-rail-btn block-rail-btn-primary" id="block-rail-add" title="Add block" aria-label="Add block">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -3568,14 +3590,14 @@
             </div>
           </div>
           <div class="playground-header-actions">
-            <button type="button" class="btn-flow" id="playground-edit-flow" title="Open this applet's flow on the canvas">
+            <button type="button" class="btn-transformation" id="playground-edit-transformation" title="Open this applet's Transformation on the canvas">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M12 20h9"/>
                 <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
               </svg>
-              Edit flow
+              Edit Transformation
             </button>
-            <button type="button" class="btn-flow" id="playground-applet-editor" title="Open applet binding editor">
+            <button type="button" class="btn-transformation" id="playground-applet-editor" title="Open applet binding editor">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <circle cx="12" cy="12" r="3"/>
                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -3654,24 +3676,24 @@
       </section>
     </div>
 
-    <dialog id="flow-save-dialog" class="flow-dialog">
-      <div class="flow-dialog-inner">
-        <h3 class="flow-dialog-title">Save flow</h3>
-        <label class="flow-dialog-label" for="flow-save-name">Name</label>
-        <input type="text" id="flow-save-name" class="flow-dialog-input" autocomplete="off" maxlength="120" placeholder="Flow name" />
-        <div class="flow-dialog-actions">
-          <button type="button" class="btn" id="flow-save-cancel">Cancel</button>
-          <button type="button" class="btn-run" id="flow-save-confirm">Save</button>
+    <dialog id="transformation-save-dialog" class="transformation-dialog">
+      <div class="transformation-dialog-inner">
+        <h3 class="transformation-dialog-title">Save Transformation</h3>
+        <label class="transformation-dialog-label" for="transformation-save-name">Name</label>
+        <input type="text" id="transformation-save-name" class="transformation-dialog-input" autocomplete="off" maxlength="120" placeholder="Transformation name" />
+        <div class="transformation-dialog-actions">
+          <button type="button" class="btn" id="transformation-save-cancel">Cancel</button>
+          <button type="button" class="btn-run" id="transformation-save-confirm">Save</button>
         </div>
       </div>
     </dialog>
 
-    <input type="file" id="flow-import-input" accept="application/json,.json" hidden />
+    <input type="file" id="transformation-import-input" accept="application/json,.json" hidden />
 
-    <dialog id="applet-edit-dialog" class="flow-dialog flow-dialog-applet-panel">
-      <div class="flow-dialog-inner">
+    <dialog id="applet-edit-dialog" class="transformation-dialog transformation-dialog-applet-panel">
+      <div class="transformation-dialog-inner">
         <div class="applet-edit-title-row">
-          <h3 class="flow-dialog-title" id="applet-edit-heading">Workflow applet</h3>
+          <h3 class="transformation-dialog-title" id="applet-edit-heading">Transformation applet</h3>
           <div
             id="applet-supported-forms"
             class="applet-supported-forms"
@@ -3690,12 +3712,12 @@
             >URL</span>
           </div>
         </div>
-        <p class="flow-dialog-hint" id="applet-edit-hint"></p>
+        <p class="transformation-dialog-hint" id="applet-edit-hint"></p>
         <p id="applet-edit-dirty-banner" class="applet-edit-dirty-banner" hidden>Unsaved changes.</p>
-        <label class="flow-dialog-label" for="applet-edit-name">Applet name</label>
-        <input type="text" id="applet-edit-name" class="flow-dialog-input" autocomplete="off" maxlength="120" readonly placeholder="Save flow first…" />
-        <label class="flow-dialog-label" for="applet-edit-description" id="applet-edit-description-label">Description</label>
-        <textarea id="applet-edit-description" class="flow-dialog-textarea" rows="2" maxlength="2000" placeholder="What this applet does…"></textarea>
+        <label class="transformation-dialog-label" for="applet-edit-name">Applet name</label>
+        <input type="text" id="applet-edit-name" class="transformation-dialog-input" autocomplete="off" maxlength="120" readonly placeholder="Save Transformation first…" />
+        <label class="transformation-dialog-label" for="applet-edit-description" id="applet-edit-description-label">Description</label>
+        <textarea id="applet-edit-description" class="transformation-dialog-textarea" rows="2" maxlength="2000" placeholder="What this applet does…"></textarea>
         <div class="applet-inputs-wrap applet-bindings-panel">
           <div class="applet-inputs-head">
             <span>Inputs</span>
@@ -3708,7 +3730,7 @@
             <span>Output</span>
           </div>
           <div
-            id="applet-flow-output-readout"
+            id="applet-transformation-output-readout"
             class="applet-bind-row applet-output-bind-row"
             role="status"
             aria-live="polite"
@@ -3737,7 +3759,7 @@
           <summary class="applet-api-summary">Example response body</summary>
           <pre id="applet-example-response-readout" class="applet-api-readout" aria-live="polite"></pre>
         </details>
-        <div class="flow-dialog-actions">
+        <div class="transformation-dialog-actions">
           <button type="button" class="btn" id="applet-edit-back">Close</button>
           <button type="button" class="btn-run" id="applet-edit-save">Save applet</button>
         </div>
@@ -3745,7 +3767,7 @@
     </dialog>
   </div>
 
-  <div id="flow-toast" class="flow-toast" popover="manual" role="status" aria-live="polite" aria-atomic="true"></div>
+  <div id="transformation-toast" class="transformation-toast" popover="manual" role="status" aria-live="polite" aria-atomic="true"></div>
 
   <script>
 (function () {
@@ -3772,38 +3794,38 @@
   /** Returned by mock text generators when nothing better to say (variants picked by mode). */
   const MOCK_AI_TEXT_FALLBACK = "[mock] (no upstream text/asset detected — placeholder result)";
 
-  /** Saved workflow document format + localStorage store for named flows */
-  const FLOW_DOC_VERSION = 1;
-  const FLOW_STORE_KEY = "videofactory.workflow.store.v1";
-  /** Active saved flow id lives in the URL (`?flow=name`), not as lastActive in localStorage. */
-  const FLOW_QUERY_PARAM = "flow";
+  /** Saved Transformation document format + localStorage store for named Transformations */
+  const TRANSFORMATION_DOC_VERSION = 1;
+  const TRANSFORMATION_STORE_KEY = "videofactory.transformation.store.v1";
+  /** Active saved Transformation id lives in the URL (`?transformation=name`), not as lastActive in localStorage. */
+  const TRANSFORMATION_QUERY_PARAM = "transformation";
 
-  function getFlowIdFromLocation() {
+  function getTransformationIdFromLocation() {
     try {
-      const q = new URLSearchParams(window.location.search).get(FLOW_QUERY_PARAM);
+      const q = new URLSearchParams(window.location.search).get(TRANSFORMATION_QUERY_PARAM);
       return q != null ? String(q).trim() : "";
     } catch (e) {
       return "";
     }
   }
 
-  function setFlowIdInUrl(nameOrEmpty) {
+  function setTransformationIdInUrl(nameOrEmpty) {
     try {
       const url = new URL(window.location.href);
       const trimmed = String(nameOrEmpty || "").trim();
-      if (trimmed) url.searchParams.set(FLOW_QUERY_PARAM, trimmed);
-      else url.searchParams.delete(FLOW_QUERY_PARAM);
+      if (trimmed) url.searchParams.set(TRANSFORMATION_QUERY_PARAM, trimmed);
+      else url.searchParams.delete(TRANSFORMATION_QUERY_PARAM);
       window.history.replaceState({}, "", url.pathname + url.search + url.hash);
     } catch (e) {}
-    updateBrandFlowName(nameOrEmpty);
+    updateBrandTransformationName(nameOrEmpty);
   }
 
-  /** Render the current flow name in the topbar brand area (italic "Untitled" if blank). */
-  function updateBrandFlowName(nameOrEmpty) {
-    const el = document.getElementById("brand-flow-name");
+  /** Render the current Transformation name in the topbar brand area (italic "Untitled" if blank). */
+  function updateBrandTransformationName(nameOrEmpty) {
+    const el = document.getElementById("brand-transformation-name");
     if (!el) return;
     const trimmed = String(nameOrEmpty || "").trim();
-    el.title = "Open Flows in sidebar";
+    el.title = "Open Transformations in sidebar";
     if (trimmed) {
       el.textContent = trimmed;
       el.classList.remove("is-untitled");
@@ -3814,20 +3836,20 @@
   }
 
   /**
-   * Bump when seedDemo() changes. On first load after bump, `flow` is cleared from the URL and the new
-   * builtin blueprint is shown once (saved flows under other names stay in the store).
+   * Bump when seedDemo() changes. On first load after bump, `transformation` is cleared from the URL and the new
+   * builtin blueprint is shown once (saved Transformations under other names stay in the store).
    */
   const BUILTIN_CANVAS_VERSION = 3;
-  const BUILTIN_CANVAS_VERSION_KEY = "videofactory.workflow.builtinCanvasVersion";
+  const BUILTIN_CANVAS_VERSION_KEY = "videofactory.transformation.builtinCanvasVersion";
 
-  /** Saved applet manifests (flow snapshot + typed inputs); local only */
+  /** Saved applet manifests (Transformation snapshot + typed inputs); local only */
   const APPLET_STORE_KEY = "videofactory.applets.store.v1";
   const APPLET_RECORD_VERSION = 1;
   /** URL param carrying the active applet slug for the Playground view. */
   const APPLET_QUERY_PARAM = "applet";
 
-  /** "flow" = canvas authoring; "applet" = applet playground view over the canvas. */
-  let appMode = "flow";
+  /** "transformation" = canvas authoring; "applet" = applet playground view over the canvas. */
+  let appMode = "transformation";
   /** Slug of the applet currently loaded in the playground (empty unless `appMode === "applet"`). */
   let currentAppletSlug = "";
 
@@ -5844,9 +5866,9 @@
   }
 
   /**
-   * Output block opted out of being the workflow's terminal output (e.g. an extra Output · video
+   * Output block opted out of being the Transformation's terminal output (e.g. an extra Output · video
    * used only for preview while iterating). Preview blocks still render their preview locally —
-   * applet/run-flow logic just doesn't count them as the canonical terminal.
+   * applet/run-Transformation logic just doesn't count them as the canonical terminal.
    */
   function isPreviewOutputNode(node) {
     return !!(
@@ -6373,7 +6395,7 @@
           );
           if (playgroundInput) playgroundInput.value = target.settings.publicId;
           refreshOutputDeliveryUi();
-          notifyAppletEditorFlowMaybeDirty();
+          notifyAppletEditorTransformationMaybeDirty();
         },
       });
       return mediaLibraryWidget;
@@ -6390,7 +6412,7 @@
       })
       .catch((err) => {
         mediaLibraryPendingNodeId = null;
-        showFlowToast(err.message || String(err));
+        showTransformationToast(err.message || String(err));
       });
   }
 
@@ -6734,7 +6756,7 @@
     requestAnimationFrame(() => {
       updateEdges();
     });
-    notifyAppletEditorFlowMaybeDirty();
+    notifyAppletEditorTransformationMaybeDirty();
   }
 
   function syncOutputImageThumbnails() {
@@ -6791,8 +6813,8 @@
     syncOutputImageThumbnails();
   }
 
-  let flowToastTimer = null;
-  function hideFlowToastEl(el) {
+  let transformationToastTimer = null;
+  function hideTransformationToastEl(el) {
     if (!el) return;
     el.classList.remove("visible");
     if (typeof el.hidePopover === "function") {
@@ -6802,12 +6824,12 @@
     }
   }
 
-  function showFlowToast(message) {
-    const el = document.getElementById("flow-toast");
+  function showTransformationToast(message) {
+    const el = document.getElementById("transformation-toast");
     if (!el) return;
     el.textContent = message;
-    clearTimeout(flowToastTimer);
-    hideFlowToastEl(el);
+    clearTimeout(transformationToastTimer);
+    hideTransformationToastEl(el);
     if (typeof el.showPopover === "function") {
       try {
         el.showPopover();
@@ -6817,18 +6839,18 @@
     } else {
       el.classList.add("visible");
     }
-    flowToastTimer = setTimeout(() => hideFlowToastEl(el), 4000);
+    transformationToastTimer = setTimeout(() => hideTransformationToastEl(el), 4000);
   }
 
-  function runFlow() {
+  function runTransformation() {
     if (!nodes.length) {
-      showFlowToast("Add blocks to the canvas first.");
+      showTransformationToast("Add blocks to the canvas first.");
       return;
     }
     const outputs = nodes.filter((n) => isTerminalOutputNode(n));
     refreshOutputDeliveryUi();
     if (outputs.length === 0) {
-      showFlowToast("Add an Output block.");
+      showTransformationToast("Add an Output block.");
       return;
     }
     const mediaOutputs = outputs.filter((o) => !isTextOutputBlockType(o.def.type));
@@ -6840,17 +6862,17 @@
     }
     if (mediaOutputs.length === 0 && textOutputs.length > 0) {
       const n = textOutputs.length;
-      showFlowToast("Flow ran — " + n + " text result" + (n === 1 ? "" : "s") + " updated.");
+      showTransformationToast("Transformation ran — " + n + " text result" + (n === 1 ? "" : "s") + " updated.");
       return;
     }
     if (withUrl === 0) {
-      showFlowToast("Set a public ID on an Input block.");
+      showTransformationToast("Set a public ID on an Input block.");
     } else if (withUrl === mediaOutputs.length) {
       const n = outputs.length;
-      showFlowToast("Flow ran — " + n + " preview" + (n === 1 ? "" : "s") + " updated.");
+      showTransformationToast("Transformation ran — " + n + " preview" + (n === 1 ? "" : "s") + " updated.");
     } else {
-      showFlowToast(
-        "Flow ran — " + withUrl + " of " + mediaOutputs.length + " outputs have a URL."
+      showTransformationToast(
+        "Transformation ran — " + withUrl + " of " + mediaOutputs.length + " outputs have a URL."
       );
     }
   }
@@ -6891,7 +6913,7 @@
           preview.appendChild(document.createTextNode(short));
         }
         refreshOutputDeliveryUi();
-        notifyAppletEditorFlowMaybeDirty();
+        notifyAppletEditorTransformationMaybeDirty();
       };
       inp.addEventListener("input", onChange);
       inp.addEventListener("change", onChange);
@@ -7001,7 +7023,7 @@
             node.settings.order = segs;
             renderNodes();
             refreshOutputDeliveryUi();
-            notifyAppletEditorFlowMaybeDirty();
+            notifyAppletEditorTransformationMaybeDirty();
           };
 
           document.addEventListener("mousemove", onMove);
@@ -7020,7 +7042,7 @@
           trans[edgeId] = normalizeSpliceTransition(e.target.value);
           node.settings.transitions = trans;
           refreshOutputDeliveryUi();
-          notifyAppletEditorFlowMaybeDirty();
+          notifyAppletEditorTransformationMaybeDirty();
         });
         sel.addEventListener("mousedown", (ev) => ev.stopPropagation());
       });
@@ -7035,7 +7057,7 @@
           syncSpliceOrderFromEdges(node);
           renderNodes();
           refreshOutputDeliveryUi();
-          notifyAppletEditorFlowMaybeDirty();
+          notifyAppletEditorTransformationMaybeDirty();
         });
       });
     });
@@ -7056,7 +7078,7 @@
         node.settings.mode = String(inp.value).trim() === "profile" ? "profile" : "video";
         renderNodes();
         refreshOutputDeliveryUi();
-        notifyAppletEditorFlowMaybeDirty();
+        notifyAppletEditorTransformationMaybeDirty();
       });
     });
     nodesLayer.querySelectorAll('select[data-output-player-profile]').forEach((sel) => {
@@ -7068,7 +7090,7 @@
         node.settings = node.settings || {};
         node.settings.profile = String(sel.value).trim() || "cld-default";
         refreshOutputDeliveryUi();
-        notifyAppletEditorFlowMaybeDirty();
+        notifyAppletEditorTransformationMaybeDirty();
       });
     });
   }
@@ -7085,7 +7107,7 @@
         node.settings.isPreview = !!e.target.checked;
         renderNodes();
         refreshOutputDeliveryUi();
-        notifyAppletEditorFlowMaybeDirty();
+        notifyAppletEditorTransformationMaybeDirty();
       });
     });
   }
@@ -7222,7 +7244,7 @@
       panY = 60;
       zoom = 1.2;
       applyTransform();
-      notifyAppletEditorFlowMaybeDirty();
+      notifyAppletEditorTransformationMaybeDirty();
       return;
     }
     let minX = Infinity,
@@ -7248,10 +7270,10 @@
     panX = (cw - (minX + maxX) * zoom) / 2;
     panY = (ch - (minY + maxY) * zoom) / 2;
     applyTransform();
-    notifyAppletEditorFlowMaybeDirty();
+    notifyAppletEditorTransformationMaybeDirty();
   }
 
-  /** Sidebar palette section order and labels. Transformations stays last on purpose. */
+  /** Sidebar palette section order and labels. Transform blocks stays last on purpose. */
   const PALETTE_SECTION_ORDER = [
     { id: "inputs", label: "Inputs" },
     { id: "outputs", label: "Outputs" },
@@ -7259,7 +7281,7 @@
     { id: "editing", label: "Editing" },
     { id: "accessibility", label: "Accessibility" },
     { id: "other", label: "Other" },
-    { id: "transforms", label: "Transformations" },
+    { id: "transforms", label: "Transform blocks" },
   ];
 
   /** Block types in the Editing palette section (splice / trim / e_preview summarization) */
@@ -7306,11 +7328,11 @@
     return false;
   }
 
-  /** Which sidebar tab is active: "flows" (saved transformations) or "applets" (saved
+  /** Which sidebar tab is active: "transformations" (saved transformations) or "applets" (saved
    * applets). Drives the rendering in the shared `#palette-list` container + the
    * placeholder text of `#palette-search`. Blocks live in a floating canvas rail now,
    * not in the sidebar. */
-  let activeLibraryTab = "flows";
+  let activeLibraryTab = "transformations";
 
   function libraryHeadingForTab(tab) {
     if (tab === "applets") return "Applets";
@@ -7319,15 +7341,15 @@
 
   function librarySearchPlaceholderForTab(tab) {
     if (tab === "applets") return "Search applets…";
-    return "Search flows…";
+    return "Search Transformations…";
   }
 
-  /** Reflect `appMode` onto the `.app` container so CSS can hide flow-only UI (Blocks
+  /** Reflect `appMode` onto the `.app` container so CSS can hide Transformation-only UI (Blocks
    * tab, drop target, etc.) while the Applet Playground is active. */
   function syncAppModeChrome() {
     const root = document.querySelector(".app");
     if (!root) return;
-    root.setAttribute("data-app-mode", appMode === "applet" ? "applet" : "flow");
+    root.setAttribute("data-app-mode", appMode === "applet" ? "applet" : "transformation");
   }
 
   /** Update the sidebar heading + search placeholder + tab highlight to match `activeLibraryTab`. */
@@ -7345,9 +7367,9 @@
   }
 
   function setActiveLibraryTab(tab) {
-    const normalized = tab === "applets" ? "applets" : "flows";
+    const normalized = tab === "applets" ? "applets" : "transformations";
     /* Switching to Applets always returns to the list view; the chat assistant is
-     * scoped to the Flows context for now. */
+     * scoped to the Transformations context for now. */
     if (normalized === "applets" && chatOpen) {
       chatOpen = false;
       try {
@@ -7369,7 +7391,7 @@
   /** Dispatcher: re-renders the sidebar list based on the active tab. */
   function renderLibrary(filter) {
     if (activeLibraryTab === "applets") renderAppletsLibrary(filter);
-    else renderFlowsLibrary(filter);
+    else renderTransformationsLibrary(filter);
   }
 
   /* ===== Sidebar collapse =================================================
@@ -7412,8 +7434,8 @@
   /* ===== Chat panel toggle ================================================
    * Chat slides in over the list view inside the sidebar; the inline header
    * button (`#palette-chat-toggle`) opens it, the X (`#chat-close`) returns to
-   * the list. Currently scoped to the Flows tab — the toggle hides on Applets
-   * since the assistant is canvas/flow-focused. */
+   * the list. Currently scoped to the Transformations tab — the toggle hides on Applets
+   * since the assistant is canvas/Transformation-focused. */
 
   const CHAT_OPEN_KEY = "videofactory.chat.open.v1";
   let chatOpen = readChatOpenFromStorage();
@@ -7435,14 +7457,14 @@
     const toggleEl = document.getElementById("palette-chat-toggle");
     const importEl = document.getElementById("palette-import-toggle");
     if (!headerEl || !listEl || !chatEl) return;
-    const isFlows = activeLibraryTab === "flows";
-    /* Toggle button is only meaningful while the Flows tab is active and the
+    const isTransformations = activeLibraryTab === "transformations";
+    /* Toggle button is only meaningful while the Transformations tab is active and the
      * chat is closed (once it's open, the X in the chat header takes over). */
-    if (toggleEl) toggleEl.hidden = !isFlows || chatOpen;
-    /* Import is a flow-only action — hide it on the Applets tab. (The whole
+    if (toggleEl) toggleEl.hidden = !isTransformations || chatOpen;
+    /* Import is a Transformation-only action — hide it on the Applets tab. (The whole
      * header is hidden when chat is open, so no need to handle that here.) */
-    if (importEl) importEl.hidden = !isFlows;
-    const showChat = isFlows && chatOpen;
+    if (importEl) importEl.hidden = !isTransformations;
+    const showChat = isTransformations && chatOpen;
     chatEl.hidden = !showChat;
     headerEl.hidden = showChat;
     listEl.hidden = showChat;
@@ -7529,7 +7551,7 @@
   }
 
   function chatActionIconSvg(kind) {
-    if (kind === "build-flow") {
+    if (kind === "build-transformation") {
       return (
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
         '<circle cx="5" cy="12" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="19" cy="18" r="2"/>' +
@@ -7603,7 +7625,7 @@
       const empty = document.createElement("div");
       empty.className = "chat-empty";
       empty.innerHTML =
-        "Ask the assistant anything about your flow." +
+        "Ask the assistant anything about your Transformation." +
         '<div class="chat-empty-hint">Try: <em>build a hero video</em>, <em>add a transcribe block</em>, or <em>set height to 720</em>.</div>';
       host.appendChild(empty);
       return;
@@ -7633,7 +7655,7 @@
 
   /** All known action shapes:
    *   { kind: "add-block", blockType, settings? }     — drop a block at canvas centre
-   *   { kind: "build-flow", nodes: [{type, settings?}], wire: true }
+   *   { kind: "build-transformation", nodes: [{type, settings?}], wire: true }
    *   { kind: "configure", target?: "selected"|nodeId, settings: {key:value} }
    * Each gets a stable `id` so we can look it up by data-attribute on click. */
   function makeAction(spec) {
@@ -7696,8 +7718,8 @@
             "Here's a hero video pipeline — Input · video → resize to 1080p → Output. Click to drop it on the canvas.",
           actions: [
             makeAction({
-              kind: "build-flow",
-              title: "Hero video flow",
+              kind: "build-transformation",
+              title: "Hero video Transformation",
               sub: "input_video → cld_resize (h=1080) → output",
               nodes: [
                 { type: "input_video" },
@@ -7714,8 +7736,8 @@
             "A thumbnail pipeline grabs a still frame from a video. Try this start:",
           actions: [
             makeAction({
-              kind: "build-flow",
-              title: "Video thumbnail flow",
+              kind: "build-transformation",
+              title: "Video thumbnail Transformation",
               sub: "input_video → cld_video_preview → output_image",
               nodes: [
                 { type: "input_video" },
@@ -7731,8 +7753,8 @@
           text: "Auto-transcription gives you a text track. Drop this pipeline:",
           actions: [
             makeAction({
-              kind: "build-flow",
-              title: "Transcribe flow",
+              kind: "build-transformation",
+              title: "Transcribe Transformation",
               sub: "input_video → cld_transcribe → output_text",
               nodes: [
                 { type: "input_video" },
@@ -7748,7 +7770,7 @@
         text: "Pick a starting shape — both wire input → transform → output:",
         actions: [
           makeAction({
-            kind: "build-flow",
+            kind: "build-transformation",
             title: "Hero video (1080p)",
             sub: "input_video → cld_resize → output",
             nodes: [
@@ -7758,7 +7780,7 @@
             ],
           }),
           makeAction({
-            kind: "build-flow",
+            kind: "build-transformation",
             title: "Thumbnail",
             sub: "input_video → cld_video_preview → output_image",
             nodes: [
@@ -7779,7 +7801,7 @@
           text:
             'Adding a "' +
             blockTitleForType(blockType) +
-            '" block. You can drag-wire it to your existing flow after.',
+            '" block. You can drag-wire it to your existing Transformation after.',
           actions: [
             makeAction({
               kind: "add-block",
@@ -7818,7 +7840,7 @@
     if (/\b(help|what.*can|how.*work)\b/.test(t)) {
       return {
         text:
-          "I'm a mock assistant for the canvas. I can build starter flows, add blocks, and tweak settings on the selected block. Try: 'build a hero video', 'add a resize block', 'set height to 720'.",
+          "I'm a mock assistant for the canvas. I can build starter Transformations, add blocks, and tweak settings on the selected block. Try: 'build a hero video', 'add a resize block', 'set height to 720'.",
         actions: [],
       };
     }
@@ -7829,8 +7851,8 @@
         "I'm not sure how to handle that yet. I can build starter pipelines or add specific blocks. Try one of these:",
       actions: [
         makeAction({
-          kind: "build-flow",
-          title: "Hero video flow",
+          kind: "build-transformation",
+          title: "Hero video Transformation",
           sub: "input → resize → output",
           nodes: [
             { type: "input_video" },
@@ -7874,7 +7896,7 @@
   function chatExecAddBlock(action) {
     const def = TYPES.find((t) => t.type === action.blockType);
     if (!def) {
-      showFlowToast("Unknown block type: " + action.blockType);
+      showTransformationToast("Unknown block type: " + action.blockType);
       return false;
     }
     const cw = canvasBg.clientWidth;
@@ -7887,12 +7909,12 @@
       renderNodes();
     }
     markChatActionApplied(action.id, "Added " + def.title);
-    showFlowToast('Added "' + def.title + '" to canvas.');
+    showTransformationToast('Added "' + def.title + '" to canvas.');
     return true;
   }
 
   /** Replace the canvas with a 3-block input → transform → output starter pipeline. */
-  function chatExecBuildFlow(action) {
+  function chatExecBuildTransformation(action) {
     if (!Array.isArray(action.nodes) || !action.nodes.length) return false;
     if (
       nodes.length > 0 &&
@@ -7931,8 +7953,8 @@
     selectedEdgeId = null;
     renderNodes();
     fitView();
-    markChatActionApplied(action.id, "Built " + (action.title || "flow"));
-    showFlowToast('Built "' + (action.title || "flow") + '" on canvas.');
+    markChatActionApplied(action.id, "Built " + (action.title || "Transformation"));
+    showTransformationToast('Built "' + (action.title || "Transformation") + '" on canvas.');
     return true;
   }
 
@@ -7941,14 +7963,14 @@
     const targetId = action.target === "selected" ? selectedNodeId : action.target;
     const node = nodes.find((n) => n.id === targetId);
     if (!node) {
-      showFlowToast("Select a block on the canvas first.");
+      showTransformationToast("Select a block on the canvas first.");
       return false;
     }
     node.settings = Object.assign({}, node.settings || {}, action.settings || {});
     renderNodes();
     refreshOutputDeliveryUi();
     markChatActionApplied(action.id, "Configured " + node.def.title);
-    showFlowToast("Configured " + node.def.title + ".");
+    showTransformationToast("Configured " + node.def.title + ".");
     return true;
   }
 
@@ -7956,11 +7978,11 @@
     const action = findChatAction(actionId);
     if (!action) return;
     if (appMode === "applet") {
-      showFlowToast("Exit the applet playground first to edit the canvas.");
+      showTransformationToast("Exit the applet playground first to edit the canvas.");
       return;
     }
     if (action.kind === "add-block") chatExecAddBlock(action);
-    else if (action.kind === "build-flow") chatExecBuildFlow(action);
+    else if (action.kind === "build-transformation") chatExecBuildTransformation(action);
     else if (action.kind === "configure") chatExecConfigure(action);
   }
 
@@ -8186,8 +8208,8 @@
     );
   }
 
-  /** Inline-action SVGs for a saved-flow row in the sidebar (export / delete). */
-  function libraryFlowExportIconSvg() {
+  /** Inline-action SVGs for a saved-Transformation row in the sidebar (export / delete). */
+  function libraryTransformationExportIconSvg() {
     return (
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
       '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>' +
@@ -8197,7 +8219,7 @@
     );
   }
 
-  function libraryFlowDeleteIconSvg() {
+  function libraryTransformationDeleteIconSvg() {
     return (
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
       '<polyline points="3 6 5 6 21 6"/>' +
@@ -8209,45 +8231,45 @@
     );
   }
 
-  function renderFlowsLibrary(filter) {
+  function renderTransformationsLibrary(filter) {
     const q = (filter || "").toLowerCase();
     paletteList.innerHTML = "";
     /* Re-rendering tears down the inline-confirm Delete button, so reset the pending state
      * to keep arming-from-the-old-button logic from leaking into the new DOM. */
-    clearPendingFlowDelete();
-    const store = readFlowStore();
-    const allNames = Object.keys(store.flows || {}).sort((a, b) => a.localeCompare(b));
+    clearPendingTransformationDelete();
+    const store = readTransformationStore();
+    const allNames = Object.keys(store.transformations || {}).sort((a, b) => a.localeCompare(b));
     const names = q ? allNames.filter((n) => n.toLowerCase().includes(q)) : allNames;
     if (!allNames.length) {
       const empty = document.createElement("div");
       empty.className = "library-empty";
       empty.innerHTML =
         "No saved transformations yet." +
-        '<div class="library-empty-hint">Build a flow and press <b>Save flow</b>, or use the <b>Import</b> icon above.</div>';
+        '<div class="library-empty-hint">Build a Transformation and press <b>Save Transformation</b>, or use the <b>Import</b> icon above.</div>';
       paletteList.appendChild(empty);
       return;
     }
     if (!names.length) {
       const empty = document.createElement("div");
       empty.className = "library-empty";
-      empty.textContent = "No flows match.";
+      empty.textContent = "No Transformations match.";
       paletteList.appendChild(empty);
       return;
     }
-    const activeFlow = appMode === "applet" ? "" : getActiveSavedFlowName();
+    const activeTransformation = appMode === "applet" ? "" : getActiveSavedTransformationName();
     for (const name of names) {
-      const doc = store.flows[name];
-      const when = formatFlowSavedAt(doc && doc.savedAt);
+      const doc = store.transformations[name];
+      const when = formatTransformationSavedAt(doc && doc.savedAt);
       const row = document.createElement("div");
-      row.className = "library-row library-row-flow";
-      if (name === activeFlow) row.classList.add("is-active");
-      row.setAttribute("data-flow-name", encodeURIComponent(name));
+      row.className = "library-row library-row-transformation";
+      if (name === activeTransformation) row.classList.add("is-active");
+      row.setAttribute("data-transformation-name", encodeURIComponent(name));
       row.setAttribute("role", "button");
       row.setAttribute("tabindex", "0");
       row.title = name;
       row.innerHTML =
         '<div class="library-row-icon">' +
-        libraryRowIconSvg("flow") +
+        libraryRowIconSvg("transformation") +
         "</div>" +
         '<div class="library-row-meta">' +
         '<span class="library-row-name">' +
@@ -8258,11 +8280,11 @@
           : "") +
         "</div>" +
         '<div class="library-row-actions">' +
-        '<button type="button" class="library-row-action library-row-export" title="Export as JSON" aria-label="Export flow as JSON">' +
-        libraryFlowExportIconSvg() +
+        '<button type="button" class="library-row-action library-row-export" title="Export as JSON" aria-label="Export Transformation as JSON">' +
+        libraryTransformationExportIconSvg() +
         "</button>" +
-        '<button type="button" class="library-row-action library-row-delete" title="Delete flow" aria-label="Delete flow">' +
-        libraryFlowDeleteIconSvg() +
+        '<button type="button" class="library-row-action library-row-delete" title="Delete Transformation" aria-label="Delete Transformation">' +
+        libraryTransformationDeleteIconSvg() +
         "</button>" +
         "</div>";
       paletteList.appendChild(row);
@@ -8289,7 +8311,7 @@
       : allSlugs;
     if (!allSlugs.length) {
       paletteList.innerHTML =
-        '<div class="library-empty">No applets yet.<div class="library-empty-hint">Open <b>Applet</b> on a saved flow to create one.</div></div>';
+        '<div class="library-empty">No applets yet.<div class="library-empty-hint">Open <b>Applet</b> on a saved Transformation to create one.</div></div>';
       return;
     }
     if (!slugs.length) {
@@ -8300,7 +8322,7 @@
     for (const slug of slugs) {
       const rec = applets[slug];
       const name = (rec && rec.name) || slug;
-      const when = formatFlowSavedAt(rec && rec.updatedAt);
+      const when = formatTransformationSavedAt(rec && rec.updatedAt);
       const outKind = rec && rec.output && rec.output.kind ? rec.output.kind : "";
       const sub = outKind ? "→ " + outKind + (when ? " · " + when : "") : when;
       const row = document.createElement("div");
@@ -8418,7 +8440,7 @@
         inputWirePull = null;
         selectedEdgeId = null;
         updateEdges();
-        notifyAppletEditorFlowMaybeDirty();
+        notifyAppletEditorTransformationMaybeDirty();
       }
     }
     if (panning) {
@@ -8469,12 +8491,12 @@
       panning = false;
       canvasBg.classList.remove("panning");
     }
-    if (endedCanvasPan) notifyAppletEditorFlowMaybeDirty();
+    if (endedCanvasPan) notifyAppletEditorTransformationMaybeDirty();
     if (draggingNode) {
       const el = nodesLayer.querySelector(`[data-node-id="${draggingNode.id}"]`);
       if (el) el.classList.remove("dragging");
       draggingNode = null;
-      notifyAppletEditorFlowMaybeDirty();
+      notifyAppletEditorTransformationMaybeDirty();
     }
     if (wiring) {
       wiring = null;
@@ -8552,7 +8574,7 @@
         panY -= e.deltaY;
       }
       applyTransform();
-      notifyAppletEditorFlowMaybeDirty();
+      notifyAppletEditorTransformationMaybeDirty();
     },
     { passive: false }
   );
@@ -8572,7 +8594,7 @@
     }
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && !e.target.matches("textarea, input, select")) {
       e.preventDefault();
-      runFlow();
+      runTransformation();
     }
     if (e.key === "Delete" || e.key === "Backspace") {
       if (e.target.matches("input, textarea") || e.target.closest?.("select")) return;
@@ -8581,7 +8603,7 @@
         selectedEdgeId = null;
         for (const n of nodes) if (n.def.type === "splice") syncSpliceOrderFromEdges(n);
         renderNodes();
-        notifyAppletEditorFlowMaybeDirty();
+        notifyAppletEditorTransformationMaybeDirty();
       } else if (selectedNodeId) {
         const id = selectedNodeId;
         nodes = nodes.filter((n) => n.id !== id);
@@ -8598,22 +8620,22 @@
   });
 
   document.getElementById("btn-fit").addEventListener("click", fitView);
-  document.getElementById("btn-run-flow").addEventListener("click", runFlow);
+  document.getElementById("btn-run-transformation").addEventListener("click", runTransformation);
 
   document.getElementById("zoom-in").addEventListener("click", () => {
     zoom = Math.min(MAX_Z, zoom * 1.15);
     applyTransform();
-    notifyAppletEditorFlowMaybeDirty();
+    notifyAppletEditorTransformationMaybeDirty();
   });
   document.getElementById("zoom-out").addEventListener("click", () => {
     zoom = Math.max(MIN_Z, zoom / 1.15);
     applyTransform();
-    notifyAppletEditorFlowMaybeDirty();
+    notifyAppletEditorTransformationMaybeDirty();
   });
 
   paletteSearch.addEventListener("input", () => renderLibrary(paletteSearch.value));
 
-  /* Library tab switcher: Flows · Applets. A user click also expands the sidebar
+  /* Library tab switcher: Transformations · Applets. A user click also expands the sidebar
    * if it's collapsed (so clicking an icon in the collapsed rail reveals the panel).
    * Programmatic `setActiveLibraryTab` calls (e.g. the boot-time switch when
    * opening `?applet=<slug>`) deliberately don't expand — the URL's `?sidebar=`
@@ -8622,7 +8644,7 @@
     tabEl.addEventListener("click", () => {
       const t = tabEl.getAttribute("data-library-tab");
       if (sidebarCollapsed) setSidebarCollapsed(false);
-      setActiveLibraryTab(t || "flows");
+      setActiveLibraryTab(t || "transformations");
     });
   });
 
@@ -8664,41 +8686,41 @@
   });
 
   /* Clicking inside the library list:
-   *   - Flows tab:
-   *       · Export icon  → download saved flow JSON (no row activation).
+   *   - Transformations tab:
+   *       · Export icon  → download saved Transformation JSON (no row activation).
    *       · Delete icon  → two-step inline confirm, then delete.
    *       · Import row   → open the hidden file input picker.
-   *       · Row body     → load the saved flow into the canvas.
+   *       · Row body     → load the saved Transformation into the canvas.
    *   - Applets tab     → open the applet in the Playground view. */
   paletteList.addEventListener("click", (e) => {
-    if (activeLibraryTab === "flows") {
+    if (activeLibraryTab === "transformations") {
       const exportBtn = e.target.closest && e.target.closest(".library-row-export");
       const deleteBtn = e.target.closest && e.target.closest(".library-row-delete");
-      const row = e.target.closest(".library-row[data-flow-name]");
+      const row = e.target.closest(".library-row[data-transformation-name]");
       if (!row) return;
-      const enc = row.getAttribute("data-flow-name") || "";
+      const enc = row.getAttribute("data-transformation-name") || "";
       const name = enc ? decodeURIComponent(enc) : "";
       if (!name) return;
       if (exportBtn) {
         e.preventDefault();
         e.stopPropagation();
-        clearPendingFlowDelete();
-        exportSavedFlowByName(name);
+        clearPendingTransformationDelete();
+        exportSavedTransformationByName(name);
         return;
       }
       if (deleteBtn) {
         e.preventDefault();
         e.stopPropagation();
-        if (pendingFlowDeleteName === name) {
-          clearPendingFlowDelete();
-          void deleteSavedFlowByName(name);
+        if (pendingTransformationDeleteName === name) {
+          clearPendingTransformationDelete();
+          void deleteSavedTransformationByName(name);
         } else {
-          armPendingFlowDelete(name, deleteBtn);
+          armPendingTransformationDelete(name, deleteBtn);
         }
         return;
       }
-      if (appMode === "applet") exitAppletPlayground({ keepFlow: true });
-      const ok = loadFlowByName(name);
+      if (appMode === "applet") exitAppletPlayground({ keepTransformation: true });
+      const ok = loadTransformationByName(name);
       if (ok) renderLibrary(paletteSearch.value);
     } else if (activeLibraryTab === "applets") {
       const row = e.target.closest(".library-row[data-applet-slug]");
@@ -8737,7 +8759,7 @@
     setChatOpen(true);
   });
   document.getElementById("palette-import-toggle").addEventListener("click", () => {
-    const inp = document.getElementById("flow-import-input");
+    const inp = document.getElementById("transformation-import-input");
     if (!inp) return;
     inp.value = "";
     inp.click();
@@ -8780,7 +8802,7 @@
 
   window.addEventListener("resize", () => {
     applyTransform();
-    notifyAppletEditorFlowMaybeDirty();
+    notifyAppletEditorTransformationMaybeDirty();
   });
 
   function syncIdSequencesFromGraph() {
@@ -8822,9 +8844,9 @@
     return out;
   }
 
-  function serializeFlowDocument() {
+  function serializeTransformationDocument() {
     return {
-      v: FLOW_DOC_VERSION,
+      v: TRANSFORMATION_DOC_VERSION,
       savedAt: new Date().toISOString(),
       viewport: { panX, panY, zoom },
       nodeIdSeq,
@@ -8847,7 +8869,7 @@
   }
 
   function canvasGraphFingerprint() {
-    const doc = serializeFlowDocument();
+    const doc = serializeTransformationDocument();
     return JSON.stringify({
       v: doc.v,
       viewport: doc.viewport,
@@ -8859,9 +8881,9 @@
   }
 
   /** Fingerprint of just the *content* of the canvas (no viewport). Used for the brand
-   * "· unsaved" indicator so that panning/zooming alone doesn't mark a flow dirty. */
-  function flowContentFingerprint() {
-    const doc = serializeFlowDocument();
+   * "· unsaved" indicator so that panning/zooming alone doesn't mark a Transformation dirty. */
+  function transformationContentFingerprint() {
+    const doc = serializeTransformationDocument();
     return JSON.stringify({
       v: doc.v,
       nodeIdSeq: doc.nodeIdSeq,
@@ -8872,23 +8894,23 @@
   }
 
   /** Last known-clean content fingerprint (set on load/save/import/seed). */
-  let cleanFlowFingerprint = "";
+  let cleanTransformationFingerprint = "";
 
   /** Reset baseline — call after the canvas matches a known persisted state. */
-  function markFlowAsClean() {
-    cleanFlowFingerprint = flowContentFingerprint();
-    updateBrandFlowDirtyUi();
+  function markTransformationAsClean() {
+    cleanTransformationFingerprint = transformationContentFingerprint();
+    updateBrandTransformationDirtyUi();
   }
 
-  function flowIsDirty() {
-    return flowContentFingerprint() !== cleanFlowFingerprint;
+  function transformationIsDirty() {
+    return transformationContentFingerprint() !== cleanTransformationFingerprint;
   }
 
-  /** Toggle the amber " · unsaved" suffix on the topbar flow name. */
-  function updateBrandFlowDirtyUi() {
-    const el = document.getElementById("brand-flow-name");
+  /** Toggle the amber " · unsaved" suffix on the topbar Transformation name. */
+  function updateBrandTransformationDirtyUi() {
+    const el = document.getElementById("brand-transformation-name");
     if (!el) return;
-    el.classList.toggle("is-unsaved", flowIsDirty());
+    el.classList.toggle("is-unsaved", transformationIsDirty());
   }
 
   function appletEditDialogIsOpen() {
@@ -8897,11 +8919,11 @@
   }
 
   /** Blueprint/layout/settings/viewport changed while applet editor may be open — refresh previews + unsaved UI. */
-  function notifyAppletEditorFlowMaybeDirty() {
+  function notifyAppletEditorTransformationMaybeDirty() {
     /* Always refresh the brand "· unsaved" indicator regardless of applet editor state. */
-    updateBrandFlowDirtyUi();
+    updateBrandTransformationDirtyUi();
     if (!appletEditDialogIsOpen()) return;
-    updateAppletFlowOutputReadout();
+    updateAppletTransformationOutputReadout();
     updateAppletApiMethodReadout();
     updateAppletEditorDirtyUi();
   }
@@ -8909,9 +8931,9 @@
   /**
    * @returns {{ unknownTypes: string[] }}
    */
-  function applyFlowDocument(doc) {
-    if (!doc || doc.v !== FLOW_DOC_VERSION) {
-      throw new Error("Invalid flow file (expected version " + FLOW_DOC_VERSION + ").");
+  function applyTransformationDocument(doc) {
+    if (!doc || doc.v !== TRANSFORMATION_DOC_VERSION) {
+      throw new Error("Invalid Transformation file (expected version " + TRANSFORMATION_DOC_VERSION + ").");
     }
     const unknownTypes = [];
     const built = [];
@@ -8969,39 +8991,39 @@
     applyTransform();
     /* Canvas now matches the document we just applied — baseline the dirty tracker so the
        brand stays clean until the user makes their first change. */
-    markFlowAsClean();
+    markTransformationAsClean();
     return { unknownTypes };
   }
 
-  function safeParseFlowStoreRaw(raw) {
+  function safeParseTransformationStoreRaw(raw) {
     try {
-      if (!raw || !String(raw).trim()) return { v: 1, lastActive: null, flows: {} };
+      if (!raw || !String(raw).trim()) return { v: 1, lastActive: null, transformations: {} };
       const o = JSON.parse(raw);
-      if (!o || o.v !== 1 || typeof o.flows !== "object" || o.flows === null) {
-        return { v: 1, lastActive: null, flows: {} };
+      if (!o || o.v !== 1 || typeof o.transformations !== "object" || o.transformations === null) {
+        return { v: 1, lastActive: null, transformations: {} };
       }
       return {
         v: 1,
         lastActive: typeof o.lastActive === "string" ? o.lastActive : null,
-        flows: o.flows,
+        transformations: o.transformations,
       };
     } catch (e) {
-      return { v: 1, lastActive: null, flows: {} };
+      return { v: 1, lastActive: null, transformations: {} };
     }
   }
 
-  function readFlowStore() {
-    return safeParseFlowStoreRaw(localStorage.getItem(FLOW_STORE_KEY));
+  function readTransformationStore() {
+    return safeParseTransformationStoreRaw(localStorage.getItem(TRANSFORMATION_STORE_KEY));
   }
 
-  function writeFlowStore(store) {
+  function writeTransformationStore(store) {
     try {
       delete store.lastActive;
     } catch (e) {}
-    localStorage.setItem(FLOW_STORE_KEY, JSON.stringify(store));
+    localStorage.setItem(TRANSFORMATION_STORE_KEY, JSON.stringify(store));
   }
 
-  function formatFlowSavedAt(iso) {
+  function formatTransformationSavedAt(iso) {
     if (!iso || typeof iso !== "string") return "";
     try {
       const d = new Date(iso);
@@ -9012,137 +9034,137 @@
     }
   }
 
-  /** Writes current canvas to the named flow; updates `?flow=` — no confirm, no toast (for applet co-save). */
-  function persistCurrentFlowUnderNameSilent(trimmed) {
+  /** Writes current canvas to the named Transformation; updates `?transformation=` — no confirm, no toast (for applet co-save). */
+  function persistCurrentTransformationUnderNameSilent(trimmed) {
     const name = String(trimmed || "").trim();
     if (!name) return false;
     try {
-      const store = readFlowStore();
-      store.flows[name] = serializeFlowDocument();
-      writeFlowStore(store);
-      setFlowIdInUrl(name);
-      markFlowAsClean();
+      const store = readTransformationStore();
+      store.transformations[name] = serializeTransformationDocument();
+      writeTransformationStore(store);
+      setTransformationIdInUrl(name);
+      markTransformationAsClean();
       return true;
     } catch (err) {
       return false;
     }
   }
 
-  function saveCurrentFlowWithName(name) {
+  function saveCurrentTransformationWithName(name) {
     const trimmed = String(name || "").trim();
     if (!trimmed) {
-      showFlowToast("Enter a name for this flow.");
+      showTransformationToast("Enter a name for this Transformation.");
       return false;
     }
-    const store = readFlowStore();
-    const doc = serializeFlowDocument();
-    store.flows[trimmed] = doc;
+    const store = readTransformationStore();
+    const doc = serializeTransformationDocument();
+    store.transformations[trimmed] = doc;
     try {
-      writeFlowStore(store);
-      setFlowIdInUrl(trimmed);
-      markFlowAsClean();
-      showFlowToast('Saved flow "' + trimmed + '".');
+      writeTransformationStore(store);
+      setTransformationIdInUrl(trimmed);
+      markTransformationAsClean();
+      showTransformationToast('Saved Transformation "' + trimmed + '".');
       return true;
     } catch (err) {
-      showFlowToast("Could not save (storage full or private mode).");
+      showTransformationToast("Could not save (storage full or private mode).");
       return false;
     }
   }
 
-  function loadFlowByName(name) {
-    const store = readFlowStore();
-    const doc = store.flows[name];
+  function loadTransformationByName(name) {
+    const store = readTransformationStore();
+    const doc = store.transformations[name];
     if (!doc) {
-      showFlowToast("That saved flow was not found.");
+      showTransformationToast("That saved Transformation was not found.");
       return false;
     }
     try {
-      const { unknownTypes } = applyFlowDocument(doc);
-      setFlowIdInUrl(name);
-      let msg = 'Loaded flow "' + name + '".';
+      const { unknownTypes } = applyTransformationDocument(doc);
+      setTransformationIdInUrl(name);
+      let msg = 'Loaded Transformation "' + name + '".';
       if (unknownTypes.length) {
         msg += " Skipped: " + Array.from(new Set(unknownTypes)).join(", ");
       }
-      showFlowToast(msg);
+      showTransformationToast(msg);
       return true;
     } catch (err) {
-      showFlowToast(err.message || String(err));
+      showTransformationToast(err.message || String(err));
       return false;
     }
   }
 
-  function deleteSavedFlowByName(name) {
-    const store = readFlowStore();
-    if (!Object.prototype.hasOwnProperty.call(store.flows, name)) return;
-    delete store.flows[name];
+  function deleteSavedTransformationByName(name) {
+    const store = readTransformationStore();
+    if (!Object.prototype.hasOwnProperty.call(store.transformations, name)) return;
+    delete store.transformations[name];
     try {
-      writeFlowStore(store);
-      if (getFlowIdFromLocation() === name) setFlowIdInUrl("");
-      showFlowToast('Removed "' + name + '".');
-      if (activeLibraryTab === "flows") renderLibrary(paletteSearch.value);
+      writeTransformationStore(store);
+      if (getTransformationIdFromLocation() === name) setTransformationIdInUrl("");
+      showTransformationToast('Removed "' + name + '".');
+      if (activeLibraryTab === "transformations") renderLibrary(paletteSearch.value);
     } catch (err) {
-      showFlowToast("Could not update saved flows.");
+      showTransformationToast("Could not update saved Transformations.");
     }
   }
 
-  /** Two-step inline confirm for the Delete button in the sidebar saved-flows list:
+  /** Two-step inline confirm for the Delete button in the sidebar saved-Transformations list:
    * first click arms the button (icon → "?"), second click within the timeout deletes. */
-  let pendingFlowDeleteName = null;
-  let pendingFlowDeleteTimer = null;
+  let pendingTransformationDeleteName = null;
+  let pendingTransformationDeleteTimer = null;
   const PENDING_FLOW_DELETE_MS = 4000;
 
-  function findFlowDeleteButton(name) {
+  function findTransformationDeleteButton(name) {
     const enc = encodeURIComponent(name);
     const row = document.querySelector(
-      '.library-row-flow[data-flow-name="' + enc.replace(/"/g, '\\"') + '"]'
+      '.library-row-transformation[data-transformation-name="' + enc.replace(/"/g, '\\"') + '"]'
     );
     return row ? row.querySelector(".library-row-delete") : null;
   }
 
-  function clearPendingFlowDelete() {
-    if (pendingFlowDeleteTimer !== null) {
-      clearTimeout(pendingFlowDeleteTimer);
-      pendingFlowDeleteTimer = null;
+  function clearPendingTransformationDelete() {
+    if (pendingTransformationDeleteTimer !== null) {
+      clearTimeout(pendingTransformationDeleteTimer);
+      pendingTransformationDeleteTimer = null;
     }
-    if (pendingFlowDeleteName !== null) {
-      const btn = findFlowDeleteButton(pendingFlowDeleteName);
+    if (pendingTransformationDeleteName !== null) {
+      const btn = findTransformationDeleteButton(pendingTransformationDeleteName);
       if (btn) {
         btn.classList.remove("is-pending");
-        btn.title = "Delete flow";
-        btn.setAttribute("aria-label", "Delete flow");
-        btn.innerHTML = libraryFlowDeleteIconSvg();
+        btn.title = "Delete Transformation";
+        btn.setAttribute("aria-label", "Delete Transformation");
+        btn.innerHTML = libraryTransformationDeleteIconSvg();
       }
-      pendingFlowDeleteName = null;
+      pendingTransformationDeleteName = null;
     }
   }
 
-  function armPendingFlowDelete(name, btn) {
-    clearPendingFlowDelete();
+  function armPendingTransformationDelete(name, btn) {
+    clearPendingTransformationDelete();
     if (!btn) return;
-    pendingFlowDeleteName = name;
+    pendingTransformationDeleteName = name;
     btn.classList.add("is-pending");
     btn.title = "Click again to confirm";
-    btn.setAttribute("aria-label", "Confirm delete flow");
+    btn.setAttribute("aria-label", "Confirm delete Transformation");
     btn.textContent = "?";
-    pendingFlowDeleteTimer = setTimeout(() => {
-      pendingFlowDeleteTimer = null;
-      clearPendingFlowDelete();
+    pendingTransformationDeleteTimer = setTimeout(() => {
+      pendingTransformationDeleteTimer = null;
+      clearPendingTransformationDelete();
     }, PENDING_FLOW_DELETE_MS);
   }
 
-  /** Best-effort filesystem-safe filename from a flow name. Falls back to "flow". */
-  function flowDownloadFilename(name) {
+  /** Best-effort filesystem-safe filename from a Transformation name. Falls back to "transformation". */
+  function transformationDownloadFilename(name) {
     const safe = String(name || "")
       .trim()
       .replace(/[\\/:*?"<>|]+/g, "-")
       .replace(/\s+/g, "_")
       .replace(/^[.\-_]+|[.\-_]+$/g, "")
       .slice(0, 80);
-    return (safe || "flow") + ".flow.json";
+    return (safe || "transformation") + ".transformation.json";
   }
 
   /** Triggers a browser download of `doc` as JSON, using a filename derived from `name`. */
-  function downloadFlowDocument(doc, name) {
+  function downloadTransformationDocument(doc, name) {
     try {
       const blob = new Blob([JSON.stringify(doc, null, 2)], {
         type: "application/json",
@@ -9150,33 +9172,33 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = flowDownloadFilename(name);
+      a.download = transformationDownloadFilename(name);
       document.body.appendChild(a);
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 0);
       return true;
     } catch (err) {
-      showFlowToast("Could not export flow.");
+      showTransformationToast("Could not export Transformation.");
       return false;
     }
   }
 
-  /** Export a named flow straight from the saved store (without loading it onto the canvas). */
-  function exportSavedFlowByName(name) {
-    const store = readFlowStore();
-    const doc = store.flows[name];
+  /** Export a named Transformation straight from the saved store (without loading it onto the canvas). */
+  function exportSavedTransformationByName(name) {
+    const store = readTransformationStore();
+    const doc = store.transformations[name];
     if (!doc) {
-      showFlowToast("That saved flow was not found.");
+      showTransformationToast("That saved Transformation was not found.");
       return;
     }
-    if (downloadFlowDocument(doc, name)) {
-      showFlowToast('Exported "' + name + '" as JSON.');
+    if (downloadTransformationDocument(doc, name)) {
+      showTransformationToast('Exported "' + name + '" as JSON.');
     }
   }
 
-  /** Read a JSON flow file, validate, and apply it to the canvas (replaces current). */
-  function importFlowFromFile(file) {
+  /** Read a JSON Transformation file, validate, and apply it to the canvas (replaces current). */
+  function importTransformationFromFile(file) {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
@@ -9184,31 +9206,31 @@
       try {
         doc = JSON.parse(String(reader.result || ""));
       } catch (e) {
-        showFlowToast("Import failed: file is not valid JSON.");
+        showTransformationToast("Import failed: file is not valid JSON.");
         return;
       }
-      if (!doc || doc.v !== FLOW_DOC_VERSION) {
-        showFlowToast(
-          "Import failed: not a flow file (expected v" + FLOW_DOC_VERSION + ")."
+      if (!doc || doc.v !== TRANSFORMATION_DOC_VERSION) {
+        showTransformationToast(
+          "Import failed: not a Transformation file (expected v" + TRANSFORMATION_DOC_VERSION + ")."
         );
         return;
       }
       try {
-        const { unknownTypes } = applyFlowDocument(doc);
-        /* Imported flow is "untitled" until the user explicitly saves it under a name —
-           clear the URL flow id so they don't accidentally overwrite a previous save. */
-        setFlowIdInUrl("");
-        let msg = "Imported flow.";
+        const { unknownTypes } = applyTransformationDocument(doc);
+        /* Imported Transformation is "untitled" until the user explicitly saves it under a name —
+           clear the URL Transformation id so they don't accidentally overwrite a previous save. */
+        setTransformationIdInUrl("");
+        let msg = "Imported Transformation.";
         if (unknownTypes.length) {
           msg += " Skipped: " + Array.from(new Set(unknownTypes)).join(", ");
         }
-        showFlowToast(msg);
+        showTransformationToast(msg);
       } catch (err) {
-        showFlowToast(err.message || String(err));
+        showTransformationToast(err.message || String(err));
       }
     };
     reader.onerror = () => {
-      showFlowToast("Could not read the selected file.");
+      showTransformationToast("Could not read the selected file.");
     };
     reader.readAsText(file);
   }
@@ -9231,22 +9253,22 @@
     localStorage.setItem(APPLET_STORE_KEY, JSON.stringify(store));
   }
 
-  function getActiveSavedFlowName() {
-    const id = getFlowIdFromLocation();
+  function getActiveSavedTransformationName() {
+    const id = getTransformationIdFromLocation();
     if (!id) return "";
-    const store = readFlowStore();
-    return Object.prototype.hasOwnProperty.call(store.flows, id) ? id : "";
+    const store = readTransformationStore();
+    return Object.prototype.hasOwnProperty.call(store.transformations, id) ? id : "";
   }
 
-  function syncAppletFlowNameFieldFromStore() {
+  function syncAppletTransformationNameFieldFromStore() {
     const el = document.getElementById("applet-edit-name");
     if (!el) return;
-    const fn = getActiveSavedFlowName();
+    const fn = getActiveSavedTransformationName();
     el.value = fn;
   }
 
-  /** Same rules as naming a saved flow (applets use this string as both display name and id). */
-  function isValidAppletFlowName(name) {
+  /** Same rules as naming a saved Transformation (applets use this string as both display name and id). */
+  function isValidAppletTransformationName(name) {
     const s = String(name || "").trim();
     return s.length > 0 && s.length <= 120;
   }
@@ -9456,7 +9478,7 @@
     return nodes.filter((n) => isTerminalOutputNode(n));
   }
 
-  function deriveAppletOutputSpecFromFlow() {
+  function deriveAppletOutputSpecFromTransformation() {
     const terminals = listTerminalOutputNodesOnCanvas();
     if (terminals.length === 0) {
       return {
@@ -9495,10 +9517,10 @@
     };
   }
 
-  function updateAppletFlowOutputReadout() {
-    const el = document.getElementById("applet-flow-output-readout");
+  function updateAppletTransformationOutputReadout() {
+    const el = document.getElementById("applet-transformation-output-readout");
     if (!el) return;
-    const spec = deriveAppletOutputSpecFromFlow();
+    const spec = deriveAppletOutputSpecFromTransformation();
     el.classList.toggle("applet-output-readout-warn", !spec.ok);
     if (spec.ok) {
       const k = escapeHtml(spec.kind);
@@ -9605,7 +9627,7 @@
           newBadge +
           "</span>" +
           '<span class="applet-bind-param-field"><label>API name</label>' +
-          '<input type="text" class="applet-bind-param-name flow-dialog-input" autocomplete="off" maxlength="64" spellcheck="false" value="' +
+          '<input type="text" class="applet-bind-param-name transformation-dialog-input" autocomplete="off" maxlength="64" spellcheck="false" value="' +
           pnv +
           '"' +
           nameDis +
@@ -9640,7 +9662,7 @@
   /* ============================================================================
    * Named-transformation publishing (Class A applets — URL-form)
    *
-   * A workflow whose graph collapses to a single Cloudinary URL transformation
+   * A Transformation whose graph collapses to a single Cloudinary URL transformation
    * chain can be published as a named transformation (`t_<slug>`) on the cloud
    * account. The applet's `POST /applets/<slug>/run` then becomes a stateless
    * URL constructor instead of a server-executed pipeline.
@@ -9653,7 +9675,7 @@
    *     trigger server-side jobs that store separate resources).
    *
    * Variables: applet inputs that *can* parameterize the URL bind to:
-   *   - the URL public_id slot (the primary base media input — one per flow),
+   *   - the URL public_id slot (the primary base media input — one per Transformation),
    *   - Cloudinary user-defined variables `$(<name>)` referenced inside the
    *     chain (today: `input_text` blocks wired into a Text overlay's text
    *     port).
@@ -9666,7 +9688,7 @@
   function slugifyForCloudinaryNamedTransformation(name) {
     let s = String(name || "").trim().toLowerCase();
     s = s.replace(/[^a-z0-9_]+/g, "_").replace(/^_+|_+$/g, "").replace(/_+/g, "_");
-    if (!s) s = "workflow";
+    if (!s) s = "transformation";
     return "vcf_" + s.slice(0, 80);
   }
 
@@ -9697,7 +9719,7 @@
   }
 
   /**
-   * Decide whether the active flow can be published as a Cloudinary named transformation.
+   * Decide whether the active Transformation can be published as a Cloudinary named transformation.
    *
    * Class B blockers come in two flavours so the readout can explain *which* block
    * forces API-only and *why*:
@@ -9715,7 +9737,7 @@
   function classifyAppletForNamedTransformation(bindings) {
     const reasons = [];
     const blockers = [];
-    const outSpec = deriveAppletOutputSpecFromFlow();
+    const outSpec = deriveAppletOutputSpecFromTransformation();
     if (!outSpec.ok) {
       return { ok: false, reasons: [outSpec.message], blockers, outSpec };
     }
@@ -9977,14 +9999,14 @@
   function updateAppletExampleResponseReadout() {
     const el = document.getElementById("applet-example-response-readout");
     if (!el) return;
-    const slug = String(document.getElementById("applet-edit-name")?.value || "").trim() || "workflow_name";
+    const slug = String(document.getElementById("applet-edit-name")?.value || "").trim() || "transformation_name";
     const version = appletEditorResolvedVersion();
-    const spec = deriveAppletOutputSpecFromFlow();
+    const spec = deriveAppletOutputSpecFromTransformation();
     if (!spec.ok) {
       el.textContent = JSON.stringify(
         {
           ok: false,
-          error: "invalid_flow",
+          error: "invalid_transformation",
           message: spec.message,
         },
         null,
@@ -10025,7 +10047,7 @@
   function updateAppletApiMethodReadout() {
     const el = document.getElementById("applet-api-method-readout");
     if (!el) return;
-    const name = String(document.getElementById("applet-edit-name")?.value || "").trim() || "workflow_name";
+    const name = String(document.getElementById("applet-edit-name")?.value || "").trim() || "transformation_name";
     const slugPart = encodeURIComponent(name);
     let inputs = [];
     try {
@@ -10143,7 +10165,7 @@
     const el = document.getElementById("applet-named-tx-readout");
     const pill = document.getElementById("applet-named-tx-pill");
     if (!el) return;
-    const name = String(document.getElementById("applet-edit-name")?.value || "").trim() || "workflow_name";
+    const name = String(document.getElementById("applet-edit-name")?.value || "").trim() || "transformation_name";
     let inputs = [];
     try {
       inputs = collectAppletInputsFromBindings();
@@ -10191,7 +10213,7 @@
         : "";
       const fallbackHtml = hasAny
         ? ""
-        : '<p class="applet-named-tx-meta">This flow can\'t be expressed as a single Cloudinary URL transformation.</p>';
+        : '<p class="applet-named-tx-meta">This Transformation can\'t be expressed as a single Cloudinary URL transformation.</p>';
       el.innerHTML =
         '<div class="applet-named-tx-banner">' +
         '<p class="applet-named-tx-banner-title">URL form unavailable — applet runs eagerly via the API.</p>' +
@@ -10269,7 +10291,7 @@
     appletEditorCleanSnapshot = {
       description: descEl ? String(descEl.value || "") : "",
       inputs,
-      flowFingerprint: canvasGraphFingerprint(),
+      transformationFingerprint: canvasGraphFingerprint(),
     };
   }
 
@@ -10335,19 +10357,19 @@
       el.classList.toggle("applet-removed-unsaved", canvasDeltaDirty);
     });
 
-    const flowDirty =
-      appletEditorCleanSnapshot.flowFingerprint != null &&
-      canvasGraphFingerprint() !== appletEditorCleanSnapshot.flowFingerprint;
+    const transformationDirty =
+      appletEditorCleanSnapshot.transformationFingerprint != null &&
+      canvasGraphFingerprint() !== appletEditorCleanSnapshot.transformationFingerprint;
 
     const bindingsSectionDirty = inputsDirty || canvasDeltaDirty;
-    const bindingsPanelDirty = bindingsSectionDirty || flowDirty;
+    const bindingsPanelDirty = bindingsSectionDirty || transformationDirty;
     bindingsPanel?.classList.toggle("applet-section-dirty", bindingsPanelDirty);
     bindingsHeadSpan?.classList.toggle("applet-section-label-dirty", bindingsPanelDirty);
 
-    outputPanel?.classList.toggle("applet-section-dirty", flowDirty);
-    outputHeadSpan?.classList.toggle("applet-section-label-dirty", flowDirty);
+    outputPanel?.classList.toggle("applet-section-dirty", transformationDirty);
+    outputHeadSpan?.classList.toggle("applet-section-label-dirty", transformationDirty);
 
-    const anyDirty = descDirty || bindingsSectionDirty || flowDirty;
+    const anyDirty = descDirty || bindingsSectionDirty || transformationDirty;
     titleEl?.classList.toggle("applet-title-dirty", anyDirty);
     if (banner) banner.hidden = !anyDirty;
   }
@@ -10356,38 +10378,38 @@
     const hint = document.getElementById("applet-edit-hint");
     if (!hint) return;
     if (!hasExistingApplet) {
-      hint.innerHTML = "No applet stored yet for this flow.";
+      hint.innerHTML = "No applet stored yet for this Transformation.";
     } else {
-      hint.innerHTML = "Configure the input and output interface for this flow.";
+      hint.innerHTML = "Configure the input and output interface for this Transformation.";
     }
   }
 
-  /** One applet per saved workflow (slug = workflow name). Requires Save flow first. */
-  function openAppletEditorForCurrentWorkflow() {
+  /** One applet per saved Transformation (slug = Transformation name). Requires Save Transformation first. */
+  function openAppletEditorForCurrentTransformation() {
     const dlg = document.getElementById("applet-edit-dialog");
     if (!dlg) return;
 
-    const flowName = getActiveSavedFlowName();
-    if (!flowName) {
-      showFlowToast("Save the flow first.");
+    const transformationName = getActiveSavedTransformationName();
+    if (!transformationName) {
+      showTransformationToast("Save the Transformation first.");
       return;
     }
     if (!nodes.length) {
-      showFlowToast("Add blocks first.");
+      showTransformationToast("Add blocks first.");
       return;
     }
 
     const store = readAppletStore();
-    const rec = store.applets[flowName];
+    const rec = store.applets[transformationName];
     const nameEl = document.getElementById("applet-edit-name");
     if (nameEl) {
-      nameEl.value = flowName;
+      nameEl.value = transformationName;
       nameEl.readOnly = true;
     }
 
     if (rec) {
       syncAppletEditorPersistedFromRecord(rec);
-      appletEditingSlug = flowName;
+      appletEditingSlug = transformationName;
       appletSavedInputsSnapshot = mergeDiscoveredInputsWithSaved(normalizeAppletInputs(rec.inputs || []));
       const descEl = document.getElementById("applet-edit-description");
       if (descEl) descEl.value = rec.description || "";
@@ -10402,9 +10424,9 @@
     }
 
     const h = document.getElementById("applet-edit-heading");
-    if (h) h.textContent = "Workflow applet";
+    if (h) h.textContent = "Transformation applet";
 
-    updateAppletFlowOutputReadout();
+    updateAppletTransformationOutputReadout();
     renderAppletInputBindings(appletSavedInputsSnapshot);
     captureAppletEditorCleanSnapshot();
     updateAppletEditorDirtyUi();
@@ -10420,10 +10442,10 @@
     const name = String(document.getElementById("applet-edit-name").value || "").trim();
     const slug = name;
     const description = String(document.getElementById("applet-edit-description").value || "").trim();
-    const outSpec = deriveAppletOutputSpecFromFlow();
+    const outSpec = deriveAppletOutputSpecFromTransformation();
     if (!outSpec.ok) throw new Error(outSpec.message);
-    if (!isValidAppletFlowName(name))
-      throw new Error("Enter a flow name (1–120 characters), matching Save flow.");
+    if (!isValidAppletTransformationName(name))
+      throw new Error("Enter a Transformation name (1–120 characters), matching Save Transformation.");
     const rawInputs = collectAppletInputsFromBindings();
     const forApi = rawInputs.filter((r) => !r.ignored);
     let resolvedKeys = new Map();
@@ -10459,7 +10481,7 @@
       }
       inputs.push(row);
     }
-    const flowSnapshot = serializeFlowDocument();
+    const transformationSnapshot = serializeTransformationDocument();
     const store = readAppletStore();
     const existing = appletEditingSlug ? store.applets[appletEditingSlug] : null;
     const record = {
@@ -10468,7 +10490,7 @@
       slug,
       version: existing && existing.version ? existing.version : "1",
       description: description || undefined,
-      flowSnapshot,
+      transformationSnapshot,
       inputs,
       output: { kind: outSpec.kind, nodeId: outSpec.nodeId },
       updatedAt: new Date().toISOString(),
@@ -10481,12 +10503,12 @@
     try {
       record = buildAppletRecordFromForm();
     } catch (err) {
-      showFlowToast(err.message || String(err));
+      showTransformationToast(err.message || String(err));
       return;
     }
     const store = readAppletStore();
-    if (!persistCurrentFlowUnderNameSilent(record.name)) {
-      showFlowToast("Could not save the flow under this name (browser storage).");
+    if (!persistCurrentTransformationUnderNameSilent(record.name)) {
+      showTransformationToast("Could not save the Transformation under this name (browser storage).");
       return;
     }
     if (appletEditingSlug && appletEditingSlug !== record.slug) {
@@ -10495,30 +10517,30 @@
     store.applets[record.slug] = record;
     try {
       writeAppletStore(store);
-      showFlowToast('Saved flow and applet "' + record.name + '".');
+      showTransformationToast('Saved Transformation and applet "' + record.name + '".');
       appletEditingSlug = record.slug;
       appletSavedInputsSnapshot = normalizeAppletInputs(record.inputs || []);
       syncAppletEditorPersistedFromRecord(record);
       renderAppletInputBindings(appletSavedInputsSnapshot);
-      syncAppletFlowNameFieldFromStore();
+      syncAppletTransformationNameFieldFromStore();
       syncAppletEditHint(true);
       updateAppletApiMethodReadout();
       captureAppletEditorCleanSnapshot();
       updateAppletEditorDirtyUi();
       const h = document.getElementById("applet-edit-heading");
-      if (h) h.textContent = "Workflow applet";
+      if (h) h.textContent = "Transformation applet";
     } catch (err) {
-      showFlowToast("Could not save applets (storage full or private mode).");
+      showTransformationToast("Could not save applets (storage full or private mode).");
     }
   }
 
   /* ===== Applet Playground ================================================
    * A read-once-run-many surface over a saved applet: loads the applet's
-   * `flowSnapshot` onto the canvas, renders kind-typed input controls for each
+   * `transformationSnapshot` onto the canvas, renders kind-typed input controls for each
    * binding, and wires a Run button that overrides the corresponding input
    * blocks' settings before computing the terminal output (URL + preview).
    * The authoring canvas stays behind the overlay — closing the Playground
-   * keeps the loaded flow so the user can iterate in either surface.
+   * keeps the loaded Transformation so the user can iterate in either surface.
    * ---------------------------------------------------------------------- */
 
   function setAppletIdInUrl(slugOrEmpty) {
@@ -10580,7 +10602,7 @@
         const miss = document.createElement("div");
         miss.className = "playground-field-hint";
         miss.textContent =
-          "Bound node " + row.nodeId + " is missing from the canvas. Edit the flow to reconnect.";
+          "Bound node " + row.nodeId + " is missing from the canvas. Edit the Transformation to reconnect.";
         field.appendChild(miss);
         host.appendChild(field);
         continue;
@@ -10667,7 +10689,7 @@
 
   /**
    * Toggle the API / URL pills next to the playground title. API is always on
-   * (every applet exposes the run endpoint); URL only when the flow snapshot
+   * (every applet exposes the run endpoint); URL only when the Transformation snapshot
    * classifies as a Class A named-transformation candidate. We re-use the same
    * classifier the bindings editor uses so the playground and the editor agree
    * on whether a URL form is available.
@@ -10762,29 +10784,29 @@
   }
 
   /** Switch the main stage to the Applet Playground for `slug`. Loads the applet's
-   * flow snapshot onto the canvas (so Edit flow works without a second fetch). */
+   * Transformation snapshot onto the canvas (so Edit Transformation works without a second fetch). */
   function enterAppletPlayground(slug) {
     const store = readAppletStore();
     const rec = store.applets[slug];
     if (!rec) {
-      showFlowToast('Applet "' + slug + '" was not found.');
+      showTransformationToast('Applet "' + slug + '" was not found.');
       return false;
     }
-    const doc = rec.flowSnapshot;
+    const doc = rec.transformationSnapshot;
     if (!doc) {
-      showFlowToast("Applet is missing its flow snapshot.");
+      showTransformationToast("Applet is missing its Transformation snapshot.");
       return false;
     }
     try {
-      applyFlowDocument(doc);
+      applyTransformationDocument(doc);
     } catch (err) {
-      showFlowToast(err.message || String(err));
+      showTransformationToast(err.message || String(err));
       return false;
     }
     appMode = "applet";
     currentAppletSlug = slug;
     appletEditingSlug = slug;
-    setFlowIdInUrl(rec.name || slug);
+    setTransformationIdInUrl(rec.name || slug);
     setAppletIdInUrl(slug);
     /* Hide the canvas block popover if it was open — rail is about to go away. */
     closeBlockPopover();
@@ -10796,7 +10818,7 @@
     renderAppletPlaygroundChrome(rec);
     renderAppletPlaygroundInputs(rec);
     /* Refresh library UI so Blocks tab hides, the active applet row highlights, and
-     * the flow row doesn't — syncLibraryChrome coerces the tab off "blocks" if needed. */
+     * the Transformation row doesn't — syncLibraryChrome coerces the tab off "blocks" if needed. */
     syncAppModeChrome();
     syncLibraryChrome();
     renderLibrary(document.getElementById("palette-search").value);
@@ -10810,7 +10832,7 @@
       overlay.hidden = true;
       overlay.setAttribute("aria-hidden", "true");
     }
-    appMode = "flow";
+    appMode = "transformation";
     currentAppletSlug = "";
     setAppletIdInUrl("");
     /* Drop the cached applet record on the snippet panel so reopening another
@@ -10859,7 +10881,7 @@
     const terminalNode = nodes.find((n) => n.id === out.nodeId);
     if (!terminalNode) {
       host.innerHTML =
-        '<div class="playground-output-placeholder">Terminal output node missing from the flow snapshot.</div>';
+        '<div class="playground-output-placeholder">Terminal output node missing from the Transformation snapshot.</div>';
       return;
     }
     const kindBadge = document.createElement("div");
@@ -10872,7 +10894,7 @@
       pre.className = "playground-output-preview is-text";
       const s = terminalNode.settings || {};
       /* Text outputs show their resolved settings.text (if already populated) or fall back
-       * to a sensible placeholder — same policy as runFlow's text-output toast. */
+       * to a sensible placeholder — same policy as runTransformation's text-output toast. */
       pre.textContent =
         typeof s.text === "string" && s.text
           ? s.text
@@ -10934,12 +10956,12 @@
     const store = readAppletStore();
     const rec = store.applets[currentAppletSlug];
     if (!rec) {
-      showFlowToast("Applet no longer exists.");
+      showTransformationToast("Applet no longer exists.");
       return;
     }
     applyPlaygroundInputsToCanvas();
     renderPlaygroundResponse(rec);
-    showFlowToast("Applet ran.");
+    showTransformationToast("Applet ran.");
   }
 
   function resetPlaygroundInputsFromSnapshot() {
@@ -10948,9 +10970,9 @@
     const rec = store.applets[currentAppletSlug];
     if (!rec) return;
     try {
-      applyFlowDocument(rec.flowSnapshot);
+      applyTransformationDocument(rec.transformationSnapshot);
     } catch (err) {
-      showFlowToast(err.message || String(err));
+      showTransformationToast(err.message || String(err));
       return;
     }
     renderAppletPlaygroundInputs(rec);
@@ -10962,20 +10984,20 @@
   }
 
   /**
-   * Open `dlg` as a floating popover anchored to `anchorBtn` (used for Save flow /
-   * Load flow). Positioned just below the button's left edge; if it would overflow
+   * Open `dlg` as a floating popover anchored to `anchorBtn` (used for Save Transformation /
+   * Load Transformation). Positioned just below the button's left edge; if it would overflow
    * the viewport horizontally we clamp left, and if it would overflow vertically
    * we flip above the button. Uses non-modal `dlg.show()` so there's no backdrop
    * or inert behind it; closes on outside click or Escape. If the dialog is
    * already open, this toggles it closed.
    */
-  function openFlowDialogAsPopover(dlg, anchorBtn) {
+  function openTransformationDialogAsPopover(dlg, anchorBtn) {
     if (!dlg || !anchorBtn) return false;
     if (dlg.open) {
       dlg.close();
       return false;
     }
-    dlg.classList.add("flow-dialog-popover");
+    dlg.classList.add("transformation-dialog-popover");
     if (typeof dlg.show === "function") dlg.show();
     else if (typeof dlg.showModal === "function") dlg.showModal();
     else dlg.setAttribute("open", "");
@@ -11013,95 +11035,95 @@
     return true;
   }
 
-  function openFlowSaveDialog() {
-    const dlg = document.getElementById("flow-save-dialog");
-    const inp = document.getElementById("flow-save-name");
-    const btn = document.getElementById("btn-save-flow");
+  function openTransformationSaveDialog() {
+    const dlg = document.getElementById("transformation-save-dialog");
+    const inp = document.getElementById("transformation-save-name");
+    const btn = document.getElementById("btn-save-transformation");
     if (!dlg || !inp || !btn) return;
-    inp.value = getActiveSavedFlowName();
-    if (!openFlowDialogAsPopover(dlg, btn)) return;
+    inp.value = getActiveSavedTransformationName();
+    if (!openTransformationDialogAsPopover(dlg, btn)) return;
     requestAnimationFrame(() => {
       inp.focus();
       inp.select();
     });
   }
 
-  /** Reveal the Flows list in the sidebar (expand the rail if collapsed and switch to
-   * the Flows tab) — used when the brand flow name in the topbar is clicked. */
-  function revealFlowsLibraryInSidebar() {
+  /** Reveal the Transformations list in the sidebar (expand the rail if collapsed and switch to
+   * the Transformations tab) — used when the brand Transformation name in the topbar is clicked. */
+  function revealTransformationsLibraryInSidebar() {
     if (sidebarCollapsed) setSidebarCollapsed(false);
     if (chatOpen) setChatOpen(false);
-    if (activeLibraryTab !== "flows") setActiveLibraryTab("flows");
+    if (activeLibraryTab !== "transformations") setActiveLibraryTab("transformations");
     else syncLibraryChrome();
   }
 
-  document.getElementById("btn-save-flow").addEventListener("click", () => {
-    openFlowSaveDialog();
+  document.getElementById("btn-save-transformation").addEventListener("click", () => {
+    openTransformationSaveDialog();
   });
 
-  document.getElementById("flow-save-cancel").addEventListener("click", () => {
-    document.getElementById("flow-save-dialog").close();
+  document.getElementById("transformation-save-cancel").addEventListener("click", () => {
+    document.getElementById("transformation-save-dialog").close();
   });
 
-  document.getElementById("flow-save-confirm").addEventListener("click", () => {
-    const inp = document.getElementById("flow-save-name");
-    if (saveCurrentFlowWithName(inp && inp.value)) {
-      document.getElementById("flow-save-dialog").close();
+  document.getElementById("transformation-save-confirm").addEventListener("click", () => {
+    const inp = document.getElementById("transformation-save-name");
+    if (saveCurrentTransformationWithName(inp && inp.value)) {
+      document.getElementById("transformation-save-dialog").close();
     }
   });
 
-  document.getElementById("flow-save-name").addEventListener("keydown", (e) => {
+  document.getElementById("transformation-save-name").addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      document.getElementById("flow-save-confirm").click();
+      document.getElementById("transformation-save-confirm").click();
     }
   });
 
-  (function wireBrandFlowNameRevealsSidebar() {
-    const el = document.getElementById("brand-flow-name");
+  (function wireBrandTransformationNameRevealsSidebar() {
+    const el = document.getElementById("brand-transformation-name");
     if (!el) return;
     el.addEventListener("click", () => {
-      revealFlowsLibraryInSidebar();
+      revealTransformationsLibraryInSidebar();
     });
     el.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
         e.preventDefault();
-        revealFlowsLibraryInSidebar();
+        revealTransformationsLibraryInSidebar();
       }
     });
   })();
 
-  document.getElementById("flow-save-dialog").addEventListener("click", (e) => {
+  document.getElementById("transformation-save-dialog").addEventListener("click", (e) => {
     if (e.target === e.currentTarget && typeof e.currentTarget.close === "function") e.currentTarget.close();
   });
 
-  document.getElementById("flow-import-input").addEventListener("change", (e) => {
+  document.getElementById("transformation-import-input").addEventListener("change", (e) => {
     const inp = e.currentTarget;
     const file = inp && inp.files && inp.files[0];
-    if (file) importFlowFromFile(file);
+    if (file) importTransformationFromFile(file);
     inp.value = "";
   });
 
   document.getElementById("btn-applets").addEventListener("click", () => {
-    openAppletEditorForCurrentWorkflow();
+    openAppletEditorForCurrentTransformation();
   });
 
   /* Playground header actions. */
   document.getElementById("playground-close").addEventListener("click", () => {
-    exitAppletPlayground({ keepFlow: true });
+    exitAppletPlayground({ keepTransformation: true });
   });
 
-  document.getElementById("playground-edit-flow").addEventListener("click", () => {
-    /* Leave the flow loaded on the canvas and just drop the overlay so the user can edit
+  document.getElementById("playground-edit-transformation").addEventListener("click", () => {
+    /* Leave the Transformation loaded on the canvas and just drop the overlay so the user can edit
      * the underlying transformation that powers this applet. The floating block rail
-     * becomes visible again automatically (appMode flips back to "flow"). */
-    exitAppletPlayground({ keepFlow: true });
+     * becomes visible again automatically (appMode flips back to "transformation"). */
+    exitAppletPlayground({ keepTransformation: true });
   });
 
   document.getElementById("playground-applet-editor").addEventListener("click", () => {
     /* Bindings editor doubles as the canonical "edit applet metadata" surface — reuse it
-     * instead of building a second form. It reads the current flow's applet record. */
-    openAppletEditorForCurrentWorkflow();
+     * instead of building a second form. It reads the current Transformation's applet record. */
+    openAppletEditorForCurrentTransformation();
   });
 
   document.getElementById("playground-run").addEventListener("click", () => {
@@ -11176,7 +11198,7 @@
             ta.remove();
             showCopied();
           } catch (e) {
-            showFlowToast("Could not copy to clipboard.");
+            showTransformationToast("Could not copy to clipboard.");
           }
         });
       }
@@ -11194,8 +11216,8 @@
   document.getElementById("applet-bindings-refresh").addEventListener("click", () => {
     appletSavedInputsSnapshot = mergeDiscoveredInputsWithSaved(appletSavedInputsSnapshot);
     renderAppletInputBindings(appletSavedInputsSnapshot);
-    updateAppletFlowOutputReadout();
-    syncAppletFlowNameFieldFromStore();
+    updateAppletTransformationOutputReadout();
+    syncAppletTransformationNameFieldFromStore();
     updateAppletApiMethodReadout();
     captureAppletEditorCleanSnapshot();
     updateAppletEditorDirtyUi();
@@ -11243,7 +11265,7 @@
     renderNodes();
     fitView();
     /* Baseline the dirty tracker so a freshly-seeded demo isn't shown as "· unsaved". */
-    markFlowAsClean();
+    markTransformationAsClean();
   }
 
   setSidebarCollapsed(readSidebarCollapsedFromLocation());
@@ -11261,7 +11283,7 @@
       }
     }
   })();
-  (function restoreStartupFlow() {
+  (function restoreStartupTransformation() {
     let builtinJustUpgraded = false;
     try {
       const raw = localStorage.getItem(BUILTIN_CANVAS_VERSION_KEY);
@@ -11275,15 +11297,15 @@
     } catch (e) {}
     if (builtinJustUpgraded) {
       try {
-        setFlowIdInUrl("");
+        setTransformationIdInUrl("");
         setAppletIdInUrl("");
       } catch (e2) {}
       seedDemo();
       return;
     }
     /* Applet URL takes precedence — if `?applet=<slug>` is valid, open the Playground
-     * (the applet record carries its own flow snapshot). Otherwise fall back to the
-     * saved flow path. */
+     * (the applet record carries its own Transformation snapshot). Otherwise fall back to the
+     * saved Transformation path. */
     const appletSlug = getAppletIdFromLocation();
     if (appletSlug) {
       const appletStore = readAppletStore();
@@ -11293,17 +11315,17 @@
       }
       setAppletIdInUrl("");
     }
-    const store = readFlowStore();
-    const flowId = getFlowIdFromLocation();
-    if (flowId && Object.prototype.hasOwnProperty.call(store.flows, flowId)) {
+    const store = readTransformationStore();
+    const transformationId = getTransformationIdFromLocation();
+    if (transformationId && Object.prototype.hasOwnProperty.call(store.transformations, transformationId)) {
       try {
-        applyFlowDocument(store.flows[flowId]);
+        applyTransformationDocument(store.transformations[transformationId]);
         return;
       } catch (err) {
-        setFlowIdInUrl("");
+        setTransformationIdInUrl("");
       }
-    } else if (flowId) {
-      setFlowIdInUrl("");
+    } else if (transformationId) {
+      setTransformationIdInUrl("");
     }
     seedDemo();
   })();
@@ -11318,23 +11340,23 @@
         if (enterAppletPlayground(appletSlug)) return;
       }
     } else if (appMode === "applet") {
-      exitAppletPlayground({ keepFlow: true });
+      exitAppletPlayground({ keepTransformation: true });
     }
-    const store = readFlowStore();
-    const flowId = getFlowIdFromLocation();
-    if (flowId && Object.prototype.hasOwnProperty.call(store.flows, flowId)) {
+    const store = readTransformationStore();
+    const transformationId = getTransformationIdFromLocation();
+    if (transformationId && Object.prototype.hasOwnProperty.call(store.transformations, transformationId)) {
       try {
-        applyFlowDocument(store.flows[flowId]);
-        updateBrandFlowName(flowId);
+        applyTransformationDocument(store.transformations[transformationId]);
+        updateBrandTransformationName(transformationId);
         return;
       } catch (err) {}
     }
     seedDemo();
-    updateBrandFlowName("");
+    updateBrandTransformationName("");
   });
-  /* Initial brand-name sync (covers the boot path that loads a URL-bound flow without
-   * calling setFlowIdInUrl). */
-  updateBrandFlowName(getFlowIdFromLocation());
+  /* Initial brand-name sync (covers the boot path that loads a URL-bound Transformation without
+   * calling setTransformationIdInUrl). */
+  updateBrandTransformationName(getTransformationIdFromLocation());
   syncDock();
 })();
   </script>
