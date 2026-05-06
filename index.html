@@ -70,7 +70,7 @@
     }
 
     /* Applet playground takes over the whole stage — the canvas-centric topbar
-     * (Run Transformation / Save Transformation / Applet button / brand crumb) doesn't apply when
+     * (Run Graph / Save Graph / Applet button / brand crumb) doesn't apply when
      * exercising a published applet's API, so we hide the header row and let
      * the playground use the full vertical space. */
     .app[data-app-mode="applet"] {
@@ -132,7 +132,7 @@
       flex-shrink: 0;
     }
 
-    .brand-transformation-name {
+    .brand-graph-name {
       font-weight: 400;
       color: var(--text-soft);
       max-width: 280px;
@@ -140,28 +140,20 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       min-width: 0;
-      cursor: pointer;
       padding: 2px 6px;
       margin: -2px -6px;
       border-radius: 6px;
       transition: background 0.14s, color 0.14s;
     }
 
-    .brand-transformation-name:hover,
-    .brand-transformation-name:focus-visible {
-      background: rgba(0, 0, 0, 0.05);
-      color: var(--text);
-      outline: none;
-    }
-
-    .brand-transformation-name.is-untitled {
+    .brand-graph-name.is-untitled {
       color: var(--text-faint);
       font-style: italic;
     }
 
-    /* Amber " · unsaved" suffix on the brand Transformation name whenever the canvas content has
+    /* Amber " · unsaved" suffix on the brand Graph name whenever the canvas content has
        diverged from the last saved/loaded baseline. Matches the applet editor pattern. */
-    .brand-transformation-name.is-unsaved::after {
+    .brand-graph-name.is-unsaved::after {
       content: " · unsaved";
       font-weight: 500;
       color: #b45309;
@@ -267,9 +259,9 @@
       opacity: 0.95;
     }
 
-    /* Bordered pill for Save Transformation / Import — more prominent than `.btn` ghost buttons,
+    /* Bordered pill for Save Graph / Import — more prominent than `.btn` ghost buttons,
        lighter than `.btn-run` so the run action stays the primary CTA. */
-    .btn-transformation {
+    .btn-graph {
       font-family: inherit;
       font-size: 11px;
       font-weight: 500;
@@ -288,17 +280,17 @@
       transition: border-color 0.14s, box-shadow 0.14s, color 0.14s, transform 0.12s;
     }
 
-    .btn-transformation:hover {
+    .btn-graph:hover {
       border-color: var(--accent-focus);
       color: var(--accent-focus);
       box-shadow: 0 2px 8px rgba(99, 102, 241, 0.16);
     }
 
-    .btn-transformation:active {
+    .btn-graph:active {
       transform: scale(0.98);
     }
 
-    .btn-transformation svg {
+    .btn-graph svg {
       flex-shrink: 0;
       opacity: 0.85;
     }
@@ -393,14 +385,14 @@
       display: none;
     }
 
-    /* Block rail is a Transformation-author affordance — in Applet Playground mode the canvas is
+    /* Block rail is a Graph-author affordance — in Applet Playground mode the canvas is
      * covered by the overlay so dragging blocks would be nonsense; hide the rail entirely. */
     .app[data-app-mode="applet"] .block-rail,
     .app[data-app-mode="applet"] #block-popover {
       display: none !important;
     }
 
-    /* Top-of-sidebar segmented control — pivot between saved Transformations
+    /* Top-of-sidebar segmented control — pivot between saved Graphs
      * and saved Applets. Sits on a muted "track" so the chips look like a real
      * picker instead of text links; the active chip pops with white fill + soft
      * shadow + accent-tinted icon. */
@@ -415,7 +407,7 @@
       flex-shrink: 0;
     }
 
-    /* `flex: 1 1 auto` lets the wider label ("Transformations") naturally claim
+    /* `flex: 1 1 auto` lets the wider label ("Graphs") naturally claim
      * more horizontal space than "Applets" instead of forcing a 50/50 split that
      * truncates the longer word. */
     .palette-tab {
@@ -448,7 +440,7 @@
       transition: opacity 0.14s, color 0.14s;
     }
 
-    /* Label can shrink and ellipsize so a long word ("Transformations") never
+    /* Label can shrink and ellipsize so a long word ("Graphs") never
      * forces the pill to overflow or wrap. */
     .palette-tab-label {
       min-width: 0;
@@ -482,8 +474,9 @@
     }
 
     /* Collapsed sidebar — vertical stack of icon-over-label tabs. Track loses its
-     * pill background and chips become full-width rounded buttons so the rail looks
-     * intentional rather than a squished horizontal control. */
+     * pill background and chips become full-width rounded buttons (icon stacked
+     * above a tiny text label) so the rail looks intentional rather than a
+     * squished horizontal control. */
     .app[data-sidebar="collapsed"] .palette-tabs {
       flex-direction: column;
       background: transparent;
@@ -495,14 +488,12 @@
 
     .app[data-sidebar="collapsed"] .palette-tab {
       flex: 0 0 auto;
-      align-self: center;
+      align-self: stretch;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 0;
-      padding: 0;
-      width: 36px;
-      height: 36px;
-      aspect-ratio: 1 / 1;
+      gap: 4px;
+      padding: 6px 4px;
       border-radius: 10px;
     }
 
@@ -511,10 +502,13 @@
       height: 18px;
     }
 
-    /* Icon-only rail — accessible name lives on the button (`aria-label` +
-     * `title`), so we drop the visible label entirely instead of clipping it. */
+    /* Tiny label sits under the icon at the narrow rail width — the words
+     * "Graphs" and "Applets" both fit comfortably at 10px in 60px. */
     .app[data-sidebar="collapsed"] .palette-tab-label {
-      display: none;
+      display: block;
+      font-size: 10px;
+      line-height: 1;
+      letter-spacing: -0.01em;
     }
 
     .app[data-sidebar="collapsed"] .palette-tab.is-active {
@@ -532,8 +526,8 @@
       display: none !important;
     }
 
-    /* Inline chat toggle in the header — shown only when the Transformations tab is active
-     * (the assistant is canvas/Transformation-focused). Compact circular icon button. */
+    /* Inline chat toggle in the header — shown only when the Graphs tab is active
+     * (the assistant is canvas/Graph-focused). Compact circular icon button. */
     .palette-header-row {
       display: flex;
       align-items: center;
@@ -1047,8 +1041,8 @@
       color: var(--text);
     }
 
-    /* Sidebar rows for saved Transformations / Applets — selectable list items.
-     * Differs from `.palette-item` (which is draggable): clicking loads the Transformation or
+    /* Sidebar rows for saved Graphs / Applets — selectable list items.
+     * Differs from `.palette-item` (which is draggable): clicking loads the Graph or
      * opens the applet playground, and `.is-active` highlights the current entry. */
     .library-row {
       display: flex;
@@ -1130,7 +1124,7 @@
       font-size: 10.5px;
     }
 
-    /* Hover-revealed action icons on a saved-Transformation library row (Export, Delete).
+    /* Hover-revealed action icons on a saved-Graph library row (Export, Delete).
      * The container reserves space so the row layout doesn't shift when the
      * actions appear; child buttons fade in on row hover/focus-within. */
     .library-row-actions {
@@ -2005,7 +1999,7 @@
 
     /* Floating vertical block rail — pinned inside `.main-wrap` and vertically centered
      * along the canvas's left edge. "Add block" (+) opens the full palette; category
-     * shortcuts below it open the same popover scoped to a single section. Transformation-mode only
+     * shortcuts below it open the same popover scoped to a single section. Graph-mode only
      * (hidden in applet playground via `.app[data-app-mode="applet"]`). */
     .block-rail {
       position: absolute;
@@ -2186,7 +2180,7 @@
       border: 0;
     }
 
-    .transformation-toast {
+    .graph-toast {
       position: fixed;
       inset: auto auto 52px 50%;
       translate: -50% 0;
@@ -2209,13 +2203,13 @@
     }
 
     /* Popover = top layer above modal <dialog> backdrops; .visible = fallback */
-    .transformation-toast:popover-open,
-    .transformation-toast.visible {
+    .graph-toast:popover-open,
+    .graph-toast.visible {
       opacity: 1;
       visibility: visible;
     }
 
-    .transformation-dialog {
+    .graph-dialog {
       border: none;
       border-radius: var(--radius);
       padding: 0;
@@ -2225,43 +2219,43 @@
       box-shadow: var(--shadow-bar);
     }
 
-    .transformation-dialog::backdrop {
+    .graph-dialog::backdrop {
       background: rgba(15, 23, 42, 0.38);
       backdrop-filter: blur(2px);
     }
 
-    /* Popover variant: anchored next to the trigger element (Save Transformation button or the brand
-     * Transformation name for Load Transformation) instead of the default centered showModal() layout. Position
+    /* Popover variant: anchored next to the trigger element (Save Graph button or the brand
+     * Graph name for Load Graph) instead of the default centered showModal() layout. Position
      * is set inline by JS based on the trigger's bounding rect. */
-    .transformation-dialog.transformation-dialog-popover {
+    .graph-dialog.graph-dialog-popover {
       position: fixed;
       margin: 0;
       inset: auto;
       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
     }
-    .transformation-dialog.transformation-dialog-popover::backdrop {
+    .graph-dialog.graph-dialog-popover::backdrop {
       display: none;
     }
 
-    .transformation-dialog-inner {
+    .graph-dialog-inner {
       padding: 18px 20px 16px;
     }
 
-    .transformation-dialog-title {
+    .graph-dialog-title {
       margin: 0 0 6px;
       font-size: 14px;
       font-weight: 600;
       letter-spacing: -0.02em;
     }
 
-    .transformation-dialog-hint {
+    .graph-dialog-hint {
       margin: 0 0 14px;
       font-size: 11px;
       line-height: 1.45;
       color: var(--text-soft);
     }
 
-    .transformation-dialog-label {
+    .graph-dialog-label {
       display: block;
       font-size: 10px;
       font-weight: 600;
@@ -2270,7 +2264,7 @@
       margin-bottom: 6px;
     }
 
-    .transformation-dialog-input {
+    .graph-dialog-input {
       width: 100%;
       box-sizing: border-box;
       padding: 8px 10px;
@@ -2284,11 +2278,11 @@
       margin-bottom: 16px;
     }
 
-    .transformation-dialog-input:focus {
+    .graph-dialog-input:focus {
       border-color: rgba(59, 130, 246, 0.55);
     }
 
-    .transformation-dialog-actions {
+    .graph-dialog-actions {
       display: flex;
       justify-content: flex-end;
       gap: 8px;
@@ -2297,16 +2291,16 @@
 
     /* Applets hub + editor: dock to the right under the header (not centered) */
     /* Closed <dialog> must stay hidden: author `display:flex` overrides UA `dialog:not(:open){display:none}` */
-    .transformation-dialog.transformation-dialog-applet-panel:not(:open) {
+    .graph-dialog.graph-dialog-applet-panel:not(:open) {
       display: none !important;
     }
 
-    .transformation-dialog.transformation-dialog-applet-panel:open {
+    .graph-dialog.graph-dialog-applet-panel:open {
       display: flex;
       flex-direction: column;
     }
 
-    .transformation-dialog.transformation-dialog-applet-panel {
+    .graph-dialog.graph-dialog-applet-panel {
       position: fixed;
       right: max(10px, env(safe-area-inset-right, 0px));
       left: auto;
@@ -2324,19 +2318,19 @@
         0 0 0 1px rgba(99, 102, 241, 0.14);
     }
 
-    .transformation-dialog.transformation-dialog-applet-panel .transformation-dialog-inner {
+    .graph-dialog.graph-dialog-applet-panel .graph-dialog-inner {
       overflow-y: auto;
       flex: 1;
       min-height: 0;
       -webkit-overflow-scrolling: touch;
     }
 
-    #applet-edit-dialog.transformation-dialog-applet-panel {
+    #applet-edit-dialog.graph-dialog-applet-panel {
       width: min(520px, calc(100vw - 20px));
       max-width: min(520px, calc(100vw - 20px));
     }
 
-    .transformation-dialog-textarea {
+    .graph-dialog-textarea {
       width: 100%;
       box-sizing: border-box;
       min-height: 56px;
@@ -2353,7 +2347,7 @@
       margin-bottom: 12px;
     }
 
-    .transformation-dialog-textarea:focus {
+    .graph-dialog-textarea:focus {
       border-color: rgba(59, 130, 246, 0.55);
     }
 
@@ -2683,7 +2677,7 @@
       margin: 0 0 6px;
     }
 
-    .applet-edit-title-row .transformation-dialog-title {
+    .applet-edit-title-row .graph-dialog-title {
       margin: 0;
     }
 
@@ -2694,22 +2688,29 @@
       flex-shrink: 0;
     }
 
+    /* Pill badge for supported invocation forms. Two states:
+     *   - default (off):  muted grey pill — the form isn't available for this graph
+     *   - .is-on:         green pill     — the form IS available
+     * Used in both the bindings editor (dialog header) and the playground header,
+     * so sizing/palette stay identical across the two surfaces. */
     .applet-supported-badge {
-      padding: 3px 10px;
-      font-size: 10px;
+      padding: 2px 7px;
+      font-size: 9.5px;
       font-weight: 700;
       letter-spacing: 0.06em;
       text-transform: uppercase;
       border-radius: 999px;
-      border: 1px solid transparent;
+      background: rgba(15, 23, 42, 0.05);
+      color: var(--text-faint);
+      border: 1px solid var(--border-hair);
       cursor: default;
       user-select: none;
     }
 
     .applet-supported-badge.is-on {
-      background: rgba(34, 197, 94, 0.14);
+      background: rgba(34, 197, 94, 0.16);
       color: #166534;
-      border-color: rgba(34, 197, 94, 0.42);
+      border-color: rgba(34, 197, 94, 0.55);
     }
 
     .applet-supported-badge[hidden] {
@@ -2727,7 +2728,7 @@
       font-size: 12px;
     }
 
-    .transformation-dialog-label.applet-label-dirty {
+    .graph-dialog-label.applet-label-dirty {
       color: #b45309;
     }
 
@@ -2917,18 +2918,14 @@
       min-width: 0;
     }
 
-    /* Reuse the bindings-editor .applet-supported-badge palette but compact a touch
-     * for the playground header — same green pill, slightly smaller padding. */
+    /* Container for the supported-forms badges in the playground header. The badges
+     * themselves share `.applet-supported-badge` styling with the bindings editor so
+     * both surfaces show the same gray/green pill row. */
     .playground-supported-forms {
       display: flex;
       align-items: center;
       gap: 5px;
       flex-shrink: 0;
-    }
-
-    .playground-supported-forms .applet-supported-badge {
-      padding: 2px 7px;
-      font-size: 9.5px;
     }
 
     .playground-header-actions {
@@ -3322,26 +3319,26 @@
           <span class="brand-name">Studio</span>
           <span class="brand-divider" aria-hidden="true">/</span>
           <span
-            class="brand-transformation-name"
-            id="brand-transformation-name"
+            class="brand-graph-name"
+            id="brand-graph-name"
             role="button"
             tabindex="0"
-            title="Open Transformations in sidebar"
+            title="Open Graphs in sidebar"
           >Untitled</span>
         </div>
       </div>
       <div class="toolbar">
-        <button type="button" class="btn-run" id="btn-run-transformation" title="Run Transformation (⌘↵)">
+        <button type="button" class="btn-run" id="btn-run-graph" title="Run Graph (⌘↵)">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
-          Run Transformation
+          Run Graph
         </button>
-        <button type="button" class="btn-transformation" id="btn-save-transformation">
+        <button type="button" class="btn-graph" id="btn-save-graph">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
             <polyline points="17 21 17 13 7 13 7 21"/>
             <polyline points="7 3 7 8 15 8"/>
           </svg>
-          Save Transformation
+          Save Graph
         </button>
         <span class="toolbar-divider" aria-hidden="true"></span>
         <button
@@ -3369,7 +3366,7 @@
         </button>
       </div>
       <div class="palette-tabs" role="tablist" aria-label="Library">
-        <button type="button" class="palette-tab is-active" role="tab" data-library-tab="transformations" aria-selected="true" aria-label="Transformations" title="Transformations">
+        <button type="button" class="palette-tab is-active" role="tab" data-library-tab="graphs" aria-selected="true" aria-label="Graphs" title="Graphs">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="5" cy="12" r="2"/>
             <circle cx="19" cy="6" r="2"/>
@@ -3378,7 +3375,7 @@
             <path d="M14 12l3-5"/>
             <path d="M14 12l3 5"/>
           </svg>
-          <span class="palette-tab-label">Transformations</span>
+          <span class="palette-tab-label">Graphs</span>
         </button>
         <button type="button" class="palette-tab" role="tab" data-library-tab="applets" aria-selected="false" aria-label="Applets" title="Applets">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -3392,14 +3389,14 @@
       </div>
       <div class="palette-header" id="palette-header">
         <div class="palette-header-row">
-          <h2 id="palette-heading">Transformations</h2>
+          <h2 id="palette-heading">Graphs</h2>
           <div class="palette-header-actions">
             <button
               type="button"
               class="palette-header-icon-btn"
               id="palette-import-toggle"
-              aria-label="Import Transformation from JSON"
-              title="Import Transformation from JSON"
+              aria-label="Import Graph from JSON"
+              title="Import Graph from JSON"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -3420,7 +3417,7 @@
             </button>
           </div>
         </div>
-        <input type="search" class="palette-search" id="palette-search" placeholder="Search Transformations…" autocomplete="off" />
+        <input type="search" class="palette-search" id="palette-search" placeholder="Search Graphs…" autocomplete="off" />
       </div>
       <div class="palette-list" id="palette-list"></div>
 
@@ -3454,7 +3451,7 @@
             id="chat-input"
             class="chat-input"
             rows="1"
-            placeholder="Ask, e.g. 'build a hero video Transformation'…"
+            placeholder="Ask, e.g. 'build a hero video Graph'…"
             aria-label="Chat message"
           ></textarea>
           <button type="submit" class="chat-send" id="chat-send" aria-label="Send" title="Send (Enter)">
@@ -3484,7 +3481,7 @@
       </div>
 
       <!-- Floating block rail — primary "+" opens the full palette; category shortcuts
-           below open the same popover scoped to one section. Transformation mode only. -->
+           below open the same popover scoped to one section. Graph mode only. -->
       <nav class="block-rail" aria-label="Add blocks">
         <button type="button" class="block-rail-btn block-rail-btn-primary" id="block-rail-add" title="Add block" aria-label="Add block">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -3583,21 +3580,20 @@
                 <span
                   class="applet-supported-badge"
                   data-form="url"
-                  hidden
                   title="Publishable as a Cloudinary named transformation — callers can build a URL directly."
                 >URL</span>
               </div>
             </div>
           </div>
           <div class="playground-header-actions">
-            <button type="button" class="btn-transformation" id="playground-edit-transformation" title="Open this applet's Transformation on the canvas">
+            <button type="button" class="btn-graph" id="playground-edit-graph" title="Open this applet's Graph on the canvas">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M12 20h9"/>
                 <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
               </svg>
-              Edit Transformation
+              Edit Graph
             </button>
-            <button type="button" class="btn-transformation" id="playground-applet-editor" title="Open applet binding editor">
+            <button type="button" class="btn-graph" id="playground-applet-editor" title="Open applet binding editor">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <circle cx="12" cy="12" r="3"/>
                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -3676,24 +3672,24 @@
       </section>
     </div>
 
-    <dialog id="transformation-save-dialog" class="transformation-dialog">
-      <div class="transformation-dialog-inner">
-        <h3 class="transformation-dialog-title">Save Transformation</h3>
-        <label class="transformation-dialog-label" for="transformation-save-name">Name</label>
-        <input type="text" id="transformation-save-name" class="transformation-dialog-input" autocomplete="off" maxlength="120" placeholder="Transformation name" />
-        <div class="transformation-dialog-actions">
-          <button type="button" class="btn" id="transformation-save-cancel">Cancel</button>
-          <button type="button" class="btn-run" id="transformation-save-confirm">Save</button>
+    <dialog id="graph-save-dialog" class="graph-dialog">
+      <div class="graph-dialog-inner">
+        <h3 class="graph-dialog-title">Save Graph</h3>
+        <label class="graph-dialog-label" for="graph-save-name">Name</label>
+        <input type="text" id="graph-save-name" class="graph-dialog-input" autocomplete="off" maxlength="120" placeholder="Graph name" />
+        <div class="graph-dialog-actions">
+          <button type="button" class="btn" id="graph-save-cancel">Cancel</button>
+          <button type="button" class="btn-run" id="graph-save-confirm">Save</button>
         </div>
       </div>
     </dialog>
 
-    <input type="file" id="transformation-import-input" accept="application/json,.json" hidden />
+    <input type="file" id="graph-import-input" accept="application/json,.json" hidden />
 
-    <dialog id="applet-edit-dialog" class="transformation-dialog transformation-dialog-applet-panel">
-      <div class="transformation-dialog-inner">
+    <dialog id="applet-edit-dialog" class="graph-dialog graph-dialog-applet-panel">
+      <div class="graph-dialog-inner">
         <div class="applet-edit-title-row">
-          <h3 class="transformation-dialog-title" id="applet-edit-heading">Transformation applet</h3>
+          <h3 class="graph-dialog-title" id="applet-edit-heading">Graph applet</h3>
           <div
             id="applet-supported-forms"
             class="applet-supported-forms"
@@ -3712,12 +3708,12 @@
             >URL</span>
           </div>
         </div>
-        <p class="transformation-dialog-hint" id="applet-edit-hint"></p>
+        <p class="graph-dialog-hint" id="applet-edit-hint"></p>
         <p id="applet-edit-dirty-banner" class="applet-edit-dirty-banner" hidden>Unsaved changes.</p>
-        <label class="transformation-dialog-label" for="applet-edit-name">Applet name</label>
-        <input type="text" id="applet-edit-name" class="transformation-dialog-input" autocomplete="off" maxlength="120" readonly placeholder="Save Transformation first…" />
-        <label class="transformation-dialog-label" for="applet-edit-description" id="applet-edit-description-label">Description</label>
-        <textarea id="applet-edit-description" class="transformation-dialog-textarea" rows="2" maxlength="2000" placeholder="What this applet does…"></textarea>
+        <label class="graph-dialog-label" for="applet-edit-name">Applet name</label>
+        <input type="text" id="applet-edit-name" class="graph-dialog-input" autocomplete="off" maxlength="120" readonly placeholder="Save Graph first…" />
+        <label class="graph-dialog-label" for="applet-edit-description" id="applet-edit-description-label">Description</label>
+        <textarea id="applet-edit-description" class="graph-dialog-textarea" rows="2" maxlength="2000" placeholder="What this applet does…"></textarea>
         <div class="applet-inputs-wrap applet-bindings-panel">
           <div class="applet-inputs-head">
             <span>Inputs</span>
@@ -3730,7 +3726,7 @@
             <span>Output</span>
           </div>
           <div
-            id="applet-transformation-output-readout"
+            id="applet-graph-output-readout"
             class="applet-bind-row applet-output-bind-row"
             role="status"
             aria-live="polite"
@@ -3759,7 +3755,7 @@
           <summary class="applet-api-summary">Example response body</summary>
           <pre id="applet-example-response-readout" class="applet-api-readout" aria-live="polite"></pre>
         </details>
-        <div class="transformation-dialog-actions">
+        <div class="graph-dialog-actions">
           <button type="button" class="btn" id="applet-edit-back">Close</button>
           <button type="button" class="btn-run" id="applet-edit-save">Save applet</button>
         </div>
@@ -3767,7 +3763,7 @@
     </dialog>
   </div>
 
-  <div id="transformation-toast" class="transformation-toast" popover="manual" role="status" aria-live="polite" aria-atomic="true"></div>
+  <div id="graph-toast" class="graph-toast" popover="manual" role="status" aria-live="polite" aria-atomic="true"></div>
 
   <script>
 (function () {
@@ -3794,38 +3790,40 @@
   /** Returned by mock text generators when nothing better to say (variants picked by mode). */
   const MOCK_AI_TEXT_FALLBACK = "[mock] (no upstream text/asset detected — placeholder result)";
 
-  /** Saved Transformation document format + localStorage store for named Transformations */
-  const TRANSFORMATION_DOC_VERSION = 1;
-  const TRANSFORMATION_STORE_KEY = "videofactory.transformation.store.v1";
-  /** Active saved Transformation id lives in the URL (`?transformation=name`), not as lastActive in localStorage. */
-  const TRANSFORMATION_QUERY_PARAM = "transformation";
+  /** Saved Graph document format + localStorage store for named Graphs */
+  const GRAPH_DOC_VERSION = 1;
+  const GRAPH_STORE_KEY = "videofactory.graph.store.v1";
+  /** Active saved Graph id lives in the URL (`?graph=name`), not as lastActive in localStorage. */
+  const GRAPH_QUERY_PARAM = "graph";
 
-  function getTransformationIdFromLocation() {
+  function getGraphIdFromLocation() {
     try {
-      const q = new URLSearchParams(window.location.search).get(TRANSFORMATION_QUERY_PARAM);
-      return q != null ? String(q).trim() : "";
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get(GRAPH_QUERY_PARAM);
+      if (q != null) return String(q).trim();
+      return "";
     } catch (e) {
       return "";
     }
   }
 
-  function setTransformationIdInUrl(nameOrEmpty) {
+  function setGraphIdInUrl(nameOrEmpty) {
     try {
       const url = new URL(window.location.href);
       const trimmed = String(nameOrEmpty || "").trim();
-      if (trimmed) url.searchParams.set(TRANSFORMATION_QUERY_PARAM, trimmed);
-      else url.searchParams.delete(TRANSFORMATION_QUERY_PARAM);
+      if (trimmed) url.searchParams.set(GRAPH_QUERY_PARAM, trimmed);
+      else url.searchParams.delete(GRAPH_QUERY_PARAM);
       window.history.replaceState({}, "", url.pathname + url.search + url.hash);
     } catch (e) {}
-    updateBrandTransformationName(nameOrEmpty);
+    updateBrandGraphName(nameOrEmpty);
   }
 
-  /** Render the current Transformation name in the topbar brand area (italic "Untitled" if blank). */
-  function updateBrandTransformationName(nameOrEmpty) {
-    const el = document.getElementById("brand-transformation-name");
+  /** Render the current Graph name in the topbar brand area (italic "Untitled" if blank). */
+  function updateBrandGraphName(nameOrEmpty) {
+    const el = document.getElementById("brand-graph-name");
     if (!el) return;
     const trimmed = String(nameOrEmpty || "").trim();
-    el.title = "Open Transformations in sidebar";
+    el.title = "Open Graphs in sidebar";
     if (trimmed) {
       el.textContent = trimmed;
       el.classList.remove("is-untitled");
@@ -3836,20 +3834,20 @@
   }
 
   /**
-   * Bump when seedDemo() changes. On first load after bump, `transformation` is cleared from the URL and the new
-   * builtin blueprint is shown once (saved Transformations under other names stay in the store).
+   * Bump when seedDemo() changes. On first load after bump, `graph` is cleared from the URL and the new
+   * builtin blueprint is shown once (saved Graphs under other names stay in the store).
    */
   const BUILTIN_CANVAS_VERSION = 3;
-  const BUILTIN_CANVAS_VERSION_KEY = "videofactory.transformation.builtinCanvasVersion";
+  const BUILTIN_CANVAS_VERSION_KEY = "videofactory.graph.builtinCanvasVersion";
 
-  /** Saved applet manifests (Transformation snapshot + typed inputs); local only */
+  /** Saved applet manifests (Graph snapshot + typed inputs); local only */
   const APPLET_STORE_KEY = "videofactory.applets.store.v1";
   const APPLET_RECORD_VERSION = 1;
   /** URL param carrying the active applet slug for the Playground view. */
   const APPLET_QUERY_PARAM = "applet";
 
-  /** "transformation" = canvas authoring; "applet" = applet playground view over the canvas. */
-  let appMode = "transformation";
+  /** "graph" = canvas authoring; "applet" = applet playground view over the canvas. */
+  let appMode = "graph";
   /** Slug of the applet currently loaded in the playground (empty unless `appMode === "applet"`). */
   let currentAppletSlug = "";
 
@@ -4166,7 +4164,7 @@
       settingsFields: [
         {
           key: "chain",
-          label: "Transformation string",
+          label: "Graph string",
           type: "textarea",
           placeholder: "w_640,c_fill / e_grayscale",
         },
@@ -5043,7 +5041,7 @@
    * Output · video uses the chain delivery URL; Output · video player switches to a
    * Cloudinary Player profile when its block is in "Profile settings" mode (the player is
    * constructed with `{ profile }` and sourced by public_id, so the cloud applies the
-   * profile's transformations + UI).
+   * profile's graphs + UI).
    */
   function mountOutputCloudinaryPlayer(nodeId, gen) {
     const sid = sanitizeDomIdForPlayer(nodeId);
@@ -5866,9 +5864,9 @@
   }
 
   /**
-   * Output block opted out of being the Transformation's terminal output (e.g. an extra Output · video
+   * Output block opted out of being the Graph's terminal output (e.g. an extra Output · video
    * used only for preview while iterating). Preview blocks still render their preview locally —
-   * applet/run-Transformation logic just doesn't count them as the canonical terminal.
+   * applet/run-Graph logic just doesn't count them as the canonical terminal.
    */
   function isPreviewOutputNode(node) {
     return !!(
@@ -6059,7 +6057,7 @@
 
   /**
    * Walk every transformation block on the primary (first-segment) path leading to an
-   * output node and collect the SDK-style transformation pieces. Splice branches that
+   * output node and collect the SDK-style graph pieces. Splice branches that
    * aren't the first segment stay out of the base chain — their transforms are inlined
    * inside the splice layer by `nodeTransformationPieces`.
    *
@@ -6143,7 +6141,7 @@
   /**
    * The Cloudinary URL transformation chain for an output node — shares the primary-path
    * walk + per-block serialization with `buildDeliveryUrlForOutput`, just without the
-   * delivery-side image / still-frame tail. Returns "" when no upstream transformation
+   * delivery-side image / still-frame tail. Returns "" when no upstream graph
    * blocks are wired. Output looks like:
    *   "c_scale,h_720/fl_splice:transition_(name_fade),l_video:samples:elephants/fl_layer_apply"
    */
@@ -6318,7 +6316,7 @@
       if (segs.length) {
         const joined = segs.join("/");
         const short = joined.length > 140 ? joined.slice(0, 138) + "…" : joined;
-        html += `<div class="cld-url-preview"><strong>Transformation URL</strong>${escapeHtml(short)}</div>`;
+        html += `<div class="cld-url-preview"><strong>Graph URL</strong>${escapeHtml(short)}</div>`;
       }
     }
     html += "</div>";
@@ -6395,7 +6393,7 @@
           );
           if (playgroundInput) playgroundInput.value = target.settings.publicId;
           refreshOutputDeliveryUi();
-          notifyAppletEditorTransformationMaybeDirty();
+          notifyAppletEditorGraphMaybeDirty();
         },
       });
       return mediaLibraryWidget;
@@ -6412,7 +6410,7 @@
       })
       .catch((err) => {
         mediaLibraryPendingNodeId = null;
-        showTransformationToast(err.message || String(err));
+        showGraphToast(err.message || String(err));
       });
   }
 
@@ -6756,7 +6754,7 @@
     requestAnimationFrame(() => {
       updateEdges();
     });
-    notifyAppletEditorTransformationMaybeDirty();
+    notifyAppletEditorGraphMaybeDirty();
   }
 
   function syncOutputImageThumbnails() {
@@ -6792,7 +6790,7 @@
       }
       if (!isAnyVideoOutputBlockType(out.def.type)) continue;
       /* Profile mode pins the source to the bare public_id (the Cloudinary profile defines
-       * its own transformations) — `source(deliveryUrl)` would overrule the profile, so
+       * its own graphs) — `source(deliveryUrl)` would overrule the profile, so
        * always re-mount when the player is in profile mode. */
       if (isVideoPlayerProfileMode(out)) {
         mountOutputCloudinaryPlayer(out.id, outputPlayerRenderGen);
@@ -6813,8 +6811,8 @@
     syncOutputImageThumbnails();
   }
 
-  let transformationToastTimer = null;
-  function hideTransformationToastEl(el) {
+  let graphToastTimer = null;
+  function hideGraphToastEl(el) {
     if (!el) return;
     el.classList.remove("visible");
     if (typeof el.hidePopover === "function") {
@@ -6824,12 +6822,12 @@
     }
   }
 
-  function showTransformationToast(message) {
-    const el = document.getElementById("transformation-toast");
+  function showGraphToast(message) {
+    const el = document.getElementById("graph-toast");
     if (!el) return;
     el.textContent = message;
-    clearTimeout(transformationToastTimer);
-    hideTransformationToastEl(el);
+    clearTimeout(graphToastTimer);
+    hideGraphToastEl(el);
     if (typeof el.showPopover === "function") {
       try {
         el.showPopover();
@@ -6839,18 +6837,18 @@
     } else {
       el.classList.add("visible");
     }
-    transformationToastTimer = setTimeout(() => hideTransformationToastEl(el), 4000);
+    graphToastTimer = setTimeout(() => hideGraphToastEl(el), 4000);
   }
 
-  function runTransformation() {
+  function runGraph() {
     if (!nodes.length) {
-      showTransformationToast("Add blocks to the canvas first.");
+      showGraphToast("Add blocks to the canvas first.");
       return;
     }
     const outputs = nodes.filter((n) => isTerminalOutputNode(n));
     refreshOutputDeliveryUi();
     if (outputs.length === 0) {
-      showTransformationToast("Add an Output block.");
+      showGraphToast("Add an Output block.");
       return;
     }
     const mediaOutputs = outputs.filter((o) => !isTextOutputBlockType(o.def.type));
@@ -6862,17 +6860,17 @@
     }
     if (mediaOutputs.length === 0 && textOutputs.length > 0) {
       const n = textOutputs.length;
-      showTransformationToast("Transformation ran — " + n + " text result" + (n === 1 ? "" : "s") + " updated.");
+      showGraphToast("Graph ran — " + n + " text result" + (n === 1 ? "" : "s") + " updated.");
       return;
     }
     if (withUrl === 0) {
-      showTransformationToast("Set a public ID on an Input block.");
+      showGraphToast("Set a public ID on an Input block.");
     } else if (withUrl === mediaOutputs.length) {
       const n = outputs.length;
-      showTransformationToast("Transformation ran — " + n + " preview" + (n === 1 ? "" : "s") + " updated.");
+      showGraphToast("Graph ran — " + n + " preview" + (n === 1 ? "" : "s") + " updated.");
     } else {
-      showTransformationToast(
-        "Transformation ran — " + withUrl + " of " + mediaOutputs.length + " outputs have a URL."
+      showGraphToast(
+        "Graph ran — " + withUrl + " of " + mediaOutputs.length + " outputs have a URL."
       );
     }
   }
@@ -6908,12 +6906,12 @@
           const short = joined.length > 140 ? joined.slice(0, 138) + "…" : joined;
           preview.textContent = "";
           const lab = document.createElement("strong");
-          lab.textContent = "Transformation URL";
+          lab.textContent = "Graph URL";
           preview.appendChild(lab);
           preview.appendChild(document.createTextNode(short));
         }
         refreshOutputDeliveryUi();
-        notifyAppletEditorTransformationMaybeDirty();
+        notifyAppletEditorGraphMaybeDirty();
       };
       inp.addEventListener("input", onChange);
       inp.addEventListener("change", onChange);
@@ -7023,7 +7021,7 @@
             node.settings.order = segs;
             renderNodes();
             refreshOutputDeliveryUi();
-            notifyAppletEditorTransformationMaybeDirty();
+            notifyAppletEditorGraphMaybeDirty();
           };
 
           document.addEventListener("mousemove", onMove);
@@ -7042,7 +7040,7 @@
           trans[edgeId] = normalizeSpliceTransition(e.target.value);
           node.settings.transitions = trans;
           refreshOutputDeliveryUi();
-          notifyAppletEditorTransformationMaybeDirty();
+          notifyAppletEditorGraphMaybeDirty();
         });
         sel.addEventListener("mousedown", (ev) => ev.stopPropagation());
       });
@@ -7057,7 +7055,7 @@
           syncSpliceOrderFromEdges(node);
           renderNodes();
           refreshOutputDeliveryUi();
-          notifyAppletEditorTransformationMaybeDirty();
+          notifyAppletEditorGraphMaybeDirty();
         });
       });
     });
@@ -7078,7 +7076,7 @@
         node.settings.mode = String(inp.value).trim() === "profile" ? "profile" : "video";
         renderNodes();
         refreshOutputDeliveryUi();
-        notifyAppletEditorTransformationMaybeDirty();
+        notifyAppletEditorGraphMaybeDirty();
       });
     });
     nodesLayer.querySelectorAll('select[data-output-player-profile]').forEach((sel) => {
@@ -7090,7 +7088,7 @@
         node.settings = node.settings || {};
         node.settings.profile = String(sel.value).trim() || "cld-default";
         refreshOutputDeliveryUi();
-        notifyAppletEditorTransformationMaybeDirty();
+        notifyAppletEditorGraphMaybeDirty();
       });
     });
   }
@@ -7107,7 +7105,7 @@
         node.settings.isPreview = !!e.target.checked;
         renderNodes();
         refreshOutputDeliveryUi();
-        notifyAppletEditorTransformationMaybeDirty();
+        notifyAppletEditorGraphMaybeDirty();
       });
     });
   }
@@ -7244,7 +7242,7 @@
       panY = 60;
       zoom = 1.2;
       applyTransform();
-      notifyAppletEditorTransformationMaybeDirty();
+      notifyAppletEditorGraphMaybeDirty();
       return;
     }
     let minX = Infinity,
@@ -7270,7 +7268,7 @@
     panX = (cw - (minX + maxX) * zoom) / 2;
     panY = (ch - (minY + maxY) * zoom) / 2;
     applyTransform();
-    notifyAppletEditorTransformationMaybeDirty();
+    notifyAppletEditorGraphMaybeDirty();
   }
 
   /** Sidebar palette section order and labels. Transform blocks stays last on purpose. */
@@ -7328,28 +7326,28 @@
     return false;
   }
 
-  /** Which sidebar tab is active: "transformations" (saved transformations) or "applets" (saved
+  /** Which sidebar tab is active: "graphs" (saved graphs) or "applets" (saved
    * applets). Drives the rendering in the shared `#palette-list` container + the
    * placeholder text of `#palette-search`. Blocks live in a floating canvas rail now,
    * not in the sidebar. */
-  let activeLibraryTab = "transformations";
+  let activeLibraryTab = "graphs";
 
   function libraryHeadingForTab(tab) {
     if (tab === "applets") return "Applets";
-    return "Transformations";
+    return "Graphs";
   }
 
   function librarySearchPlaceholderForTab(tab) {
     if (tab === "applets") return "Search applets…";
-    return "Search Transformations…";
+    return "Search Graphs…";
   }
 
-  /** Reflect `appMode` onto the `.app` container so CSS can hide Transformation-only UI (Blocks
+  /** Reflect `appMode` onto the `.app` container so CSS can hide Graph-only UI (Blocks
    * tab, drop target, etc.) while the Applet Playground is active. */
   function syncAppModeChrome() {
     const root = document.querySelector(".app");
     if (!root) return;
-    root.setAttribute("data-app-mode", appMode === "applet" ? "applet" : "transformation");
+    root.setAttribute("data-app-mode", appMode === "applet" ? "applet" : "graph");
   }
 
   /** Update the sidebar heading + search placeholder + tab highlight to match `activeLibraryTab`. */
@@ -7367,9 +7365,9 @@
   }
 
   function setActiveLibraryTab(tab) {
-    const normalized = tab === "applets" ? "applets" : "transformations";
+    const normalized = tab === "applets" ? "applets" : "graphs";
     /* Switching to Applets always returns to the list view; the chat assistant is
-     * scoped to the Transformations context for now. */
+     * scoped to the Graphs context for now. */
     if (normalized === "applets" && chatOpen) {
       chatOpen = false;
       try {
@@ -7391,7 +7389,7 @@
   /** Dispatcher: re-renders the sidebar list based on the active tab. */
   function renderLibrary(filter) {
     if (activeLibraryTab === "applets") renderAppletsLibrary(filter);
-    else renderTransformationsLibrary(filter);
+    else renderGraphsLibrary(filter);
   }
 
   /* ===== Sidebar collapse =================================================
@@ -7434,8 +7432,8 @@
   /* ===== Chat panel toggle ================================================
    * Chat slides in over the list view inside the sidebar; the inline header
    * button (`#palette-chat-toggle`) opens it, the X (`#chat-close`) returns to
-   * the list. Currently scoped to the Transformations tab — the toggle hides on Applets
-   * since the assistant is canvas/Transformation-focused. */
+   * the list. Currently scoped to the Graphs tab — the toggle hides on Applets
+   * since the assistant is canvas/Graph-focused. */
 
   const CHAT_OPEN_KEY = "videofactory.chat.open.v1";
   let chatOpen = readChatOpenFromStorage();
@@ -7457,14 +7455,14 @@
     const toggleEl = document.getElementById("palette-chat-toggle");
     const importEl = document.getElementById("palette-import-toggle");
     if (!headerEl || !listEl || !chatEl) return;
-    const isTransformations = activeLibraryTab === "transformations";
-    /* Toggle button is only meaningful while the Transformations tab is active and the
+    const isGraphs = activeLibraryTab === "graphs";
+    /* Toggle button is only meaningful while the Graphs tab is active and the
      * chat is closed (once it's open, the X in the chat header takes over). */
-    if (toggleEl) toggleEl.hidden = !isTransformations || chatOpen;
-    /* Import is a Transformation-only action — hide it on the Applets tab. (The whole
+    if (toggleEl) toggleEl.hidden = !isGraphs || chatOpen;
+    /* Import is a Graph-only action — hide it on the Applets tab. (The whole
      * header is hidden when chat is open, so no need to handle that here.) */
-    if (importEl) importEl.hidden = !isTransformations;
-    const showChat = isTransformations && chatOpen;
+    if (importEl) importEl.hidden = !isGraphs;
+    const showChat = isGraphs && chatOpen;
     chatEl.hidden = !showChat;
     headerEl.hidden = showChat;
     listEl.hidden = showChat;
@@ -7551,7 +7549,7 @@
   }
 
   function chatActionIconSvg(kind) {
-    if (kind === "build-transformation") {
+    if (kind === "build-graph") {
       return (
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
         '<circle cx="5" cy="12" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="19" cy="18" r="2"/>' +
@@ -7625,7 +7623,7 @@
       const empty = document.createElement("div");
       empty.className = "chat-empty";
       empty.innerHTML =
-        "Ask the assistant anything about your Transformation." +
+        "Ask the assistant anything about your Graph." +
         '<div class="chat-empty-hint">Try: <em>build a hero video</em>, <em>add a transcribe block</em>, or <em>set height to 720</em>.</div>';
       host.appendChild(empty);
       return;
@@ -7655,7 +7653,7 @@
 
   /** All known action shapes:
    *   { kind: "add-block", blockType, settings? }     — drop a block at canvas centre
-   *   { kind: "build-transformation", nodes: [{type, settings?}], wire: true }
+   *   { kind: "build-graph", nodes: [{type, settings?}], wire: true }
    *   { kind: "configure", target?: "selected"|nodeId, settings: {key:value} }
    * Each gets a stable `id` so we can look it up by data-attribute on click. */
   function makeAction(spec) {
@@ -7718,8 +7716,8 @@
             "Here's a hero video pipeline — Input · video → resize to 1080p → Output. Click to drop it on the canvas.",
           actions: [
             makeAction({
-              kind: "build-transformation",
-              title: "Hero video Transformation",
+              kind: "build-graph",
+              title: "Hero video Graph",
               sub: "input_video → cld_resize (h=1080) → output",
               nodes: [
                 { type: "input_video" },
@@ -7736,8 +7734,8 @@
             "A thumbnail pipeline grabs a still frame from a video. Try this start:",
           actions: [
             makeAction({
-              kind: "build-transformation",
-              title: "Video thumbnail Transformation",
+              kind: "build-graph",
+              title: "Video thumbnail Graph",
               sub: "input_video → cld_video_preview → output_image",
               nodes: [
                 { type: "input_video" },
@@ -7753,8 +7751,8 @@
           text: "Auto-transcription gives you a text track. Drop this pipeline:",
           actions: [
             makeAction({
-              kind: "build-transformation",
-              title: "Transcribe Transformation",
+              kind: "build-graph",
+              title: "Transcribe Graph",
               sub: "input_video → cld_transcribe → output_text",
               nodes: [
                 { type: "input_video" },
@@ -7770,7 +7768,7 @@
         text: "Pick a starting shape — both wire input → transform → output:",
         actions: [
           makeAction({
-            kind: "build-transformation",
+            kind: "build-graph",
             title: "Hero video (1080p)",
             sub: "input_video → cld_resize → output",
             nodes: [
@@ -7780,7 +7778,7 @@
             ],
           }),
           makeAction({
-            kind: "build-transformation",
+            kind: "build-graph",
             title: "Thumbnail",
             sub: "input_video → cld_video_preview → output_image",
             nodes: [
@@ -7801,7 +7799,7 @@
           text:
             'Adding a "' +
             blockTitleForType(blockType) +
-            '" block. You can drag-wire it to your existing Transformation after.',
+            '" block. You can drag-wire it to your existing Graph after.',
           actions: [
             makeAction({
               kind: "add-block",
@@ -7840,7 +7838,7 @@
     if (/\b(help|what.*can|how.*work)\b/.test(t)) {
       return {
         text:
-          "I'm a mock assistant for the canvas. I can build starter Transformations, add blocks, and tweak settings on the selected block. Try: 'build a hero video', 'add a resize block', 'set height to 720'.",
+          "I'm a mock assistant for the canvas. I can build starter Graphs, add blocks, and tweak settings on the selected block. Try: 'build a hero video', 'add a resize block', 'set height to 720'.",
         actions: [],
       };
     }
@@ -7851,8 +7849,8 @@
         "I'm not sure how to handle that yet. I can build starter pipelines or add specific blocks. Try one of these:",
       actions: [
         makeAction({
-          kind: "build-transformation",
-          title: "Hero video Transformation",
+          kind: "build-graph",
+          title: "Hero video Graph",
           sub: "input → resize → output",
           nodes: [
             { type: "input_video" },
@@ -7896,7 +7894,7 @@
   function chatExecAddBlock(action) {
     const def = TYPES.find((t) => t.type === action.blockType);
     if (!def) {
-      showTransformationToast("Unknown block type: " + action.blockType);
+      showGraphToast("Unknown block type: " + action.blockType);
       return false;
     }
     const cw = canvasBg.clientWidth;
@@ -7909,12 +7907,12 @@
       renderNodes();
     }
     markChatActionApplied(action.id, "Added " + def.title);
-    showTransformationToast('Added "' + def.title + '" to canvas.');
+    showGraphToast('Added "' + def.title + '" to canvas.');
     return true;
   }
 
   /** Replace the canvas with a 3-block input → transform → output starter pipeline. */
-  function chatExecBuildTransformation(action) {
+  function chatExecBuildGraph(action) {
     if (!Array.isArray(action.nodes) || !action.nodes.length) return false;
     if (
       nodes.length > 0 &&
@@ -7953,8 +7951,8 @@
     selectedEdgeId = null;
     renderNodes();
     fitView();
-    markChatActionApplied(action.id, "Built " + (action.title || "Transformation"));
-    showTransformationToast('Built "' + (action.title || "Transformation") + '" on canvas.');
+    markChatActionApplied(action.id, "Built " + (action.title || "Graph"));
+    showGraphToast('Built "' + (action.title || "Graph") + '" on canvas.');
     return true;
   }
 
@@ -7963,14 +7961,14 @@
     const targetId = action.target === "selected" ? selectedNodeId : action.target;
     const node = nodes.find((n) => n.id === targetId);
     if (!node) {
-      showTransformationToast("Select a block on the canvas first.");
+      showGraphToast("Select a block on the canvas first.");
       return false;
     }
     node.settings = Object.assign({}, node.settings || {}, action.settings || {});
     renderNodes();
     refreshOutputDeliveryUi();
     markChatActionApplied(action.id, "Configured " + node.def.title);
-    showTransformationToast("Configured " + node.def.title + ".");
+    showGraphToast("Configured " + node.def.title + ".");
     return true;
   }
 
@@ -7978,11 +7976,11 @@
     const action = findChatAction(actionId);
     if (!action) return;
     if (appMode === "applet") {
-      showTransformationToast("Exit the applet playground first to edit the canvas.");
+      showGraphToast("Exit the applet playground first to edit the canvas.");
       return;
     }
     if (action.kind === "add-block") chatExecAddBlock(action);
-    else if (action.kind === "build-transformation") chatExecBuildTransformation(action);
+    else if (action.kind === "build-graph") chatExecBuildGraph(action);
     else if (action.kind === "configure") chatExecConfigure(action);
   }
 
@@ -8208,8 +8206,8 @@
     );
   }
 
-  /** Inline-action SVGs for a saved-Transformation row in the sidebar (export / delete). */
-  function libraryTransformationExportIconSvg() {
+  /** Inline-action SVGs for a saved-Graph row in the sidebar (export / delete). */
+  function libraryGraphExportIconSvg() {
     return (
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
       '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>' +
@@ -8219,7 +8217,7 @@
     );
   }
 
-  function libraryTransformationDeleteIconSvg() {
+  function libraryGraphDeleteIconSvg() {
     return (
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
       '<polyline points="3 6 5 6 21 6"/>' +
@@ -8231,45 +8229,45 @@
     );
   }
 
-  function renderTransformationsLibrary(filter) {
+  function renderGraphsLibrary(filter) {
     const q = (filter || "").toLowerCase();
     paletteList.innerHTML = "";
     /* Re-rendering tears down the inline-confirm Delete button, so reset the pending state
      * to keep arming-from-the-old-button logic from leaking into the new DOM. */
-    clearPendingTransformationDelete();
-    const store = readTransformationStore();
-    const allNames = Object.keys(store.transformations || {}).sort((a, b) => a.localeCompare(b));
+    clearPendingGraphDelete();
+    const store = readGraphStore();
+    const allNames = Object.keys(store.graphs || {}).sort((a, b) => a.localeCompare(b));
     const names = q ? allNames.filter((n) => n.toLowerCase().includes(q)) : allNames;
     if (!allNames.length) {
       const empty = document.createElement("div");
       empty.className = "library-empty";
       empty.innerHTML =
-        "No saved transformations yet." +
-        '<div class="library-empty-hint">Build a Transformation and press <b>Save Transformation</b>, or use the <b>Import</b> icon above.</div>';
+        "No saved graphs yet." +
+        '<div class="library-empty-hint">Build a Graph and press <b>Save Graph</b>, or use the <b>Import</b> icon above.</div>';
       paletteList.appendChild(empty);
       return;
     }
     if (!names.length) {
       const empty = document.createElement("div");
       empty.className = "library-empty";
-      empty.textContent = "No Transformations match.";
+      empty.textContent = "No Graphs match.";
       paletteList.appendChild(empty);
       return;
     }
-    const activeTransformation = appMode === "applet" ? "" : getActiveSavedTransformationName();
+    const activeGraph = appMode === "applet" ? "" : getActiveSavedGraphName();
     for (const name of names) {
-      const doc = store.transformations[name];
-      const when = formatTransformationSavedAt(doc && doc.savedAt);
+      const doc = store.graphs[name];
+      const when = formatGraphSavedAt(doc && doc.savedAt);
       const row = document.createElement("div");
-      row.className = "library-row library-row-transformation";
-      if (name === activeTransformation) row.classList.add("is-active");
-      row.setAttribute("data-transformation-name", encodeURIComponent(name));
+      row.className = "library-row library-row-graph";
+      if (name === activeGraph) row.classList.add("is-active");
+      row.setAttribute("data-graph-name", encodeURIComponent(name));
       row.setAttribute("role", "button");
       row.setAttribute("tabindex", "0");
       row.title = name;
       row.innerHTML =
         '<div class="library-row-icon">' +
-        libraryRowIconSvg("transformation") +
+        libraryRowIconSvg("graph") +
         "</div>" +
         '<div class="library-row-meta">' +
         '<span class="library-row-name">' +
@@ -8280,11 +8278,11 @@
           : "") +
         "</div>" +
         '<div class="library-row-actions">' +
-        '<button type="button" class="library-row-action library-row-export" title="Export as JSON" aria-label="Export Transformation as JSON">' +
-        libraryTransformationExportIconSvg() +
+        '<button type="button" class="library-row-action library-row-export" title="Export as JSON" aria-label="Export Graph as JSON">' +
+        libraryGraphExportIconSvg() +
         "</button>" +
-        '<button type="button" class="library-row-action library-row-delete" title="Delete Transformation" aria-label="Delete Transformation">' +
-        libraryTransformationDeleteIconSvg() +
+        '<button type="button" class="library-row-action library-row-delete" title="Delete Graph" aria-label="Delete Graph">' +
+        libraryGraphDeleteIconSvg() +
         "</button>" +
         "</div>";
       paletteList.appendChild(row);
@@ -8311,7 +8309,7 @@
       : allSlugs;
     if (!allSlugs.length) {
       paletteList.innerHTML =
-        '<div class="library-empty">No applets yet.<div class="library-empty-hint">Open <b>Applet</b> on a saved Transformation to create one.</div></div>';
+        '<div class="library-empty">No applets yet.<div class="library-empty-hint">Open <b>Applet</b> on a saved Graph to create one.</div></div>';
       return;
     }
     if (!slugs.length) {
@@ -8322,7 +8320,7 @@
     for (const slug of slugs) {
       const rec = applets[slug];
       const name = (rec && rec.name) || slug;
-      const when = formatTransformationSavedAt(rec && rec.updatedAt);
+      const when = formatGraphSavedAt(rec && rec.updatedAt);
       const outKind = rec && rec.output && rec.output.kind ? rec.output.kind : "";
       const sub = outKind ? "→ " + outKind + (when ? " · " + when : "") : when;
       const row = document.createElement("div");
@@ -8440,7 +8438,7 @@
         inputWirePull = null;
         selectedEdgeId = null;
         updateEdges();
-        notifyAppletEditorTransformationMaybeDirty();
+        notifyAppletEditorGraphMaybeDirty();
       }
     }
     if (panning) {
@@ -8491,12 +8489,12 @@
       panning = false;
       canvasBg.classList.remove("panning");
     }
-    if (endedCanvasPan) notifyAppletEditorTransformationMaybeDirty();
+    if (endedCanvasPan) notifyAppletEditorGraphMaybeDirty();
     if (draggingNode) {
       const el = nodesLayer.querySelector(`[data-node-id="${draggingNode.id}"]`);
       if (el) el.classList.remove("dragging");
       draggingNode = null;
-      notifyAppletEditorTransformationMaybeDirty();
+      notifyAppletEditorGraphMaybeDirty();
     }
     if (wiring) {
       wiring = null;
@@ -8574,7 +8572,7 @@
         panY -= e.deltaY;
       }
       applyTransform();
-      notifyAppletEditorTransformationMaybeDirty();
+      notifyAppletEditorGraphMaybeDirty();
     },
     { passive: false }
   );
@@ -8594,7 +8592,7 @@
     }
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && !e.target.matches("textarea, input, select")) {
       e.preventDefault();
-      runTransformation();
+      runGraph();
     }
     if (e.key === "Delete" || e.key === "Backspace") {
       if (e.target.matches("input, textarea") || e.target.closest?.("select")) return;
@@ -8603,7 +8601,7 @@
         selectedEdgeId = null;
         for (const n of nodes) if (n.def.type === "splice") syncSpliceOrderFromEdges(n);
         renderNodes();
-        notifyAppletEditorTransformationMaybeDirty();
+        notifyAppletEditorGraphMaybeDirty();
       } else if (selectedNodeId) {
         const id = selectedNodeId;
         nodes = nodes.filter((n) => n.id !== id);
@@ -8620,22 +8618,22 @@
   });
 
   document.getElementById("btn-fit").addEventListener("click", fitView);
-  document.getElementById("btn-run-transformation").addEventListener("click", runTransformation);
+  document.getElementById("btn-run-graph").addEventListener("click", runGraph);
 
   document.getElementById("zoom-in").addEventListener("click", () => {
     zoom = Math.min(MAX_Z, zoom * 1.15);
     applyTransform();
-    notifyAppletEditorTransformationMaybeDirty();
+    notifyAppletEditorGraphMaybeDirty();
   });
   document.getElementById("zoom-out").addEventListener("click", () => {
     zoom = Math.max(MIN_Z, zoom / 1.15);
     applyTransform();
-    notifyAppletEditorTransformationMaybeDirty();
+    notifyAppletEditorGraphMaybeDirty();
   });
 
   paletteSearch.addEventListener("input", () => renderLibrary(paletteSearch.value));
 
-  /* Library tab switcher: Transformations · Applets. A user click also expands the sidebar
+  /* Library tab switcher: Graphs · Applets. A user click also expands the sidebar
    * if it's collapsed (so clicking an icon in the collapsed rail reveals the panel).
    * Programmatic `setActiveLibraryTab` calls (e.g. the boot-time switch when
    * opening `?applet=<slug>`) deliberately don't expand — the URL's `?sidebar=`
@@ -8644,7 +8642,7 @@
     tabEl.addEventListener("click", () => {
       const t = tabEl.getAttribute("data-library-tab");
       if (sidebarCollapsed) setSidebarCollapsed(false);
-      setActiveLibraryTab(t || "transformations");
+      setActiveLibraryTab(t || "graphs");
     });
   });
 
@@ -8686,41 +8684,41 @@
   });
 
   /* Clicking inside the library list:
-   *   - Transformations tab:
-   *       · Export icon  → download saved Transformation JSON (no row activation).
+   *   - Graphs tab:
+   *       · Export icon  → download saved Graph JSON (no row activation).
    *       · Delete icon  → two-step inline confirm, then delete.
    *       · Import row   → open the hidden file input picker.
-   *       · Row body     → load the saved Transformation into the canvas.
+   *       · Row body     → load the saved Graph into the canvas.
    *   - Applets tab     → open the applet in the Playground view. */
   paletteList.addEventListener("click", (e) => {
-    if (activeLibraryTab === "transformations") {
+    if (activeLibraryTab === "graphs") {
       const exportBtn = e.target.closest && e.target.closest(".library-row-export");
       const deleteBtn = e.target.closest && e.target.closest(".library-row-delete");
-      const row = e.target.closest(".library-row[data-transformation-name]");
+      const row = e.target.closest(".library-row[data-graph-name]");
       if (!row) return;
-      const enc = row.getAttribute("data-transformation-name") || "";
+      const enc = row.getAttribute("data-graph-name") || "";
       const name = enc ? decodeURIComponent(enc) : "";
       if (!name) return;
       if (exportBtn) {
         e.preventDefault();
         e.stopPropagation();
-        clearPendingTransformationDelete();
-        exportSavedTransformationByName(name);
+        clearPendingGraphDelete();
+        exportSavedGraphByName(name);
         return;
       }
       if (deleteBtn) {
         e.preventDefault();
         e.stopPropagation();
-        if (pendingTransformationDeleteName === name) {
-          clearPendingTransformationDelete();
-          void deleteSavedTransformationByName(name);
+        if (pendingGraphDeleteName === name) {
+          clearPendingGraphDelete();
+          void deleteSavedGraphByName(name);
         } else {
-          armPendingTransformationDelete(name, deleteBtn);
+          armPendingGraphDelete(name, deleteBtn);
         }
         return;
       }
-      if (appMode === "applet") exitAppletPlayground({ keepTransformation: true });
-      const ok = loadTransformationByName(name);
+      if (appMode === "applet") exitAppletPlayground({ keepGraph: true });
+      const ok = loadGraphByName(name);
       if (ok) renderLibrary(paletteSearch.value);
     } else if (activeLibraryTab === "applets") {
       const row = e.target.closest(".library-row[data-applet-slug]");
@@ -8759,7 +8757,7 @@
     setChatOpen(true);
   });
   document.getElementById("palette-import-toggle").addEventListener("click", () => {
-    const inp = document.getElementById("transformation-import-input");
+    const inp = document.getElementById("graph-import-input");
     if (!inp) return;
     inp.value = "";
     inp.click();
@@ -8802,7 +8800,7 @@
 
   window.addEventListener("resize", () => {
     applyTransform();
-    notifyAppletEditorTransformationMaybeDirty();
+    notifyAppletEditorGraphMaybeDirty();
   });
 
   function syncIdSequencesFromGraph() {
@@ -8844,9 +8842,9 @@
     return out;
   }
 
-  function serializeTransformationDocument() {
+  function serializeGraphDocument() {
     return {
-      v: TRANSFORMATION_DOC_VERSION,
+      v: GRAPH_DOC_VERSION,
       savedAt: new Date().toISOString(),
       viewport: { panX, panY, zoom },
       nodeIdSeq,
@@ -8869,7 +8867,7 @@
   }
 
   function canvasGraphFingerprint() {
-    const doc = serializeTransformationDocument();
+    const doc = serializeGraphDocument();
     return JSON.stringify({
       v: doc.v,
       viewport: doc.viewport,
@@ -8881,9 +8879,9 @@
   }
 
   /** Fingerprint of just the *content* of the canvas (no viewport). Used for the brand
-   * "· unsaved" indicator so that panning/zooming alone doesn't mark a Transformation dirty. */
-  function transformationContentFingerprint() {
-    const doc = serializeTransformationDocument();
+   * "· unsaved" indicator so that panning/zooming alone doesn't mark a Graph dirty. */
+  function graphContentFingerprint() {
+    const doc = serializeGraphDocument();
     return JSON.stringify({
       v: doc.v,
       nodeIdSeq: doc.nodeIdSeq,
@@ -8894,23 +8892,23 @@
   }
 
   /** Last known-clean content fingerprint (set on load/save/import/seed). */
-  let cleanTransformationFingerprint = "";
+  let cleanGraphFingerprint = "";
 
   /** Reset baseline — call after the canvas matches a known persisted state. */
-  function markTransformationAsClean() {
-    cleanTransformationFingerprint = transformationContentFingerprint();
-    updateBrandTransformationDirtyUi();
+  function markGraphAsClean() {
+    cleanGraphFingerprint = graphContentFingerprint();
+    updateBrandGraphDirtyUi();
   }
 
-  function transformationIsDirty() {
-    return transformationContentFingerprint() !== cleanTransformationFingerprint;
+  function graphIsDirty() {
+    return graphContentFingerprint() !== cleanGraphFingerprint;
   }
 
-  /** Toggle the amber " · unsaved" suffix on the topbar Transformation name. */
-  function updateBrandTransformationDirtyUi() {
-    const el = document.getElementById("brand-transformation-name");
+  /** Toggle the amber " · unsaved" suffix on the topbar Graph name. */
+  function updateBrandGraphDirtyUi() {
+    const el = document.getElementById("brand-graph-name");
     if (!el) return;
-    el.classList.toggle("is-unsaved", transformationIsDirty());
+    el.classList.toggle("is-unsaved", graphIsDirty());
   }
 
   function appletEditDialogIsOpen() {
@@ -8919,11 +8917,11 @@
   }
 
   /** Blueprint/layout/settings/viewport changed while applet editor may be open — refresh previews + unsaved UI. */
-  function notifyAppletEditorTransformationMaybeDirty() {
+  function notifyAppletEditorGraphMaybeDirty() {
     /* Always refresh the brand "· unsaved" indicator regardless of applet editor state. */
-    updateBrandTransformationDirtyUi();
+    updateBrandGraphDirtyUi();
     if (!appletEditDialogIsOpen()) return;
-    updateAppletTransformationOutputReadout();
+    updateAppletGraphOutputReadout();
     updateAppletApiMethodReadout();
     updateAppletEditorDirtyUi();
   }
@@ -8931,9 +8929,9 @@
   /**
    * @returns {{ unknownTypes: string[] }}
    */
-  function applyTransformationDocument(doc) {
-    if (!doc || doc.v !== TRANSFORMATION_DOC_VERSION) {
-      throw new Error("Invalid Transformation file (expected version " + TRANSFORMATION_DOC_VERSION + ").");
+  function applyGraphDocument(doc) {
+    if (!doc || doc.v !== GRAPH_DOC_VERSION) {
+      throw new Error("Invalid Graph file (expected version " + GRAPH_DOC_VERSION + ").");
     }
     const unknownTypes = [];
     const built = [];
@@ -8991,39 +8989,39 @@
     applyTransform();
     /* Canvas now matches the document we just applied — baseline the dirty tracker so the
        brand stays clean until the user makes their first change. */
-    markTransformationAsClean();
+    markGraphAsClean();
     return { unknownTypes };
   }
 
-  function safeParseTransformationStoreRaw(raw) {
+  function safeParseGraphStoreRaw(raw) {
     try {
-      if (!raw || !String(raw).trim()) return { v: 1, lastActive: null, transformations: {} };
+      if (!raw || !String(raw).trim()) return { v: 1, lastActive: null, graphs: {} };
       const o = JSON.parse(raw);
-      if (!o || o.v !== 1 || typeof o.transformations !== "object" || o.transformations === null) {
-        return { v: 1, lastActive: null, transformations: {} };
+      if (!o || o.v !== 1 || typeof o.graphs !== "object" || o.graphs === null) {
+        return { v: 1, lastActive: null, graphs: {} };
       }
       return {
         v: 1,
         lastActive: typeof o.lastActive === "string" ? o.lastActive : null,
-        transformations: o.transformations,
+        graphs: o.graphs,
       };
     } catch (e) {
-      return { v: 1, lastActive: null, transformations: {} };
+      return { v: 1, lastActive: null, graphs: {} };
     }
   }
 
-  function readTransformationStore() {
-    return safeParseTransformationStoreRaw(localStorage.getItem(TRANSFORMATION_STORE_KEY));
+  function readGraphStore() {
+    return safeParseGraphStoreRaw(localStorage.getItem(GRAPH_STORE_KEY));
   }
 
-  function writeTransformationStore(store) {
+  function writeGraphStore(store) {
     try {
       delete store.lastActive;
     } catch (e) {}
-    localStorage.setItem(TRANSFORMATION_STORE_KEY, JSON.stringify(store));
+    localStorage.setItem(GRAPH_STORE_KEY, JSON.stringify(store));
   }
 
-  function formatTransformationSavedAt(iso) {
+  function formatGraphSavedAt(iso) {
     if (!iso || typeof iso !== "string") return "";
     try {
       const d = new Date(iso);
@@ -9034,137 +9032,137 @@
     }
   }
 
-  /** Writes current canvas to the named Transformation; updates `?transformation=` — no confirm, no toast (for applet co-save). */
-  function persistCurrentTransformationUnderNameSilent(trimmed) {
+  /** Writes current canvas to the named Graph; updates `?graph=` — no confirm, no toast (for applet co-save). */
+  function persistCurrentGraphUnderNameSilent(trimmed) {
     const name = String(trimmed || "").trim();
     if (!name) return false;
     try {
-      const store = readTransformationStore();
-      store.transformations[name] = serializeTransformationDocument();
-      writeTransformationStore(store);
-      setTransformationIdInUrl(name);
-      markTransformationAsClean();
+      const store = readGraphStore();
+      store.graphs[name] = serializeGraphDocument();
+      writeGraphStore(store);
+      setGraphIdInUrl(name);
+      markGraphAsClean();
       return true;
     } catch (err) {
       return false;
     }
   }
 
-  function saveCurrentTransformationWithName(name) {
+  function saveCurrentGraphWithName(name) {
     const trimmed = String(name || "").trim();
     if (!trimmed) {
-      showTransformationToast("Enter a name for this Transformation.");
+      showGraphToast("Enter a name for this Graph.");
       return false;
     }
-    const store = readTransformationStore();
-    const doc = serializeTransformationDocument();
-    store.transformations[trimmed] = doc;
+    const store = readGraphStore();
+    const doc = serializeGraphDocument();
+    store.graphs[trimmed] = doc;
     try {
-      writeTransformationStore(store);
-      setTransformationIdInUrl(trimmed);
-      markTransformationAsClean();
-      showTransformationToast('Saved Transformation "' + trimmed + '".');
+      writeGraphStore(store);
+      setGraphIdInUrl(trimmed);
+      markGraphAsClean();
+      showGraphToast('Saved Graph "' + trimmed + '".');
       return true;
     } catch (err) {
-      showTransformationToast("Could not save (storage full or private mode).");
+      showGraphToast("Could not save (storage full or private mode).");
       return false;
     }
   }
 
-  function loadTransformationByName(name) {
-    const store = readTransformationStore();
-    const doc = store.transformations[name];
+  function loadGraphByName(name) {
+    const store = readGraphStore();
+    const doc = store.graphs[name];
     if (!doc) {
-      showTransformationToast("That saved Transformation was not found.");
+      showGraphToast("That saved Graph was not found.");
       return false;
     }
     try {
-      const { unknownTypes } = applyTransformationDocument(doc);
-      setTransformationIdInUrl(name);
-      let msg = 'Loaded Transformation "' + name + '".';
+      const { unknownTypes } = applyGraphDocument(doc);
+      setGraphIdInUrl(name);
+      let msg = 'Loaded Graph "' + name + '".';
       if (unknownTypes.length) {
         msg += " Skipped: " + Array.from(new Set(unknownTypes)).join(", ");
       }
-      showTransformationToast(msg);
+      showGraphToast(msg);
       return true;
     } catch (err) {
-      showTransformationToast(err.message || String(err));
+      showGraphToast(err.message || String(err));
       return false;
     }
   }
 
-  function deleteSavedTransformationByName(name) {
-    const store = readTransformationStore();
-    if (!Object.prototype.hasOwnProperty.call(store.transformations, name)) return;
-    delete store.transformations[name];
+  function deleteSavedGraphByName(name) {
+    const store = readGraphStore();
+    if (!Object.prototype.hasOwnProperty.call(store.graphs, name)) return;
+    delete store.graphs[name];
     try {
-      writeTransformationStore(store);
-      if (getTransformationIdFromLocation() === name) setTransformationIdInUrl("");
-      showTransformationToast('Removed "' + name + '".');
-      if (activeLibraryTab === "transformations") renderLibrary(paletteSearch.value);
+      writeGraphStore(store);
+      if (getGraphIdFromLocation() === name) setGraphIdInUrl("");
+      showGraphToast('Removed "' + name + '".');
+      if (activeLibraryTab === "graphs") renderLibrary(paletteSearch.value);
     } catch (err) {
-      showTransformationToast("Could not update saved Transformations.");
+      showGraphToast("Could not update saved Graphs.");
     }
   }
 
-  /** Two-step inline confirm for the Delete button in the sidebar saved-Transformations list:
+  /** Two-step inline confirm for the Delete button in the sidebar saved-Graphs list:
    * first click arms the button (icon → "?"), second click within the timeout deletes. */
-  let pendingTransformationDeleteName = null;
-  let pendingTransformationDeleteTimer = null;
-  const PENDING_FLOW_DELETE_MS = 4000;
+  let pendingGraphDeleteName = null;
+  let pendingGraphDeleteTimer = null;
+  const PENDING_GRAPH_DELETE_MS = 4000;
 
-  function findTransformationDeleteButton(name) {
+  function findGraphDeleteButton(name) {
     const enc = encodeURIComponent(name);
     const row = document.querySelector(
-      '.library-row-transformation[data-transformation-name="' + enc.replace(/"/g, '\\"') + '"]'
+      '.library-row-graph[data-graph-name="' + enc.replace(/"/g, '\\"') + '"]'
     );
     return row ? row.querySelector(".library-row-delete") : null;
   }
 
-  function clearPendingTransformationDelete() {
-    if (pendingTransformationDeleteTimer !== null) {
-      clearTimeout(pendingTransformationDeleteTimer);
-      pendingTransformationDeleteTimer = null;
+  function clearPendingGraphDelete() {
+    if (pendingGraphDeleteTimer !== null) {
+      clearTimeout(pendingGraphDeleteTimer);
+      pendingGraphDeleteTimer = null;
     }
-    if (pendingTransformationDeleteName !== null) {
-      const btn = findTransformationDeleteButton(pendingTransformationDeleteName);
+    if (pendingGraphDeleteName !== null) {
+      const btn = findGraphDeleteButton(pendingGraphDeleteName);
       if (btn) {
         btn.classList.remove("is-pending");
-        btn.title = "Delete Transformation";
-        btn.setAttribute("aria-label", "Delete Transformation");
-        btn.innerHTML = libraryTransformationDeleteIconSvg();
+        btn.title = "Delete Graph";
+        btn.setAttribute("aria-label", "Delete Graph");
+        btn.innerHTML = libraryGraphDeleteIconSvg();
       }
-      pendingTransformationDeleteName = null;
+      pendingGraphDeleteName = null;
     }
   }
 
-  function armPendingTransformationDelete(name, btn) {
-    clearPendingTransformationDelete();
+  function armPendingGraphDelete(name, btn) {
+    clearPendingGraphDelete();
     if (!btn) return;
-    pendingTransformationDeleteName = name;
+    pendingGraphDeleteName = name;
     btn.classList.add("is-pending");
     btn.title = "Click again to confirm";
-    btn.setAttribute("aria-label", "Confirm delete Transformation");
+    btn.setAttribute("aria-label", "Confirm delete Graph");
     btn.textContent = "?";
-    pendingTransformationDeleteTimer = setTimeout(() => {
-      pendingTransformationDeleteTimer = null;
-      clearPendingTransformationDelete();
-    }, PENDING_FLOW_DELETE_MS);
+    pendingGraphDeleteTimer = setTimeout(() => {
+      pendingGraphDeleteTimer = null;
+      clearPendingGraphDelete();
+    }, PENDING_GRAPH_DELETE_MS);
   }
 
-  /** Best-effort filesystem-safe filename from a Transformation name. Falls back to "transformation". */
-  function transformationDownloadFilename(name) {
+  /** Best-effort filesystem-safe filename from a Graph name. Falls back to "graph". */
+  function graphDownloadFilename(name) {
     const safe = String(name || "")
       .trim()
       .replace(/[\\/:*?"<>|]+/g, "-")
       .replace(/\s+/g, "_")
       .replace(/^[.\-_]+|[.\-_]+$/g, "")
       .slice(0, 80);
-    return (safe || "transformation") + ".transformation.json";
+    return (safe || "graph") + ".graph.json";
   }
 
   /** Triggers a browser download of `doc` as JSON, using a filename derived from `name`. */
-  function downloadTransformationDocument(doc, name) {
+  function downloadGraphDocument(doc, name) {
     try {
       const blob = new Blob([JSON.stringify(doc, null, 2)], {
         type: "application/json",
@@ -9172,33 +9170,33 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = transformationDownloadFilename(name);
+      a.download = graphDownloadFilename(name);
       document.body.appendChild(a);
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 0);
       return true;
     } catch (err) {
-      showTransformationToast("Could not export Transformation.");
+      showGraphToast("Could not export Graph.");
       return false;
     }
   }
 
-  /** Export a named Transformation straight from the saved store (without loading it onto the canvas). */
-  function exportSavedTransformationByName(name) {
-    const store = readTransformationStore();
-    const doc = store.transformations[name];
+  /** Export a named Graph straight from the saved store (without loading it onto the canvas). */
+  function exportSavedGraphByName(name) {
+    const store = readGraphStore();
+    const doc = store.graphs[name];
     if (!doc) {
-      showTransformationToast("That saved Transformation was not found.");
+      showGraphToast("That saved Graph was not found.");
       return;
     }
-    if (downloadTransformationDocument(doc, name)) {
-      showTransformationToast('Exported "' + name + '" as JSON.');
+    if (downloadGraphDocument(doc, name)) {
+      showGraphToast('Exported "' + name + '" as JSON.');
     }
   }
 
-  /** Read a JSON Transformation file, validate, and apply it to the canvas (replaces current). */
-  function importTransformationFromFile(file) {
+  /** Read a JSON Graph file, validate, and apply it to the canvas (replaces current). */
+  function importGraphFromFile(file) {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
@@ -9206,31 +9204,31 @@
       try {
         doc = JSON.parse(String(reader.result || ""));
       } catch (e) {
-        showTransformationToast("Import failed: file is not valid JSON.");
+        showGraphToast("Import failed: file is not valid JSON.");
         return;
       }
-      if (!doc || doc.v !== TRANSFORMATION_DOC_VERSION) {
-        showTransformationToast(
-          "Import failed: not a Transformation file (expected v" + TRANSFORMATION_DOC_VERSION + ")."
+      if (!doc || doc.v !== GRAPH_DOC_VERSION) {
+        showGraphToast(
+          "Import failed: not a Graph file (expected v" + GRAPH_DOC_VERSION + ")."
         );
         return;
       }
       try {
-        const { unknownTypes } = applyTransformationDocument(doc);
-        /* Imported Transformation is "untitled" until the user explicitly saves it under a name —
-           clear the URL Transformation id so they don't accidentally overwrite a previous save. */
-        setTransformationIdInUrl("");
-        let msg = "Imported Transformation.";
+        const { unknownTypes } = applyGraphDocument(doc);
+        /* Imported Graph is "untitled" until the user explicitly saves it under a name —
+           clear the URL Graph id so they don't accidentally overwrite a previous save. */
+        setGraphIdInUrl("");
+        let msg = "Imported Graph.";
         if (unknownTypes.length) {
           msg += " Skipped: " + Array.from(new Set(unknownTypes)).join(", ");
         }
-        showTransformationToast(msg);
+        showGraphToast(msg);
       } catch (err) {
-        showTransformationToast(err.message || String(err));
+        showGraphToast(err.message || String(err));
       }
     };
     reader.onerror = () => {
-      showTransformationToast("Could not read the selected file.");
+      showGraphToast("Could not read the selected file.");
     };
     reader.readAsText(file);
   }
@@ -9253,22 +9251,22 @@
     localStorage.setItem(APPLET_STORE_KEY, JSON.stringify(store));
   }
 
-  function getActiveSavedTransformationName() {
-    const id = getTransformationIdFromLocation();
+  function getActiveSavedGraphName() {
+    const id = getGraphIdFromLocation();
     if (!id) return "";
-    const store = readTransformationStore();
-    return Object.prototype.hasOwnProperty.call(store.transformations, id) ? id : "";
+    const store = readGraphStore();
+    return Object.prototype.hasOwnProperty.call(store.graphs, id) ? id : "";
   }
 
-  function syncAppletTransformationNameFieldFromStore() {
+  function syncAppletGraphNameFieldFromStore() {
     const el = document.getElementById("applet-edit-name");
     if (!el) return;
-    const fn = getActiveSavedTransformationName();
+    const fn = getActiveSavedGraphName();
     el.value = fn;
   }
 
-  /** Same rules as naming a saved Transformation (applets use this string as both display name and id). */
-  function isValidAppletTransformationName(name) {
+  /** Same rules as naming a saved Graph (applets use this string as both display name and id). */
+  function isValidAppletGraphName(name) {
     const s = String(name || "").trim();
     return s.length > 0 && s.length <= 120;
   }
@@ -9478,7 +9476,7 @@
     return nodes.filter((n) => isTerminalOutputNode(n));
   }
 
-  function deriveAppletOutputSpecFromTransformation() {
+  function deriveAppletOutputSpecFromGraph() {
     const terminals = listTerminalOutputNodesOnCanvas();
     if (terminals.length === 0) {
       return {
@@ -9517,10 +9515,10 @@
     };
   }
 
-  function updateAppletTransformationOutputReadout() {
-    const el = document.getElementById("applet-transformation-output-readout");
+  function updateAppletGraphOutputReadout() {
+    const el = document.getElementById("applet-graph-output-readout");
     if (!el) return;
-    const spec = deriveAppletOutputSpecFromTransformation();
+    const spec = deriveAppletOutputSpecFromGraph();
     el.classList.toggle("applet-output-readout-warn", !spec.ok);
     if (spec.ok) {
       const k = escapeHtml(spec.kind);
@@ -9627,7 +9625,7 @@
           newBadge +
           "</span>" +
           '<span class="applet-bind-param-field"><label>API name</label>' +
-          '<input type="text" class="applet-bind-param-name transformation-dialog-input" autocomplete="off" maxlength="64" spellcheck="false" value="' +
+          '<input type="text" class="applet-bind-param-name graph-dialog-input" autocomplete="off" maxlength="64" spellcheck="false" value="' +
           pnv +
           '"' +
           nameDis +
@@ -9662,7 +9660,7 @@
   /* ============================================================================
    * Named-transformation publishing (Class A applets — URL-form)
    *
-   * A Transformation whose graph collapses to a single Cloudinary URL transformation
+   * A Graph that collapses to a single Cloudinary URL transformation
    * chain can be published as a named transformation (`t_<slug>`) on the cloud
    * account. The applet's `POST /applets/<slug>/run` then becomes a stateless
    * URL constructor instead of a server-executed pipeline.
@@ -9675,7 +9673,7 @@
    *     trigger server-side jobs that store separate resources).
    *
    * Variables: applet inputs that *can* parameterize the URL bind to:
-   *   - the URL public_id slot (the primary base media input — one per Transformation),
+   *   - the URL public_id slot (the primary base media input — one per Graph),
    *   - Cloudinary user-defined variables `$(<name>)` referenced inside the
    *     chain (today: `input_text` blocks wired into a Text overlay's text
    *     port).
@@ -9688,7 +9686,7 @@
   function slugifyForCloudinaryNamedTransformation(name) {
     let s = String(name || "").trim().toLowerCase();
     s = s.replace(/[^a-z0-9_]+/g, "_").replace(/^_+|_+$/g, "").replace(/_+/g, "_");
-    if (!s) s = "transformation";
+    if (!s) s = "graph";
     return "vcf_" + s.slice(0, 80);
   }
 
@@ -9719,7 +9717,7 @@
   }
 
   /**
-   * Decide whether the active Transformation can be published as a Cloudinary named transformation.
+   * Decide whether the active Graph can be published as a Cloudinary named transformation.
    *
    * Class B blockers come in two flavours so the readout can explain *which* block
    * forces API-only and *why*:
@@ -9737,7 +9735,7 @@
   function classifyAppletForNamedTransformation(bindings) {
     const reasons = [];
     const blockers = [];
-    const outSpec = deriveAppletOutputSpecFromTransformation();
+    const outSpec = deriveAppletOutputSpecFromGraph();
     if (!outSpec.ok) {
       return { ok: false, reasons: [outSpec.message], blockers, outSpec };
     }
@@ -9851,7 +9849,7 @@
    * `$(<varname>)` and the primary base's `publicId` to `{<paramName>}`), call
    * the existing chain builder, then restore. This keeps the URL grammar in
    * lock-step with `buildDeliveryUrlForOutput` — there's a single source of
-   * truth for transformation serialization. Mutations + restoration happen
+   * truth for graph serialization. Mutations + restoration happen
    * synchronously inside one tick so no other code observes the temp state.
    *
    * @returns {{ ok: false, reasons: string[] } | { ok: true, slug: string, chain: string,
@@ -10001,7 +9999,7 @@
     if (!el) return;
     const slug = String(document.getElementById("applet-edit-name")?.value || "").trim() || "transformation_name";
     const version = appletEditorResolvedVersion();
-    const spec = deriveAppletOutputSpecFromTransformation();
+    const spec = deriveAppletOutputSpecFromGraph();
     if (!spec.ok) {
       el.textContent = JSON.stringify(
         {
@@ -10137,10 +10135,12 @@
     }
     const urlOn = !!(cls && cls.ok);
     urlEl.classList.toggle("is-on", urlOn);
-    urlEl.hidden = !urlOn;
+    /* Always render the URL badge — muted grey when off — so the row reads as a
+     * supported-forms indicator. The tooltip explains the off state. */
+    urlEl.hidden = false;
     urlEl.title = urlOn
       ? "Publishable as a Cloudinary named transformation — callers can build a URL directly."
-      : "";
+      : "Not publishable as a Cloudinary named transformation — see the panel below for the blocking step.";
   }
 
   /**
@@ -10213,7 +10213,7 @@
         : "";
       const fallbackHtml = hasAny
         ? ""
-        : '<p class="applet-named-tx-meta">This Transformation can\'t be expressed as a single Cloudinary URL transformation.</p>';
+        : '<p class="applet-named-tx-meta">This Graph can\'t be expressed as a single Cloudinary URL transformation.</p>';
       el.innerHTML =
         '<div class="applet-named-tx-banner">' +
         '<p class="applet-named-tx-banner-title">URL form unavailable — applet runs eagerly via the API.</p>' +
@@ -10291,7 +10291,7 @@
     appletEditorCleanSnapshot = {
       description: descEl ? String(descEl.value || "") : "",
       inputs,
-      transformationFingerprint: canvasGraphFingerprint(),
+      graphFingerprint: canvasGraphFingerprint(),
     };
   }
 
@@ -10357,19 +10357,19 @@
       el.classList.toggle("applet-removed-unsaved", canvasDeltaDirty);
     });
 
-    const transformationDirty =
-      appletEditorCleanSnapshot.transformationFingerprint != null &&
-      canvasGraphFingerprint() !== appletEditorCleanSnapshot.transformationFingerprint;
+    const graphDirty =
+      appletEditorCleanSnapshot.graphFingerprint != null &&
+      canvasGraphFingerprint() !== appletEditorCleanSnapshot.graphFingerprint;
 
     const bindingsSectionDirty = inputsDirty || canvasDeltaDirty;
-    const bindingsPanelDirty = bindingsSectionDirty || transformationDirty;
+    const bindingsPanelDirty = bindingsSectionDirty || graphDirty;
     bindingsPanel?.classList.toggle("applet-section-dirty", bindingsPanelDirty);
     bindingsHeadSpan?.classList.toggle("applet-section-label-dirty", bindingsPanelDirty);
 
-    outputPanel?.classList.toggle("applet-section-dirty", transformationDirty);
-    outputHeadSpan?.classList.toggle("applet-section-label-dirty", transformationDirty);
+    outputPanel?.classList.toggle("applet-section-dirty", graphDirty);
+    outputHeadSpan?.classList.toggle("applet-section-label-dirty", graphDirty);
 
-    const anyDirty = descDirty || bindingsSectionDirty || transformationDirty;
+    const anyDirty = descDirty || bindingsSectionDirty || graphDirty;
     titleEl?.classList.toggle("applet-title-dirty", anyDirty);
     if (banner) banner.hidden = !anyDirty;
   }
@@ -10378,38 +10378,38 @@
     const hint = document.getElementById("applet-edit-hint");
     if (!hint) return;
     if (!hasExistingApplet) {
-      hint.innerHTML = "No applet stored yet for this Transformation.";
+      hint.innerHTML = "No applet stored yet for this Graph.";
     } else {
-      hint.innerHTML = "Configure the input and output interface for this Transformation.";
+      hint.innerHTML = "Configure the input and output interface for this Graph.";
     }
   }
 
-  /** One applet per saved Transformation (slug = Transformation name). Requires Save Transformation first. */
-  function openAppletEditorForCurrentTransformation() {
+  /** One applet per saved Graph (slug = Graph name). Requires Save Graph first. */
+  function openAppletEditorForCurrentGraph() {
     const dlg = document.getElementById("applet-edit-dialog");
     if (!dlg) return;
 
-    const transformationName = getActiveSavedTransformationName();
-    if (!transformationName) {
-      showTransformationToast("Save the Transformation first.");
+    const graphName = getActiveSavedGraphName();
+    if (!graphName) {
+      showGraphToast("Save the Graph first.");
       return;
     }
     if (!nodes.length) {
-      showTransformationToast("Add blocks first.");
+      showGraphToast("Add blocks first.");
       return;
     }
 
     const store = readAppletStore();
-    const rec = store.applets[transformationName];
+    const rec = store.applets[graphName];
     const nameEl = document.getElementById("applet-edit-name");
     if (nameEl) {
-      nameEl.value = transformationName;
+      nameEl.value = graphName;
       nameEl.readOnly = true;
     }
 
     if (rec) {
       syncAppletEditorPersistedFromRecord(rec);
-      appletEditingSlug = transformationName;
+      appletEditingSlug = graphName;
       appletSavedInputsSnapshot = mergeDiscoveredInputsWithSaved(normalizeAppletInputs(rec.inputs || []));
       const descEl = document.getElementById("applet-edit-description");
       if (descEl) descEl.value = rec.description || "";
@@ -10424,9 +10424,9 @@
     }
 
     const h = document.getElementById("applet-edit-heading");
-    if (h) h.textContent = "Transformation applet";
+    if (h) h.textContent = "Graph applet";
 
-    updateAppletTransformationOutputReadout();
+    updateAppletGraphOutputReadout();
     renderAppletInputBindings(appletSavedInputsSnapshot);
     captureAppletEditorCleanSnapshot();
     updateAppletEditorDirtyUi();
@@ -10442,10 +10442,10 @@
     const name = String(document.getElementById("applet-edit-name").value || "").trim();
     const slug = name;
     const description = String(document.getElementById("applet-edit-description").value || "").trim();
-    const outSpec = deriveAppletOutputSpecFromTransformation();
+    const outSpec = deriveAppletOutputSpecFromGraph();
     if (!outSpec.ok) throw new Error(outSpec.message);
-    if (!isValidAppletTransformationName(name))
-      throw new Error("Enter a Transformation name (1–120 characters), matching Save Transformation.");
+    if (!isValidAppletGraphName(name))
+      throw new Error("Enter a Graph name (1–120 characters), matching Save Graph.");
     const rawInputs = collectAppletInputsFromBindings();
     const forApi = rawInputs.filter((r) => !r.ignored);
     let resolvedKeys = new Map();
@@ -10481,7 +10481,7 @@
       }
       inputs.push(row);
     }
-    const transformationSnapshot = serializeTransformationDocument();
+    const graphSnapshot = serializeGraphDocument();
     const store = readAppletStore();
     const existing = appletEditingSlug ? store.applets[appletEditingSlug] : null;
     const record = {
@@ -10490,7 +10490,7 @@
       slug,
       version: existing && existing.version ? existing.version : "1",
       description: description || undefined,
-      transformationSnapshot,
+      graphSnapshot,
       inputs,
       output: { kind: outSpec.kind, nodeId: outSpec.nodeId },
       updatedAt: new Date().toISOString(),
@@ -10503,12 +10503,12 @@
     try {
       record = buildAppletRecordFromForm();
     } catch (err) {
-      showTransformationToast(err.message || String(err));
+      showGraphToast(err.message || String(err));
       return;
     }
     const store = readAppletStore();
-    if (!persistCurrentTransformationUnderNameSilent(record.name)) {
-      showTransformationToast("Could not save the Transformation under this name (browser storage).");
+    if (!persistCurrentGraphUnderNameSilent(record.name)) {
+      showGraphToast("Could not save the Graph under this name (browser storage).");
       return;
     }
     if (appletEditingSlug && appletEditingSlug !== record.slug) {
@@ -10517,30 +10517,30 @@
     store.applets[record.slug] = record;
     try {
       writeAppletStore(store);
-      showTransformationToast('Saved Transformation and applet "' + record.name + '".');
+      showGraphToast('Saved Graph and applet "' + record.name + '".');
       appletEditingSlug = record.slug;
       appletSavedInputsSnapshot = normalizeAppletInputs(record.inputs || []);
       syncAppletEditorPersistedFromRecord(record);
       renderAppletInputBindings(appletSavedInputsSnapshot);
-      syncAppletTransformationNameFieldFromStore();
+      syncAppletGraphNameFieldFromStore();
       syncAppletEditHint(true);
       updateAppletApiMethodReadout();
       captureAppletEditorCleanSnapshot();
       updateAppletEditorDirtyUi();
       const h = document.getElementById("applet-edit-heading");
-      if (h) h.textContent = "Transformation applet";
+      if (h) h.textContent = "Graph applet";
     } catch (err) {
-      showTransformationToast("Could not save applets (storage full or private mode).");
+      showGraphToast("Could not save applets (storage full or private mode).");
     }
   }
 
   /* ===== Applet Playground ================================================
    * A read-once-run-many surface over a saved applet: loads the applet's
-   * `transformationSnapshot` onto the canvas, renders kind-typed input controls for each
+   * `graphSnapshot` onto the canvas, renders kind-typed input controls for each
    * binding, and wires a Run button that overrides the corresponding input
    * blocks' settings before computing the terminal output (URL + preview).
    * The authoring canvas stays behind the overlay — closing the Playground
-   * keeps the loaded Transformation so the user can iterate in either surface.
+   * keeps the loaded Graph so the user can iterate in either surface.
    * ---------------------------------------------------------------------- */
 
   function setAppletIdInUrl(slugOrEmpty) {
@@ -10602,7 +10602,7 @@
         const miss = document.createElement("div");
         miss.className = "playground-field-hint";
         miss.textContent =
-          "Bound node " + row.nodeId + " is missing from the canvas. Edit the Transformation to reconnect.";
+          "Bound node " + row.nodeId + " is missing from the canvas. Edit the Graph to reconnect.";
         field.appendChild(miss);
         host.appendChild(field);
         continue;
@@ -10689,7 +10689,7 @@
 
   /**
    * Toggle the API / URL pills next to the playground title. API is always on
-   * (every applet exposes the run endpoint); URL only when the Transformation snapshot
+   * (every applet exposes the run endpoint); URL only when the Graph snapshot
    * classifies as a Class A named-transformation candidate. We re-use the same
    * classifier the bindings editor uses so the playground and the editor agree
    * on whether a URL form is available.
@@ -10708,7 +10708,11 @@
       urlOn = false;
     }
     urlEl.classList.toggle("is-on", urlOn);
-    urlEl.hidden = !urlOn;
+    /* Render as a muted-grey pill when off (matches the bindings-editor row). */
+    urlEl.hidden = false;
+    urlEl.title = urlOn
+      ? "Publishable as a Cloudinary named transformation — callers can build a URL directly."
+      : "Not publishable as a Cloudinary named transformation — server-side API only.";
   }
 
   /** Active snippet language for the playground API panel — flips between curl/fetch. */
@@ -10784,29 +10788,29 @@
   }
 
   /** Switch the main stage to the Applet Playground for `slug`. Loads the applet's
-   * Transformation snapshot onto the canvas (so Edit Transformation works without a second fetch). */
+   * Graph snapshot onto the canvas (so Edit Graph works without a second fetch). */
   function enterAppletPlayground(slug) {
     const store = readAppletStore();
     const rec = store.applets[slug];
     if (!rec) {
-      showTransformationToast('Applet "' + slug + '" was not found.');
+      showGraphToast('Applet "' + slug + '" was not found.');
       return false;
     }
-    const doc = rec.transformationSnapshot;
+    const doc = rec.graphSnapshot;
     if (!doc) {
-      showTransformationToast("Applet is missing its Transformation snapshot.");
+      showGraphToast("Applet is missing its Graph snapshot.");
       return false;
     }
     try {
-      applyTransformationDocument(doc);
+      applyGraphDocument(doc);
     } catch (err) {
-      showTransformationToast(err.message || String(err));
+      showGraphToast(err.message || String(err));
       return false;
     }
     appMode = "applet";
     currentAppletSlug = slug;
     appletEditingSlug = slug;
-    setTransformationIdInUrl(rec.name || slug);
+    setGraphIdInUrl(rec.name || slug);
     setAppletIdInUrl(slug);
     /* Hide the canvas block popover if it was open — rail is about to go away. */
     closeBlockPopover();
@@ -10818,7 +10822,7 @@
     renderAppletPlaygroundChrome(rec);
     renderAppletPlaygroundInputs(rec);
     /* Refresh library UI so Blocks tab hides, the active applet row highlights, and
-     * the Transformation row doesn't — syncLibraryChrome coerces the tab off "blocks" if needed. */
+     * the Graph row doesn't — syncLibraryChrome coerces the tab off "blocks" if needed. */
     syncAppModeChrome();
     syncLibraryChrome();
     renderLibrary(document.getElementById("palette-search").value);
@@ -10832,7 +10836,7 @@
       overlay.hidden = true;
       overlay.setAttribute("aria-hidden", "true");
     }
-    appMode = "transformation";
+    appMode = "graph";
     currentAppletSlug = "";
     setAppletIdInUrl("");
     /* Drop the cached applet record on the snippet panel so reopening another
@@ -10881,7 +10885,7 @@
     const terminalNode = nodes.find((n) => n.id === out.nodeId);
     if (!terminalNode) {
       host.innerHTML =
-        '<div class="playground-output-placeholder">Terminal output node missing from the Transformation snapshot.</div>';
+        '<div class="playground-output-placeholder">Terminal output node missing from the Graph snapshot.</div>';
       return;
     }
     const kindBadge = document.createElement("div");
@@ -10894,7 +10898,7 @@
       pre.className = "playground-output-preview is-text";
       const s = terminalNode.settings || {};
       /* Text outputs show their resolved settings.text (if already populated) or fall back
-       * to a sensible placeholder — same policy as runTransformation's text-output toast. */
+       * to a sensible placeholder — same policy as runGraph's text-output toast. */
       pre.textContent =
         typeof s.text === "string" && s.text
           ? s.text
@@ -10956,12 +10960,12 @@
     const store = readAppletStore();
     const rec = store.applets[currentAppletSlug];
     if (!rec) {
-      showTransformationToast("Applet no longer exists.");
+      showGraphToast("Applet no longer exists.");
       return;
     }
     applyPlaygroundInputsToCanvas();
     renderPlaygroundResponse(rec);
-    showTransformationToast("Applet ran.");
+    showGraphToast("Applet ran.");
   }
 
   function resetPlaygroundInputsFromSnapshot() {
@@ -10970,9 +10974,9 @@
     const rec = store.applets[currentAppletSlug];
     if (!rec) return;
     try {
-      applyTransformationDocument(rec.transformationSnapshot);
+      applyGraphDocument(rec.graphSnapshot);
     } catch (err) {
-      showTransformationToast(err.message || String(err));
+      showGraphToast(err.message || String(err));
       return;
     }
     renderAppletPlaygroundInputs(rec);
@@ -10984,20 +10988,20 @@
   }
 
   /**
-   * Open `dlg` as a floating popover anchored to `anchorBtn` (used for Save Transformation /
-   * Load Transformation). Positioned just below the button's left edge; if it would overflow
+   * Open `dlg` as a floating popover anchored to `anchorBtn` (used for Save Graph /
+   * Load Graph). Positioned just below the button's left edge; if it would overflow
    * the viewport horizontally we clamp left, and if it would overflow vertically
    * we flip above the button. Uses non-modal `dlg.show()` so there's no backdrop
    * or inert behind it; closes on outside click or Escape. If the dialog is
    * already open, this toggles it closed.
    */
-  function openTransformationDialogAsPopover(dlg, anchorBtn) {
+  function openGraphDialogAsPopover(dlg, anchorBtn) {
     if (!dlg || !anchorBtn) return false;
     if (dlg.open) {
       dlg.close();
       return false;
     }
-    dlg.classList.add("transformation-dialog-popover");
+    dlg.classList.add("graph-dialog-popover");
     if (typeof dlg.show === "function") dlg.show();
     else if (typeof dlg.showModal === "function") dlg.showModal();
     else dlg.setAttribute("open", "");
@@ -11035,95 +11039,95 @@
     return true;
   }
 
-  function openTransformationSaveDialog() {
-    const dlg = document.getElementById("transformation-save-dialog");
-    const inp = document.getElementById("transformation-save-name");
-    const btn = document.getElementById("btn-save-transformation");
+  function openGraphSaveDialog() {
+    const dlg = document.getElementById("graph-save-dialog");
+    const inp = document.getElementById("graph-save-name");
+    const btn = document.getElementById("btn-save-graph");
     if (!dlg || !inp || !btn) return;
-    inp.value = getActiveSavedTransformationName();
-    if (!openTransformationDialogAsPopover(dlg, btn)) return;
+    inp.value = getActiveSavedGraphName();
+    if (!openGraphDialogAsPopover(dlg, btn)) return;
     requestAnimationFrame(() => {
       inp.focus();
       inp.select();
     });
   }
 
-  /** Reveal the Transformations list in the sidebar (expand the rail if collapsed and switch to
-   * the Transformations tab) — used when the brand Transformation name in the topbar is clicked. */
-  function revealTransformationsLibraryInSidebar() {
+  /** Reveal the Graphs list in the sidebar (expand the rail if collapsed and switch to
+   * the Graphs tab) — used when the brand Graph name in the topbar is clicked. */
+  function revealGraphsLibraryInSidebar() {
     if (sidebarCollapsed) setSidebarCollapsed(false);
     if (chatOpen) setChatOpen(false);
-    if (activeLibraryTab !== "transformations") setActiveLibraryTab("transformations");
+    if (activeLibraryTab !== "graphs") setActiveLibraryTab("graphs");
     else syncLibraryChrome();
   }
 
-  document.getElementById("btn-save-transformation").addEventListener("click", () => {
-    openTransformationSaveDialog();
+  document.getElementById("btn-save-graph").addEventListener("click", () => {
+    openGraphSaveDialog();
   });
 
-  document.getElementById("transformation-save-cancel").addEventListener("click", () => {
-    document.getElementById("transformation-save-dialog").close();
+  document.getElementById("graph-save-cancel").addEventListener("click", () => {
+    document.getElementById("graph-save-dialog").close();
   });
 
-  document.getElementById("transformation-save-confirm").addEventListener("click", () => {
-    const inp = document.getElementById("transformation-save-name");
-    if (saveCurrentTransformationWithName(inp && inp.value)) {
-      document.getElementById("transformation-save-dialog").close();
+  document.getElementById("graph-save-confirm").addEventListener("click", () => {
+    const inp = document.getElementById("graph-save-name");
+    if (saveCurrentGraphWithName(inp && inp.value)) {
+      document.getElementById("graph-save-dialog").close();
     }
   });
 
-  document.getElementById("transformation-save-name").addEventListener("keydown", (e) => {
+  document.getElementById("graph-save-name").addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      document.getElementById("transformation-save-confirm").click();
+      document.getElementById("graph-save-confirm").click();
     }
   });
 
-  (function wireBrandTransformationNameRevealsSidebar() {
-    const el = document.getElementById("brand-transformation-name");
+  (function wireBrandGraphNameRevealsSidebar() {
+    const el = document.getElementById("brand-graph-name");
     if (!el) return;
     el.addEventListener("click", () => {
-      revealTransformationsLibraryInSidebar();
+      revealGraphsLibraryInSidebar();
     });
     el.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
         e.preventDefault();
-        revealTransformationsLibraryInSidebar();
+        revealGraphsLibraryInSidebar();
       }
     });
   })();
 
-  document.getElementById("transformation-save-dialog").addEventListener("click", (e) => {
+  document.getElementById("graph-save-dialog").addEventListener("click", (e) => {
     if (e.target === e.currentTarget && typeof e.currentTarget.close === "function") e.currentTarget.close();
   });
 
-  document.getElementById("transformation-import-input").addEventListener("change", (e) => {
+  document.getElementById("graph-import-input").addEventListener("change", (e) => {
     const inp = e.currentTarget;
     const file = inp && inp.files && inp.files[0];
-    if (file) importTransformationFromFile(file);
+    if (file) importGraphFromFile(file);
     inp.value = "";
   });
 
   document.getElementById("btn-applets").addEventListener("click", () => {
-    openAppletEditorForCurrentTransformation();
+    openAppletEditorForCurrentGraph();
   });
 
   /* Playground header actions. */
   document.getElementById("playground-close").addEventListener("click", () => {
-    exitAppletPlayground({ keepTransformation: true });
+    exitAppletPlayground({ keepGraph: true });
   });
 
-  document.getElementById("playground-edit-transformation").addEventListener("click", () => {
-    /* Leave the Transformation loaded on the canvas and just drop the overlay so the user can edit
-     * the underlying transformation that powers this applet. The floating block rail
-     * becomes visible again automatically (appMode flips back to "transformation"). */
-    exitAppletPlayground({ keepTransformation: true });
+  document.getElementById("playground-edit-graph").addEventListener("click", () => {
+    /* Leave the Graph loaded on the canvas and just drop the overlay so the user can edit
+     * the underlying graph that powers this applet. The floating block rail
+     * becomes visible again automatically (appMode flips back to "graph"). */
+    exitAppletPlayground({ keepGraph: true });
   });
 
   document.getElementById("playground-applet-editor").addEventListener("click", () => {
     /* Bindings editor doubles as the canonical "edit applet metadata" surface — reuse it
-     * instead of building a second form. It reads the current Transformation's applet record. */
-    openAppletEditorForCurrentTransformation();
+     * instead of building a second form. It reads the current Graph's applet record. */
+    openAppletEditorForCurrentGraph();
   });
 
   document.getElementById("playground-run").addEventListener("click", () => {
@@ -11198,7 +11202,7 @@
             ta.remove();
             showCopied();
           } catch (e) {
-            showTransformationToast("Could not copy to clipboard.");
+            showGraphToast("Could not copy to clipboard.");
           }
         });
       }
@@ -11216,8 +11220,8 @@
   document.getElementById("applet-bindings-refresh").addEventListener("click", () => {
     appletSavedInputsSnapshot = mergeDiscoveredInputsWithSaved(appletSavedInputsSnapshot);
     renderAppletInputBindings(appletSavedInputsSnapshot);
-    updateAppletTransformationOutputReadout();
-    syncAppletTransformationNameFieldFromStore();
+    updateAppletGraphOutputReadout();
+    syncAppletGraphNameFieldFromStore();
     updateAppletApiMethodReadout();
     captureAppletEditorCleanSnapshot();
     updateAppletEditorDirtyUi();
@@ -11265,7 +11269,7 @@
     renderNodes();
     fitView();
     /* Baseline the dirty tracker so a freshly-seeded demo isn't shown as "· unsaved". */
-    markTransformationAsClean();
+    markGraphAsClean();
   }
 
   setSidebarCollapsed(readSidebarCollapsedFromLocation());
@@ -11283,7 +11287,7 @@
       }
     }
   })();
-  (function restoreStartupTransformation() {
+  (function restoreStartupGraph() {
     let builtinJustUpgraded = false;
     try {
       const raw = localStorage.getItem(BUILTIN_CANVAS_VERSION_KEY);
@@ -11297,15 +11301,15 @@
     } catch (e) {}
     if (builtinJustUpgraded) {
       try {
-        setTransformationIdInUrl("");
+        setGraphIdInUrl("");
         setAppletIdInUrl("");
       } catch (e2) {}
       seedDemo();
       return;
     }
     /* Applet URL takes precedence — if `?applet=<slug>` is valid, open the Playground
-     * (the applet record carries its own Transformation snapshot). Otherwise fall back to the
-     * saved Transformation path. */
+     * (the applet record carries its own Graph snapshot). Otherwise fall back to the
+     * saved Graph path. */
     const appletSlug = getAppletIdFromLocation();
     if (appletSlug) {
       const appletStore = readAppletStore();
@@ -11315,17 +11319,17 @@
       }
       setAppletIdInUrl("");
     }
-    const store = readTransformationStore();
-    const transformationId = getTransformationIdFromLocation();
-    if (transformationId && Object.prototype.hasOwnProperty.call(store.transformations, transformationId)) {
+    const store = readGraphStore();
+    const graphId = getGraphIdFromLocation();
+    if (graphId && Object.prototype.hasOwnProperty.call(store.graphs, graphId)) {
       try {
-        applyTransformationDocument(store.transformations[transformationId]);
+        applyGraphDocument(store.graphs[graphId]);
         return;
       } catch (err) {
-        setTransformationIdInUrl("");
+        setGraphIdInUrl("");
       }
-    } else if (transformationId) {
-      setTransformationIdInUrl("");
+    } else if (graphId) {
+      setGraphIdInUrl("");
     }
     seedDemo();
   })();
@@ -11340,23 +11344,23 @@
         if (enterAppletPlayground(appletSlug)) return;
       }
     } else if (appMode === "applet") {
-      exitAppletPlayground({ keepTransformation: true });
+      exitAppletPlayground({ keepGraph: true });
     }
-    const store = readTransformationStore();
-    const transformationId = getTransformationIdFromLocation();
-    if (transformationId && Object.prototype.hasOwnProperty.call(store.transformations, transformationId)) {
+    const store = readGraphStore();
+    const graphId = getGraphIdFromLocation();
+    if (graphId && Object.prototype.hasOwnProperty.call(store.graphs, graphId)) {
       try {
-        applyTransformationDocument(store.transformations[transformationId]);
-        updateBrandTransformationName(transformationId);
+        applyGraphDocument(store.graphs[graphId]);
+        updateBrandGraphName(graphId);
         return;
       } catch (err) {}
     }
     seedDemo();
-    updateBrandTransformationName("");
+    updateBrandGraphName("");
   });
-  /* Initial brand-name sync (covers the boot path that loads a URL-bound Transformation without
-   * calling setTransformationIdInUrl). */
-  updateBrandTransformationName(getTransformationIdFromLocation());
+  /* Initial brand-name sync (covers the boot path that loads a URL-bound Graph without
+   * calling setGraphIdInUrl). */
+  updateBrandGraphName(getGraphIdFromLocation());
   syncDock();
 })();
   </script>

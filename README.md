@@ -1,6 +1,6 @@
 # Video Content Factory
 
-**Compose media transformations and generative AI as one visual workflow,
+**Compose media transformations and generative AI as one visual graph,
 then publish it as a callable applet.**
 
 Video Content Factory is a node-based studio for building media pipelines
@@ -8,8 +8,8 @@ that mix classic transformations (resize, trim, splice, overlay, format,
 effects) with generative steps (image → video, text → image, AI text,
 auto-transcription, AI chapters). You wire blocks together on a canvas,
 preview the result live, save it, and turn it into an **applet** — a
-named workflow with a typed input/output contract that anything else
-can call.
+named graph with a typed input/output contract that anything else can
+call.
 
 ---
 
@@ -41,8 +41,8 @@ make that shape easy to build, easy to read back, and easy to publish.
 
 ## Core concepts
 
-### Workflow
-A workflow is the canvas. It's a directed graph of blocks connected by
+### Graph
+A graph is the canvas. It's a directed graph of blocks connected by
 typed wires.
 
 - **Inputs** seed the graph: a video, an image, a piece of text. They're
@@ -54,18 +54,23 @@ typed wires.
   reference images), image → image, text → image, AI text, AI video
   preview / summarization, auto transcription, auto chapters, AI video
   details.
-- **Outputs** are how the workflow materialises: as a delivered video, an
+- **Outputs** are how the graph materialises: as a delivered video, an
   image, a player embed, or a piece of text.
 
 Wires carry kinds (image, video, text). Compatible blocks accept them;
 the canvas keeps you out of obvious dead ends.
 
+The word "graph" is used in the standard sense of nodes and edges, not
+the chart sense — `node = block`, `edge = wire`. The studio's vocabulary
+elsewhere lines up with that: "the graph is the spec," "node id," and so
+on.
+
 ### Applet
-An applet is a workflow promoted to a contract.
+An applet is a graph promoted to a contract.
 
-When you save a flow as an applet, the studio:
+When you save a graph as an applet, the studio:
 
-1. Detects the workflow's loose ends (the blocks with no incoming wires)
+1. Detects the graph's loose ends (the blocks with no incoming wires)
    and surfaces them as **named parameters** with kinds (`image`,
    `video`, `text`).
 2. Detects the terminal output and surfaces its kind (`video`, `image`,
@@ -94,7 +99,7 @@ When you save a flow as an applet, the studio:
    }
    ```
 
-When the workflow collapses to a single Cloudinary URL chain — every block
+When the graph collapses to a single Cloudinary URL chain — every block
 on the path is a transformation, no generative steps and no AI sidecar
 producers — the applet additionally publishes as a **named transformation**
 (`t_<slug>`) on the cloud account. Callers can then invoke it as a
@@ -105,17 +110,17 @@ round-trip:
 https://res.cloudinary.com/<cloud>/image/upload/$headline_!Hello%20world!/t_<slug>/folder/asset_id.jpg
 ```
 
-Workflows that materialise new assets (image → video, text → image, AI
+Graphs that materialise new assets (image → video, text → image, AI
 text, auto-transcription, auto-chapters, AI details) stay API-only —
 there's no URL grammar for "call a model and upload the result." The
 publish surface shows which forms an applet supports and, when URL form
 isn't available, the specific block that forces server-side execution.
 
-You author the workflow visually, but you ship a workflow-as-an-API.
-Each parameter is **required**, **optional**, or **ignored**, and gets a
+You author the graph visually, but you ship a graph-as-an-API. Each
+parameter is **required**, **optional**, or **ignored**, and gets a
 human-chosen API name.
 
-The applet snapshots the workflow at save time, so changing the canvas
+The applet snapshots the graph at save time, so changing the canvas
 later doesn't silently change what callers receive — saving again
 publishes a new revision.
 
@@ -152,7 +157,7 @@ any order; the result is whatever the wiring says.
 - Video (delivered URL), video player (Cloudinary Video Player, with
   saved profile support), image, text.
 
-A workflow can have many preview outputs, but exactly **one terminal
+A graph can have many preview outputs, but exactly **one terminal
 output** when published as an applet — that's the contract's response
 kind.
 
@@ -163,8 +168,8 @@ kind.
 1. Open the studio. Drag blocks from the palette onto the canvas.
 2. Wire inputs into transformations into a single output. The output
    updates live as you type.
-3. **Save flow** to name and persist it. The URL captures the active
-   flow so links are shareable.
+3. **Save Graph** to name and persist it. The URL captures the active
+   graph (`?graph=<name>`) so links are shareable.
 4. Click **Applet** to open the publish surface. Review the discovered
    inputs, give them friendly API names, mark each as required /
    optional / ignored, and save. The contract on the right is what
@@ -172,9 +177,8 @@ kind.
 5. Reload, iterate, save again — each save is a new revision of the
    same applet slug.
 
-Saved flows can be exported and imported as `.flow.json` files, so a
-workflow is portable: hand someone the file, they re-open the same
-canvas.
+Saved graphs can be exported and imported as `.graph.json` files, so a
+graph is portable: hand someone the file, they re-open the same canvas.
 
 ---
 
@@ -187,20 +191,20 @@ canvas.
   hidden glue between "the editor" and "the runtime"; the URL chain (or
   applet response) is derived from the canvas, not authored alongside
   it.
-- **Snapshots, not live links.** Saving an applet captures the workflow
-  as it stands. Later edits don't retroactively change what callers
-  see — you re-publish to ship.
-- **Boring outputs.** A workflow's result is always a thing you can
-  link, embed, or read. Video / image → a Cloudinary delivery URL or
-  player embed. Text → a string. No proprietary format, no opaque blob.
+- **Snapshots, not live links.** Saving an applet captures the graph as
+  it stands. Later edits don't retroactively change what callers see —
+  you re-publish to ship.
+- **Boring outputs.** A graph's result is always a thing you can link,
+  embed, or read. Video / image → a Cloudinary delivery URL or player
+  embed. Text → a string. No proprietary format, no opaque blob.
 - **No setup tax.** The studio is a single page. Open it, build a
-  workflow, share the URL.
+  graph, share the URL.
 
 ---
 
 ## Status
 
-Today the studio runs locally in the browser; saved flows and applets
+Today the studio runs locally in the browser; saved graphs and applets
 live in `localStorage`, and a few generative blocks are mocked against
 fixed sample assets while real provider integrations land. The applet
 contract is documented and stable; an execution runtime that honours
