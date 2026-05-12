@@ -89,32 +89,107 @@ When you save a graph as an applet, the studio:
    }
    ```
 
-   ```json
-   {
-     "ok": true,
-     "applet": { "slug": "<name>", "version": "1" },
-     "output": { "kind": "video" },
-     "deliveryUrl": "https://res.cloudinary.com/.../upload/.../public_id.mp4",
-     "embedPlayerUrl": "https://player.cloudinary.com/embed/?..."
-   }
-   ```
+#### Two kinds of applet: **URL** and **API**
 
-When the graph collapses to a single Cloudinary URL chain — every block
-on the path is a transformation, no generative steps and no AI sidecar
-producers — the applet additionally publishes as a **named transformation**
-(`t_<slug>`) on the cloud account. Callers can then invoke it as a
-stateless URL with the applet's parameters spliced in, no server
-round-trip:
+Every applet exposes the same `POST /applets/<slug>/run` wrapper, but the
+**contract shape** depends on what the graph does to the cloud account:
+
+- **URL** — pure transformation. The graph collapses to a single
+  Cloudinary URL chain (resize, overlay, splice, format, …). Output is a
+  delivery URL of the input asset; **no new resource is materialised**.
+  The call is idempotent.
+
+  ```json
+  {
+    "ok": true,
+    "kind": "derive",
+    "applet": { "slug": "<name>", "version": "1" },
+    "deliveryUrl": "https://res.cloudinary.com/.../t_<slug>/folder/asset_id.jpg",
+    "sourcePublicId": "folder/asset_id"
+  }
+  ```
+
+  URL applets additionally publish as a **named transformation**
+  (`t_<slug>`) so callers can skip the server entirely and invoke them as
+  a stateless URL:
+
+  ```
+  https://res.cloudinary.com/<cloud>/image/upload/$headline_!Hello%20world!/t_<slug>/folder/asset_id.jpg
+  ```
+
+- **API** — the graph mints a new resource (image → video, text →
+  image, AI text, auto-transcription, auto-chapters, AI details, AI
+  tagging, …) or a server-side sidecar. The contract carries a
+  **`producedPublicId`** so callers can reference the new asset:
+
+  ```json
+  {
+    "ok": true,
+    "kind": "create",
+    "applet": { "slug": "<name>", "version": "1" },
+    "status": "ready",
+    "producedPublicId": "vcf/<name>/<id>",
+    "resourceType": "video",
+    "deliveryUrl": "https://res.cloudinary.com/.../vcf/<name>/<id>.mp4",
+    "jobId": null
+  }
+  ```
+
+  API applets do **not** publish as named transformations — there's no
+  URL grammar for "call a model and upload the result."
+
+#### URL ⊆ API at runtime
+
+A URL applet can always be **promoted** to an API call by passing a
+`store` block. The wrapper executes the chain as the `eager` value of an
+Upload call, so the same applet can either deliver a URL or mint a new
+asset depending on what the caller sends:
 
 ```
-https://res.cloudinary.com/<cloud>/image/upload/$headline_!Hello%20world!/t_<slug>/folder/asset_id.jpg
+POST /applets/<slug>/run
+{
+  "params": { "input_image": "folder/asset_id" },
+  "store": {
+    "public_id":   "campaigns/spring/hero",
+    "folder":      "campaigns/spring",
+    "overwrite":   false,
+    "tags":        ["spring", "hero"],
+    "access_mode": "public",
+    "eager":       "derive"
+  }
+}
 ```
 
-Graphs that materialise new assets (image → video, text → image, AI
-text, auto-transcription, auto-chapters, AI details) stay API-only —
-there's no URL grammar for "call a model and upload the result." The
-publish surface shows which forms an applet supports and, when URL form
-isn't available, the specific block that forces server-side execution.
+The badge on the applet expresses the **floor**: URL means "can be called
+as URL (stateless delivery), and as API when storage params are passed";
+API means "always API — the materialising step has no URL form."
+
+#### Converting URL ⇄ API
+
+The bindings editor exposes a **Convert** action next to the kind badge
+that pins the applet's *default* contract. The choice is persisted on
+the applet record (`defaultKind`) and honoured by the playground, the
+sidebar list badge, and the `POST /run` snippet:
+
+- **Convert to API** is available on any URL-eligible graph. After
+  conversion, every call defaults to materialising a new asset (the
+  snippet body includes a `store` block with `public_id` required); the
+  URL form is still structurally available and the named-transformation
+  panel still shows the URL template.
+- **Convert to URL** is available *only* when the underlying graph
+  permits a URL chain. Graphs with materialising steps (image → video,
+  transcription, AI sidecars, …) are intrinsically API — the button
+  is disabled with a tooltip explaining the structural block.
+
+The applet record carries two related fields:
+
+- `urlFormAvailable` (boolean, derived from the saved `graphSnapshot`)
+  — the structural ceiling. Computed at save time so the sidebar can
+  badge the applet without re-classifying the graph. Old records without
+  this field show as **API** (safer unknown state) and get stamped on
+  next save.
+- `defaultKind` (`"derive" | "create"`) — the author's chosen default,
+  coerced to `"create"` whenever `urlFormAvailable === false`.
 
 You author the graph visually, but you ship a graph-as-an-API. Each
 parameter is **required**, **optional**, or **ignored**, and gets a
