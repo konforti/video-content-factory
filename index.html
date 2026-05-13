@@ -2688,33 +2688,116 @@
       flex-shrink: 0;
     }
 
-    /* Pill badge for supported invocation forms. Two states:
-     *   - default (off):  muted grey pill — the form isn't available for this graph
-     *   - .is-on:         green pill     — the form IS available
-     * Used in both the bindings editor (dialog header) and the playground header,
-     * so sizing/palette stay identical across the two surfaces. */
-    .applet-supported-badge {
-      padding: 2px 7px;
+    /* Single kind badge — "Derive" or "Create" — replaces the older API + URL pair.
+     * Derive: green pill. Pure transformation; output is a delivery URL of the input.
+     *         Same applet can be promoted to Create at runtime by passing storage params.
+     * Create: amber pill. Materialises a new resource (or sidecar) on the cloud account.
+     *         The transformation API ("POST /applets/<slug>/run") is the canonical
+     *         contract for both — only "Derive" advertises a URL/SDK alternative. */
+    .applet-kind-badge {
+      padding: 2px 8px;
       font-size: 9.5px;
       font-weight: 700;
       letter-spacing: 0.06em;
       text-transform: uppercase;
       border-radius: 999px;
+      border: 1px solid var(--border-hair);
       background: rgba(15, 23, 42, 0.05);
       color: var(--text-faint);
-      border: 1px solid var(--border-hair);
       cursor: default;
       user-select: none;
     }
 
-    .applet-supported-badge.is-on {
+    .applet-kind-badge.is-derive {
       background: rgba(34, 197, 94, 0.16);
       color: #166534;
       border-color: rgba(34, 197, 94, 0.55);
     }
 
-    .applet-supported-badge[hidden] {
+    .applet-kind-badge.is-create {
+      background: rgba(245, 158, 11, 0.16);
+      color: #92400e;
+      border-color: rgba(245, 158, 11, 0.55);
+    }
+
+    .applet-kind-badge[hidden] {
       display: none;
+    }
+
+    /* Mild "why no URL form" disclosure in the playground for API applets.
+     * No amber/warning colour — just muted text so it reads as context, not alarm. */
+    .pg-why-api-lead {
+      margin: 0 0 8px;
+      font-size: 11px;
+      color: var(--text-faint);
+      line-height: 1.5;
+    }
+
+    .pg-why-api-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .pg-why-api-item {
+      font-size: 11px;
+      color: var(--text-soft);
+      line-height: 1.5;
+      padding: 5px 8px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-muted);
+      border: 1px solid var(--border-hair);
+    }
+
+    .pg-why-api-title {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .pg-why-api-reason {
+      color: var(--text-soft);
+    }
+
+    /* Smaller variant for dense surfaces (sidebar applets list). Same palette,
+     * tighter padding and font so it fits the 11px row name without dominating it. */
+    .applet-kind-badge.is-sm {
+      padding: 1px 6px;
+      font-size: 8.5px;
+      letter-spacing: 0.05em;
+      line-height: 1.4;
+    }
+
+    /* Tiny "Convert" affordance attached to the kind badge in the bindings editor.
+     * Flips Derive ⇄ Create per the applet's `defaultKind`. Disabled (with an
+     * explanatory tooltip) when the graph cannot produce a Derive form — that's
+     * the structural floor and no choice is offered. */
+    .applet-kind-convert {
+      margin-left: 6px;
+      padding: 2px 8px;
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border-radius: 999px;
+      background: var(--bg-panel);
+      color: var(--text-soft);
+      border: 1px solid var(--border-soft);
+      cursor: pointer;
+      transition: background 0.14s, color 0.14s, border-color 0.14s;
+    }
+
+    .applet-kind-convert:hover:not([disabled]) {
+      background: var(--bg-muted);
+      color: var(--text);
+      border-color: var(--border-strong, #cbd5e1);
+    }
+
+    .applet-kind-convert[disabled] {
+      opacity: 0.45;
+      cursor: not-allowed;
     }
 
     .applet-edit-dirty-banner[hidden] {
@@ -2918,9 +3001,9 @@
       min-width: 0;
     }
 
-    /* Container for the supported-forms badges in the playground header. The badges
-     * themselves share `.applet-supported-badge` styling with the bindings editor so
-     * both surfaces show the same gray/green pill row. */
+    /* Container for the kind badge in the playground header. Shares the
+     * `.applet-kind-badge` styling with the bindings editor so both surfaces show the
+     * same Derive (green) / Create (amber) pill. */
     .playground-supported-forms {
       display: flex;
       align-items: center;
@@ -3571,17 +3654,12 @@
             <span class="playground-crumb">Applet playground</span>
             <div class="playground-title-row">
               <h2 class="playground-title" id="playground-title">Applet</h2>
-              <div class="playground-supported-forms" id="playground-supported-forms" aria-label="Supported invocation forms">
+              <div class="playground-supported-forms" id="playground-supported-forms" aria-label="Applet kind">
                 <span
-                  class="applet-supported-badge is-on"
-                  data-form="api"
-                  title="POST /applets/<slug>/run — applet always exposes a server-side API."
-                >API</span>
-                <span
-                  class="applet-supported-badge"
-                  data-form="url"
-                  title="Publishable as a Cloudinary named transformation — callers can build a URL directly."
-                >URL</span>
+                  class="applet-kind-badge"
+                  id="playground-kind-badge"
+                  data-kind=""
+                ></span>
               </div>
             </div>
           </div>
@@ -3608,7 +3686,6 @@
             <div class="playground-panel" id="playground-meta-panel">
               <div class="playground-panel-title">About</div>
               <p class="playground-description" id="playground-description"></p>
-              <div class="playground-endpoint" id="playground-endpoint"></div>
             </div>
             <div class="playground-panel" id="playground-api-panel">
               <div class="playground-panel-title-row">
@@ -3617,17 +3694,35 @@
                   <button
                     type="button"
                     class="playground-api-tab is-active"
-                    data-snippet="curl"
+                    data-snippet="node"
+                    data-snippet-kind="url"
                     role="tab"
                     aria-selected="true"
-                  >curl</button>
+                  >Node</button>
+                  <button
+                    type="button"
+                    class="playground-api-tab"
+                    data-snippet="python"
+                    data-snippet-kind="url"
+                    role="tab"
+                    aria-selected="false"
+                  >Python</button>
                   <button
                     type="button"
                     class="playground-api-tab"
                     data-snippet="js"
+                    data-snippet-kind="api"
                     role="tab"
                     aria-selected="false"
                   >fetch</button>
+                  <button
+                    type="button"
+                    class="playground-api-tab"
+                    data-snippet="curl"
+                    data-snippet-kind="api"
+                    role="tab"
+                    aria-selected="false"
+                  >curl</button>
                 </div>
               </div>
               <div class="playground-api-snippet-wrap">
@@ -3661,6 +3756,10 @@
                 <button type="button" class="btn" id="playground-reset" title="Reset inputs to applet defaults">Reset</button>
               </div>
             </div>
+            <div class="playground-panel" id="playground-named-tx-panel" hidden>
+              <div class="playground-panel-title" id="playground-named-tx-title">Named transformation · URL</div>
+              <div id="playground-named-tx-readout"></div>
+            </div>
           </div>
           <div class="playground-col">
             <div class="playground-panel">
@@ -3693,19 +3792,20 @@
           <div
             id="applet-supported-forms"
             class="applet-supported-forms"
-            role="list"
-            aria-label="Supported invocation forms for this applet"
+            aria-label="Applet kind"
           >
             <span
-              class="applet-supported-badge"
-              data-form="api"
-              role="listitem"
-            >API</span>
-            <span
-              class="applet-supported-badge"
-              data-form="url"
-              role="listitem"
-            >URL</span>
+              class="applet-kind-badge"
+              id="applet-edit-kind-badge"
+              data-kind=""
+            ></span>
+            <button
+              type="button"
+              class="applet-kind-convert"
+              id="applet-edit-kind-convert"
+              data-target-kind=""
+              hidden
+            ></button>
           </div>
         </div>
         <p class="graph-dialog-hint" id="applet-edit-hint"></p>
@@ -3732,12 +3832,20 @@
             aria-live="polite"
           ></div>
         </div>
+        <details class="applet-api-details">
+          <summary class="applet-api-summary">API — run method</summary>
+          <pre id="applet-api-method-readout" class="applet-api-readout" aria-live="polite"></pre>
+        </details>
+        <details class="applet-api-details">
+          <summary class="applet-api-summary">Example response body</summary>
+          <pre id="applet-example-response-readout" class="applet-api-readout" aria-live="polite"></pre>
+        </details>
         <div
           id="applet-named-transformation-section"
           class="applet-inputs-wrap applet-named-tx-wrap"
         >
           <div class="applet-inputs-head">
-            <span>Named transformation</span>
+            <span id="applet-named-tx-section-title">Named transformation · URL</span>
             <span id="applet-named-tx-pill" class="applet-named-tx-pill"></span>
           </div>
           <div
@@ -3747,14 +3855,6 @@
             aria-live="polite"
           ></div>
         </div>
-        <details class="applet-api-details">
-          <summary class="applet-api-summary">API — run method</summary>
-          <pre id="applet-api-method-readout" class="applet-api-readout" aria-live="polite"></pre>
-        </details>
-        <details class="applet-api-details">
-          <summary class="applet-api-summary">Example response body</summary>
-          <pre id="applet-example-response-readout" class="applet-api-readout" aria-live="polite"></pre>
-        </details>
         <div class="graph-dialog-actions">
           <button type="button" class="btn" id="applet-edit-back">Close</button>
           <button type="button" class="btn-run" id="applet-edit-save">Save applet</button>
@@ -3857,6 +3957,11 @@
   let appletSavedInputsSnapshot = [];
   /** Last known-clean applet editor state (description + bindings) for unsaved highlighting */
   let appletEditorCleanSnapshot = null;
+  /** Editor-local applet `defaultKind` ("derive" | "create"). Initialised from the
+   *  persisted record on editor open (or coerced from canvas when authoring fresh).
+   *  Toggled by the Convert button. Auto-coerced to "create" whenever the live
+   *  canvas loses URL-form eligibility. Persisted into the record on save. */
+  let appletEditorDefaultKind = "derive";
   /** Node ids from last disk-saved `inputs` when the editor opened (canvas add/remove vs this). */
   let appletEditorPersistedBindingIds = new Set();
   /** Persisted input row by nodeId (for removed-from-canvas cards). */
@@ -7384,6 +7489,12 @@
     syncLibraryChrome();
     syncChatUi();
     renderLibrary("");
+    const paletteListEl = document.getElementById("palette-list");
+    if (paletteListEl) {
+      paletteListEl.scrollTop = 0;
+      const firstRow = paletteListEl.querySelector(".library-row");
+      if (firstRow) firstRow.click();
+    }
   }
 
   /** Dispatcher: re-renders the sidebar list based on the active tab. */
@@ -8323,6 +8434,8 @@
       const when = formatGraphSavedAt(rec && rec.updatedAt);
       const outKind = rec && rec.output && rec.output.kind ? rec.output.kind : "";
       const sub = outKind ? "→ " + outKind + (when ? " · " + when : "") : when;
+      const eff = effectiveAppletKindForRecord(rec);
+      const kindCopy = appletKindBadgeCopy(eff.kind);
       const row = document.createElement("div");
       row.className = "library-row";
       if (slug === activeSlug) row.classList.add("is-active");
@@ -8341,7 +8454,14 @@
         (sub
           ? '<span class="library-row-sub">' + escapeHtml(sub) + "</span>"
           : "") +
-        "</div>";
+        "</div>" +
+        '<span class="applet-kind-badge is-sm is-' +
+        eff.kind +
+        '" title="' +
+        escapeHtml(kindCopy.title) +
+        '">' +
+        escapeHtml(kindCopy.label) +
+        "</span>";
       paletteList.appendChild(row);
     }
   }
@@ -9658,19 +9778,26 @@
   }
 
   /* ============================================================================
-   * Named-transformation publishing (Class A applets — URL-form)
+   * Named-transformation publishing (Derive applets — URL form)
    *
-   * A Graph that collapses to a single Cloudinary URL transformation
-   * chain can be published as a named transformation (`t_<slug>`) on the cloud
-   * account. The applet's `POST /applets/<slug>/run` then becomes a stateless
-   * URL constructor instead of a server-executed pipeline.
+   * A Graph that collapses to a single Cloudinary URL transformation chain can be
+   * published as a named transformation (`t_<slug>`) on the cloud account. The
+   * applet's `POST /applets/<slug>/run` then becomes a stateless URL constructor
+   * instead of a server-executed pipeline. This is the URL-form deliverable of
+   * the "Derive" applet kind (see `classifyAppletKind`).
    *
-   * Class A requires (all of):
+   * Derive (URL-form-eligible) requires (all of):
    *   - terminal output kind is video or image (text outputs have no URL form),
    *   - no generative blocks anywhere (image→video, text→image, etc. — each
    *     materializes a brand-new asset that has no URL grammar equivalent),
    *   - no Cloudinary AI sidecar blocks (transcribe, auto-chapters, AI details
    *     trigger server-side jobs that store separate resources).
+   *
+   * Anything that fails the above is "Create" — the graph mints a new resource
+   * and the only contract is the wrapper API. Note that even Derive applets can
+   * be *promoted* to Create at runtime by passing storage params (`store` block):
+   * the chain becomes the `eager` value of an Upload call. The badge expresses
+   * the floor; the runtime form follows the request body.
    *
    * Variables: applet inputs that *can* parameterize the URL bind to:
    *   - the URL public_id slot (the primary base media input — one per Graph),
@@ -9682,12 +9809,12 @@
    * transformation; an API wrapper would need per-call URL assembly to
    * parameterize them. */
 
-  /** `vcf_<slug>` keeps our names from colliding with built-in cloud transforms. */
+  /** `app_<slug>` keeps our names from colliding with built-in cloud transforms. */
   function slugifyForCloudinaryNamedTransformation(name) {
     let s = String(name || "").trim().toLowerCase();
     s = s.replace(/[^a-z0-9_]+/g, "_").replace(/^_+|_+$/g, "").replace(/_+/g, "_");
     if (!s) s = "graph";
-    return "vcf_" + s.slice(0, 80);
+    return "app_" + s.slice(0, 80);
   }
 
   /** Cloudinary user-defined variable: `$<name>`, name = `[a-z][a-z0-9]*` (no underscores). */
@@ -9717,15 +9844,17 @@
   }
 
   /**
-   * Decide whether the active Graph can be published as a Cloudinary named transformation.
+   * Decide whether the active Graph can be published as a Cloudinary named
+   * transformation. Used by `classifyAppletKind` to decide between Derive
+   * (URL form available) and Create (no URL form — graph materialises a resource).
    *
-   * Class B blockers come in two flavours so the readout can explain *which* block
-   * forces API-only and *why*:
-   *   - `blockers`: per-block records `{ nodeId, blockType, blockTitle, reason }` for
-   *     each materialising / sidecar node — printed as an itemised list under the
-   *     banner.
-   *   - `reasons`: graph-level sentences (e.g. "Output kind is text — no URL form")
-   *     that don't pin to a specific node.
+   * Create-side blockers come in two flavours so the readout can explain *which*
+   * block forces server-side execution and *why*:
+   *   - `blockers`: per-block records `{ nodeId, blockType, blockTitle, reason }`
+   *     for each materialising / sidecar node — printed as an itemised list under
+   *     the banner.
+   *   - `reasons`: graph-level sentences (e.g. "Output kind is text — no URL
+   *     form") that don't pin to a specific node.
    *
    * @param {{ nodeId: string, kind: string, ignored?: boolean }[]} bindings
    * @returns {{ ok: boolean, reasons: string[], blockers: object[], outSpec?: object,
@@ -9839,6 +9968,86 @@
       baseBinding,
       textVarBindings,
       bakedBindings,
+    };
+  }
+
+  /**
+   * Structural classification of the active applet — what kind the *graph alone*
+   * permits. The UI surfaces a higher-level "effective kind" via `effectiveAppletKind`
+   * which also considers the user's per-applet `defaultKind` choice.
+   *
+   *   - "derive"  : pure transformation. Output is a delivery URL of the input
+   *                 asset; nothing new is materialised on the cloud account.
+   *                 Idempotent. Equivalent to a stateless Cloudinary URL (named
+   *                 transformation, `t_<slug>`).
+   *   - "create"  : the graph mints a new resource (image→video, transcription,
+   *                 auto-chapters, AI details, AI tagging, …) or a server-side
+   *                 sidecar. Returns a `producedPublicId`. Not idempotent without
+   *                 a dedup key.
+   *
+   * Derive ⊆ Create at runtime: a derive applet can always be *promoted* to a
+   * create call by passing storage-targeting params (`public_id`, `folder`,
+   * `overwrite`, `tags`, `access_mode`, `eager`) — the wrapper executes the chain
+   * as the `eager` value of an Upload call. The badge therefore expresses the
+   * applet's *floor*. Authors can pin the default invocation form per-applet via
+   * the Convert action in the bindings editor (see `appletEditorDefaultKind`).
+   *
+   * @param {{ nodeId: string, kind: string, ignored?: boolean }[]} bindings
+   * @returns {{ kind: "derive" | "create", urlFormAvailable: boolean,
+   *             blockers: object[], reasons: string[] }}
+   */
+  function classifyAppletKind(bindings) {
+    let cls;
+    try {
+      cls = classifyAppletForNamedTransformation(bindings);
+    } catch (e) {
+      cls = { ok: false, blockers: [], reasons: [String((e && e.message) || e)] };
+    }
+    const urlFormAvailable = !!(cls && cls.ok);
+    return {
+      kind: urlFormAvailable ? "derive" : "create",
+      urlFormAvailable,
+      blockers: (cls && cls.blockers) || [],
+      reasons: (cls && cls.reasons) || [],
+    };
+  }
+
+  /** Coerce a `defaultKind` value against the structural ability of the graph.
+   *  Applets whose graph cannot produce a Derive form are forced to "create"
+   *  regardless of the stored choice. Unknown values default to the structural
+   *  ceiling ("derive" when available, otherwise "create"). */
+  function coerceDefaultKind(value, urlFormAvailable) {
+    const v = String(value || "").trim().toLowerCase();
+    if (!urlFormAvailable) return "create";
+    if (v === "derive" || v === "create") return v;
+    return "derive";
+  }
+
+  /** Effective applet kind for a *saved* record — combines the persisted
+   *  structural fact (`urlFormAvailable`) with the persisted user choice
+   *  (`defaultKind`).
+   *
+   *  Backwards-compat: records written before the kind/convert feature existed
+   *  have neither field. We default `urlFormAvailable` to `false` for unknown
+   *  records (safer: show API rather than falsely claiming a URL form) so old
+   *  applets are not all misclassified as URL. They will be stamped correctly
+   *  the next time the author saves the applet from the bindings editor.
+   *
+   *  The only exception: if `urlFormAvailable === true` is explicitly stored,
+   *  we honour it and the `defaultKind` choice on top of it. */
+  function effectiveAppletKindForRecord(rec) {
+    if (!rec || typeof rec !== "object") {
+      return { kind: "create", urlFormAvailable: false, defaultKind: "create", canConvert: false };
+    }
+    /* Explicit true → URL form was confirmed at save time.
+     * Anything else (undefined, null, false) → treat as Create / API-only. */
+    const urlFormAvailable = rec.urlFormAvailable === true;
+    const defaultKind = coerceDefaultKind(rec.defaultKind, urlFormAvailable);
+    return {
+      kind: defaultKind,
+      urlFormAvailable,
+      defaultKind,
+      canConvert: urlFormAvailable,
     };
   }
 
@@ -9993,7 +10202,36 @@
     return "1";
   }
 
-  /** Read-only JSON illustrating a successful POST …/run response for the current canvas. */
+  /** Resolve a representative `sourcePublicId` for a Derive response example —
+   *  the primary base media's public_id as set on the canvas, normalised. Falls
+   *  back to a placeholder when no input is bound or the public_id is empty. */
+  function exampleSourcePublicIdForDerive() {
+    let inputs = [];
+    try { inputs = collectAppletInputsFromBindings(); } catch (e) { inputs = []; }
+    const cls = (function () {
+      try { return classifyAppletForNamedTransformation(inputs); } catch (e) { return null; }
+    })();
+    const baseId = cls && cls.baseBinding && cls.baseBinding.nodeId;
+    if (baseId) {
+      const node = nodes.find((n) => n.id === baseId);
+      const pid = node && node.settings && node.settings.publicId;
+      if (pid && String(pid).trim()) return String(pid).trim().replace(/^\/+/, "");
+    }
+    return "folder/asset_id";
+  }
+
+  /** Cloudinary resource_type for an output kind — used in Create-shaped example responses. */
+  function exampleResourceTypeForOutputKind(kind) {
+    if (kind === "image") return "image";
+    if (kind === "video") return "video";
+    return "raw";
+  }
+
+  /** Read-only JSON illustrating a successful POST …/run response for the current
+   *  canvas. The shape branches on the applet's kind:
+   *    - Derive: { ok, kind, deliveryUrl, sourcePublicId }  — URL is the answer; nothing minted.
+   *    - Create: { ok, kind, status, producedPublicId, resourceType, deliveryUrl, jobId }
+   *              — a new resource is materialised; producedPublicId is the contract. */
   function updateAppletExampleResponseReadout() {
     const el = document.getElementById("applet-example-response-readout");
     if (!el) return;
@@ -10018,12 +10256,36 @@
     } catch (err) {
       deliveryUrl = "";
     }
-    const body = {
-      ok: true,
-      applet: { slug, version },
-      output: { kind: spec.kind },
-      deliveryUrl: deliveryUrl || null,
-    };
+    /* Branch the example response shape on the *effective* kind — the editor's
+     * `defaultKind` choice when the structural floor permits it, otherwise the
+     * structural floor itself (Create-locked graphs cannot pretend to be Derive). */
+    let inputsForKind = [];
+    try { inputsForKind = collectAppletInputsFromBindings(); } catch (e) { inputsForKind = []; }
+    const kindCls = classifyAppletKind(inputsForKind);
+    const effectiveKind = coerceDefaultKind(appletEditorDefaultKind, kindCls.urlFormAvailable);
+    const isDerive = effectiveKind === "derive";
+
+    let body;
+    if (isDerive) {
+      body = {
+        ok: true,
+        kind: "derive",
+        applet: { slug, version },
+        deliveryUrl: deliveryUrl || null,
+        sourcePublicId: exampleSourcePublicIdForDerive(),
+      };
+    } else {
+      body = {
+        ok: true,
+        kind: "create",
+        applet: { slug, version },
+        status: "ready",
+        producedPublicId: "vcf/" + slug + "/<id>",
+        resourceType: exampleResourceTypeForOutputKind(spec.kind),
+        deliveryUrl: deliveryUrl || null,
+        jobId: null,
+      };
+    }
     if (spec.kind === "video") {
       const specNode = nodes.find((n) => n.id === spec.nodeId);
       const isPlayerBlock = !!(specNode && isVideoPlayerOutputBlockType(specNode.def.type));
@@ -10073,9 +10335,42 @@
       return '    "' + key + '": "' + ph + '"' + trailingComma + comment;
     });
     const bodyInner = paramLines.length ? paramLines.join("\n") : "";
-    const body = "{\n  \"params\": {\n" + (bodyInner ? bodyInner + "\n  " : "") + "}\n}";
+    const kindCls = classifyAppletKind(inputs);
+    const effectiveKind = coerceDefaultKind(appletEditorDefaultKind, kindCls.urlFormAvailable);
+    const isDerive = effectiveKind === "derive";
+    /* URL (derive) applets: show only the `params` block — the URL/named-transformation
+     * is the canonical path; no store block needed.
+     * API (create) applets: always materialise a resource, so `store` is shown as a
+     * required sibling of `params`. */
+    const paramsBlock =
+      "  \"params\": {\n" + (bodyInner ? bodyInner + "\n  " : "") + "}";
+    const createStoreBlock = [
+      '  "store": {',
+      '    "folder":     "vcf/' + name + '",',
+      '    "public_id":  null,',
+      '    "overwrite":  false,',
+      '    "tags":       []',
+      '  }',
+    ].join("\n");
+    let body = "{\n" + paramsBlock;
+    if (!isDerive) {
+      body += ",\n" + createStoreBlock;
+    }
+    body += "\n}";
     el.textContent =
       "POST /applets/" + slugPart + "/run\nContent-Type: application/json\n\n" + body;
+
+    /* Hide the API run + example-response blocks entirely for URL (derive) applets. */
+    const apiMethodDetails = el.closest("details");
+    const exampleResponseDetails = document.getElementById("applet-example-response-readout")?.closest("details");
+    if (apiMethodDetails) apiMethodDetails.hidden = isDerive;
+    if (exampleResponseDetails) exampleResponseDetails.hidden = isDerive;
+
+    /* Section is always visible — the readout flips between URL template (URL
+     * applets) and a mild "Why no URL transformation?" blocker list (API applets). */
+    const namedTxSection = document.getElementById("applet-named-transformation-section");
+    if (namedTxSection) namedTxSection.hidden = false;
+
     updateAppletExampleResponseReadout();
     updateAppletNamedTransformationReadout();
   }
@@ -10107,40 +10402,80 @@
     return "";
   }
 
+  /** Tooltip + label copy for the Derive/Create kind badge. Shared between the
+   *  bindings editor header and the playground header so both surfaces speak the
+   *  same vocabulary. The "API wrapper" (POST /applets/<slug>/run) is always
+   *  available regardless of kind — it's the canonical contract — so it's not
+   *  badged separately. */
+  function appletKindBadgeCopy(kind) {
+    if (kind === "derive") {
+      return {
+        label: "DERIVED",
+        title:
+          "DERIVED — pure transformation. Output is a delivery URL of the input asset; nothing new is materialised. " +
+          "Also publishable as a Cloudinary named transformation (t_<slug>). " +
+          "Pass `store` params at call time to promote to a CREATE call.",
+      };
+    }
+    return {
+      label: "CREATE",
+      title:
+        "CREATE — materialises a new resource (or sidecar) on the cloud account. Returns a producedPublicId. " +
+        "No stateless URL form; always requires a server-side call.",
+    };
+  }
+
+  /** Apply the kind badge to a host span — flips colour class and tooltip. */
+  function applyAppletKindBadge(el, kind) {
+    if (!el) return;
+    const copy = appletKindBadgeCopy(kind);
+    el.textContent = copy.label;
+    el.title = copy.title;
+    el.setAttribute("data-kind", kind);
+    el.classList.toggle("is-derive", kind === "derive");
+    el.classList.toggle("is-create", kind === "create");
+    el.hidden = false;
+  }
+
   /**
-   * Top-of-form badges showing which invocation forms the active applet supports.
-   * "API" is always on (every applet can be invoked server-side); "URL" mirrors the
-   * Class A classifier — published as a Cloudinary named transformation when the graph
-   * collapses to a single URL chain. Updated alongside the named-transformation
-   * readout so badges and section stay in lock-step.
+   * Top-of-form badge + Convert button showing the active applet's kind —
+   * "Derive" or "Create". Reads the structural ability from the *live canvas*
+   * (so toggling materialising blocks re-locks the convert affordance) and the
+   * default-kind choice from `appletEditorDefaultKind` (the editor-local state
+   * the user can flip via the Convert button). Auto-coerces the editor state
+   * to "create" when URL form drops out from under it.
    */
   function updateAppletSupportedFormsBadges() {
-    const apiEl = document.querySelector('.applet-supported-badge[data-form="api"]');
-    const urlEl = document.querySelector('.applet-supported-badge[data-form="url"]');
-    if (!apiEl || !urlEl) return;
-    apiEl.classList.add("is-on");
-    apiEl.classList.remove("is-off");
-    apiEl.title = "POST /applets/<slug>/run — applet always exposes a server-side API.";
+    const badgeEl = document.getElementById("applet-edit-kind-badge");
+    const convertEl = document.getElementById("applet-edit-kind-convert");
+    if (!badgeEl) return;
     let inputs = [];
     try {
       inputs = collectAppletInputsFromBindings();
     } catch (e) {
       inputs = [];
     }
-    let cls = null;
-    try {
-      cls = classifyAppletForNamedTransformation(inputs);
-    } catch (e) {
-      cls = null;
+    const cls = classifyAppletKind(inputs);
+    /* Coerce in case the canvas just lost URL-form eligibility (added a
+     * materialising block while editing). The editor state cannot stay on
+     * "derive" if the graph won't support it. */
+    appletEditorDefaultKind = coerceDefaultKind(appletEditorDefaultKind, cls.urlFormAvailable);
+    applyAppletKindBadge(badgeEl, appletEditorDefaultKind);
+
+    if (convertEl) {
+      const target = appletEditorDefaultKind === "derive" ? "create" : "derive";
+      convertEl.setAttribute("data-target-kind", target);
+      convertEl.textContent =
+        target === "derive" ? "Convert to DERIVED" : "Convert to CREATE";
+      const canConvert = !!cls.urlFormAvailable;
+      convertEl.disabled = !canConvert;
+      convertEl.hidden = false;
+      convertEl.title = canConvert
+        ? (target === "derive"
+            ? "Convert to DERIVED — switch this applet's default contract to URL form. Callers receive a delivery URL of the input asset; nothing is stored."
+            : "Convert to CREATE — switch this applet's default contract to CREATE. Every call materialises a new resource on the cloud account (public_id required).")
+        : "Convert unavailable — this graph contains a materialising step (image→video, transcription, AI sidecar, …) that has no URL form.";
     }
-    const urlOn = !!(cls && cls.ok);
-    urlEl.classList.toggle("is-on", urlOn);
-    /* Always render the URL badge — muted grey when off — so the row reads as a
-     * supported-forms indicator. The tooltip explains the off state. */
-    urlEl.hidden = false;
-    urlEl.title = urlOn
-      ? "Publishable as a Cloudinary named transformation — callers can build a URL directly."
-      : "Not publishable as a Cloudinary named transformation — see the panel below for the blocking step.";
   }
 
   /**
@@ -10156,9 +10491,12 @@
   }
 
   /**
-   * Refresh the "Named transformation" panel — the URL-form deliverable for the active
-   * applet. Class A applets get a slug + chain + URL template + example URL preview;
-   * Class B applets get a banner explaining why URL form isn't available.
+   * Refresh the "Named transformation" panel — the URL-form deliverable for the
+   * active applet. The panel reflects *structural* eligibility (URL form is
+   * available whenever the graph collapses to a chain), independent of the
+   * editor's Derive/Create choice. The pill copy spells out the relationship
+   * between the two: a graph that is URL-eligible but pinned to Create still
+   * shows the template, with a note that Create is the chosen default.
    */
   function updateAppletNamedTransformationReadout() {
     updateAppletSupportedFormsBadges();
@@ -10178,66 +10516,63 @@
     } catch (e) {
       preview = { ok: false, reasons: ["Could not build preview: " + (e && e.message ? e.message : String(e))] };
     }
+    const effectiveKind = coerceDefaultKind(
+      appletEditorDefaultKind,
+      !!(preview && preview.ok)
+    );
+    const titleEl = document.getElementById("applet-named-tx-section-title");
     if (!preview || !preview.ok) {
       if (pill) {
-        pill.textContent = "API only";
+        pill.textContent = "CREATE";
         pill.className = "applet-named-tx-pill applet-named-tx-pill-off";
       }
+      if (titleEl) titleEl.textContent = "Why no URL transformation?";
       const blockers = (preview && preview.blockers) || [];
       const reasons = (preview && preview.reasons) || [];
-      const hasAny = blockers.length || reasons.length;
-      const blockersHtml = blockers.length
-        ? '<ul class="applet-named-tx-blocker-list">' +
-          blockers
-            .map(
-              (b) =>
-                '<li class="applet-named-tx-blocker">' +
-                '<div class="applet-named-tx-blocker-head">' +
-                "<code>" + escapeHtml(b.nodeId) + "</code>" +
-                ' <span class="applet-named-tx-blocker-title">' +
-                escapeHtml(b.blockTitle) +
-                "</span>" +
-                "</div>" +
-                '<p class="applet-named-tx-blocker-reason">' +
-                escapeHtml(b.reason) +
-                "</p>" +
-                "</li>"
-            )
-            .join("") +
-          "</ul>"
-        : "";
-      const reasonsHtml = reasons.length
-        ? '<ul class="applet-named-tx-banner-list">' +
-          reasons.map((r) => "<li>" + escapeHtml(r) + "</li>").join("") +
-          "</ul>"
-        : "";
-      const fallbackHtml = hasAny
-        ? ""
-        : '<p class="applet-named-tx-meta">This Graph can\'t be expressed as a single Cloudinary URL transformation.</p>';
+      if (!blockers.length && !reasons.length) {
+        el.innerHTML =
+          '<p class="pg-why-api-lead">This graph requires async execution and creates a new asset.</p>';
+        return;
+      }
+      const blockersHtml = blockers
+        .map(
+          (b) =>
+            '<li class="pg-why-api-item">' +
+            '<span class="pg-why-api-title">' + escapeHtml(b.blockTitle) + "</span>" +
+            " — " +
+            '<span class="pg-why-api-reason">' + escapeHtml(b.reason) + "</span>" +
+            "</li>"
+        )
+        .join("");
+      const reasonsHtml = reasons
+        .map((r) => '<li class="pg-why-api-item pg-why-api-reason">' + escapeHtml(r) + "</li>")
+        .join("");
       el.innerHTML =
-        '<div class="applet-named-tx-banner">' +
-        '<p class="applet-named-tx-banner-title">URL form unavailable — applet runs eagerly via the API.</p>' +
-        (blockers.length
-          ? '<p class="applet-named-tx-banner-sub">' +
-            blockers.length +
-            " block" +
-            (blockers.length > 1 ? "s force" : " forces") +
-            " server-side execution:</p>"
-          : "") +
-        blockersHtml +
-        reasonsHtml +
-        fallbackHtml +
-        "</div>";
+        '<p class="pg-why-api-lead">This graph requires async execution and creates a new asset:</p>' +
+        '<ul class="pg-why-api-list">' + blockersHtml + reasonsHtml + "</ul>";
       return;
     }
 
     if (pill) {
-      pill.textContent = "URL form";
+      pill.textContent =
+        effectiveKind === "create" ? "CREATE · URL form available" : "DERIVED";
       pill.className = "applet-named-tx-pill applet-named-tx-pill-on";
     }
+    if (titleEl) titleEl.textContent = "Named transformation · URL";
 
     const templateHtml = highlightNamedTransformationCode(escapeHtml(preview.urlTemplate));
-    el.innerHTML = '<pre class="applet-named-tx-code">' + templateHtml + "</pre>";
+    /* When the user has pinned this URL-eligible applet to Create, the URL
+     * template is still the deliverable — it just isn't the default contract.
+     * A short note keeps the two surfaces from contradicting each other. */
+    const pinnedNote =
+      effectiveKind === "create"
+        ? '<p class="applet-named-tx-meta" style="margin-top:8px;">' +
+          'URL form is structurally available, but this applet\'s default ' +
+          'contract is CREATE. Use <b>Convert to DERIVED</b> above to switch back.' +
+          "</p>"
+        : "";
+    el.innerHTML =
+      '<pre class="applet-named-tx-code">' + templateHtml + "</pre>" + pinnedNote;
   }
 
   function collectAppletInputsFromBindings() {
@@ -10291,6 +10626,7 @@
     appletEditorCleanSnapshot = {
       description: descEl ? String(descEl.value || "") : "",
       inputs,
+      defaultKind: appletEditorDefaultKind,
       graphFingerprint: canvasGraphFingerprint(),
     };
   }
@@ -10333,6 +10669,9 @@
     const inputsDirty =
       JSON.stringify(curInputs) !== JSON.stringify(appletEditorCleanSnapshot.inputs);
     const canvasDeltaDirty = appletEditorCanvasStructureDirty();
+    const kindDirty =
+      appletEditorCleanSnapshot.defaultKind != null &&
+      appletEditorDefaultKind !== appletEditorCleanSnapshot.defaultKind;
     const cleanMap = new Map(appletEditorCleanSnapshot.inputs.map((x) => [x.nodeId, x]));
     const curMap = new Map(curInputs.map((x) => [x.nodeId, x]));
 
@@ -10369,7 +10708,7 @@
     outputPanel?.classList.toggle("applet-section-dirty", graphDirty);
     outputHeadSpan?.classList.toggle("applet-section-label-dirty", graphDirty);
 
-    const anyDirty = descDirty || bindingsSectionDirty || graphDirty;
+    const anyDirty = descDirty || bindingsSectionDirty || graphDirty || kindDirty;
     titleEl?.classList.toggle("applet-title-dirty", anyDirty);
     if (banner) banner.hidden = !anyDirty;
   }
@@ -10414,6 +10753,10 @@
       const descEl = document.getElementById("applet-edit-description");
       if (descEl) descEl.value = rec.description || "";
       syncAppletEditHint(true);
+      /* Restore the persisted default-kind choice. `effectiveAppletKindForRecord`
+       * handles records written before this field existed — falling back to the
+       * structural ceiling — and coerces invalid combos. */
+      appletEditorDefaultKind = effectiveAppletKindForRecord(rec).defaultKind;
     } else {
       syncAppletEditorPersistedFromRecord(null);
       appletEditingSlug = null;
@@ -10421,6 +10764,10 @@
       const descEl = document.getElementById("applet-edit-description");
       if (descEl) descEl.value = "";
       syncAppletEditHint(false);
+      /* Fresh authoring: default to the structural ceiling of the live canvas
+       * (Derive when URL form is available, Create otherwise). */
+      const liveCls = classifyAppletKind(collectAppletInputsFromBindings());
+      appletEditorDefaultKind = liveCls.kind;
     }
 
     const h = document.getElementById("applet-edit-heading");
@@ -10484,6 +10831,15 @@
     const graphSnapshot = serializeGraphDocument();
     const store = readAppletStore();
     const existing = appletEditingSlug ? store.applets[appletEditingSlug] : null;
+    /* Capture the structural URL-form eligibility of the saved snapshot so the
+     * sidebar list (and any out-of-editor surface) can render the kind badge
+     * without re-running the classifier against a re-loaded graph. The
+     * `defaultKind` carries the author's per-applet choice — when the graph
+     * forces Create (urlFormAvailable === false) we coerce it to "create"
+     * unconditionally; otherwise we honour the editor's current setting. */
+    const kindCls = classifyAppletKind(inputs);
+    const urlFormAvailable = !!kindCls.urlFormAvailable;
+    const defaultKind = coerceDefaultKind(appletEditorDefaultKind, urlFormAvailable);
     const record = {
       v: APPLET_RECORD_VERSION,
       name,
@@ -10493,6 +10849,8 @@
       graphSnapshot,
       inputs,
       output: { kind: outSpec.kind, nodeId: outSpec.nodeId },
+      urlFormAvailable,
+      defaultKind,
       updatedAt: new Date().toISOString(),
     };
     return record;
@@ -10529,6 +10887,12 @@
       updateAppletEditorDirtyUi();
       const h = document.getElementById("applet-edit-heading");
       if (h) h.textContent = "Graph applet";
+      /* Refresh the sidebar so the kind badge on the saved applet's row reflects
+       * the new `defaultKind` (and any rename / new applet appears in place). */
+      if (activeLibraryTab === "applets") {
+        const ps = document.getElementById("palette-search");
+        renderLibrary(ps ? ps.value : "");
+      }
     } catch (err) {
       showGraphToast("Could not save applets (storage full or private mode).");
     }
@@ -10560,11 +10924,6 @@
     } catch (e) {
       return "";
     }
-  }
-
-  function playgroundEndpointForSlug(slug) {
-    const s = String(slug || "").trim();
-    return s ? "POST /applets/" + s + "/run" : "POST /applets/<slug>/run";
   }
 
   /** For each applet input row, find the current canvas node and render a typed control. */
@@ -10667,6 +11026,67 @@
     }
   }
 
+  /** Render the named-transformation panel in the playground.
+   *  - URL applets: shows the URL template + live example link.
+   *  - API applets: shows a mild "why no URL form" note listing the blocking steps,
+   *    without alarming colour — just enough context for the author. */
+  function renderPlaygroundNamedTxPanel(rec) {
+    const panel = document.getElementById("playground-named-tx-panel");
+    const readout = document.getElementById("playground-named-tx-readout");
+    if (!panel || !readout) return;
+    const isUrl = effectiveAppletKindForRecord(rec).kind === "derive";
+    const name = (rec && rec.name) || "";
+    const inputs = normalizeAppletInputs((rec && rec.inputs) || []);
+    let preview;
+    try {
+      preview = buildNamedTransformationPreview(name, inputs);
+    } catch (e) {
+      preview = null;
+    }
+
+    const titleEl = document.getElementById("playground-named-tx-title");
+    if (!isUrl || !preview || !preview.ok) {
+      /* API applet — show a mild blocker note if we have one, otherwise hide. */
+      const blockers = (preview && preview.blockers) || [];
+      const reasons = (preview && preview.reasons) || [];
+      if (!blockers.length && !reasons.length) {
+        panel.hidden = true;
+        readout.innerHTML = "";
+        return;
+      }
+      panel.hidden = false;
+      if (titleEl) titleEl.textContent = "Why no URL transformation?";
+      const blockersHtml = blockers
+        .map(
+          (b) =>
+            '<li class="pg-why-api-item">' +
+            '<span class="pg-why-api-title">' + escapeHtml(b.blockTitle) + "</span>" +
+            " — " +
+            '<span class="pg-why-api-reason">' + escapeHtml(b.reason) + "</span>" +
+            "</li>"
+        )
+        .join("");
+      const reasonsHtml = reasons
+        .map((r) => '<li class="pg-why-api-item pg-why-api-reason">' + escapeHtml(r) + "</li>")
+        .join("");
+      readout.innerHTML =
+        '<p class="pg-why-api-lead">This graph requires async execution and creates a new asset:</p>' +
+        '<ul class="pg-why-api-list">' + blockersHtml + reasonsHtml + "</ul>";
+      return;
+    }
+
+    /* URL applet — show template + live example. */
+    panel.hidden = false;
+    if (titleEl) titleEl.textContent = "Named transformation · URL";
+    const templateHtml = highlightNamedTransformationCode(escapeHtml(preview.urlTemplate));
+    const exampleHtml = escapeHtml(preview.exampleUrl);
+    readout.innerHTML =
+      '<pre class="applet-named-tx-code">' + templateHtml + "</pre>" +
+      '<p class="applet-named-tx-meta" style="margin-top:6px;">Example: ' +
+      '<a href="' + escapeHtml(preview.exampleUrl) + '" target="_blank" rel="noopener" ' +
+      'style="color:inherit;word-break:break-all;">' + exampleHtml + "</a></p>";
+  }
+
   function renderAppletPlaygroundChrome(rec) {
     const titleEl = document.getElementById("playground-title");
     if (titleEl) titleEl.textContent = (rec && rec.name) || currentAppletSlug || "Applet";
@@ -10676,10 +11096,9 @@
       descEl.textContent = d || "No description for this applet yet.";
       descEl.classList.toggle("is-muted", !d);
     }
-    const endpointEl = document.getElementById("playground-endpoint");
-    if (endpointEl) endpointEl.textContent = playgroundEndpointForSlug(rec && rec.slug);
     updatePlaygroundSupportedFormBadges(rec);
     renderPlaygroundApiSnippet(rec);
+    renderPlaygroundNamedTxPanel(rec);
     const outHost = document.getElementById("playground-output");
     if (outHost) {
       outHost.innerHTML =
@@ -10688,42 +11107,31 @@
   }
 
   /**
-   * Toggle the API / URL pills next to the playground title. API is always on
-   * (every applet exposes the run endpoint); URL only when the Graph snapshot
-   * classifies as a Class A named-transformation candidate. We re-use the same
-   * classifier the bindings editor uses so the playground and the editor agree
-   * on whether a URL form is available.
+   * Render the kind badge ("Derive" or "Create") next to the playground title.
+   * The saved record carries both the structural ability (`urlFormAvailable`)
+   * and the user's choice (`defaultKind`); `effectiveAppletKindForRecord`
+   * combines them and falls back gracefully for pre-feature records.
    */
   function updatePlaygroundSupportedFormBadges(rec) {
-    const apiEl = document.querySelector('#playground-supported-forms .applet-supported-badge[data-form="api"]');
-    const urlEl = document.querySelector('#playground-supported-forms .applet-supported-badge[data-form="url"]');
-    if (!apiEl || !urlEl) return;
-    apiEl.classList.add("is-on");
-    let urlOn = false;
-    try {
-      const inputs = normalizeAppletInputs((rec && rec.inputs) || []).filter((r) => !r.ignored);
-      const cls = classifyAppletForNamedTransformation(inputs);
-      urlOn = !!(cls && cls.ok);
-    } catch (e) {
-      urlOn = false;
-    }
-    urlEl.classList.toggle("is-on", urlOn);
-    /* Render as a muted-grey pill when off (matches the bindings-editor row). */
-    urlEl.hidden = false;
-    urlEl.title = urlOn
-      ? "Publishable as a Cloudinary named transformation — callers can build a URL directly."
-      : "Not publishable as a Cloudinary named transformation — server-side API only.";
+    const el = document.getElementById("playground-kind-badge");
+    if (!el) return;
+    applyAppletKindBadge(el, effectiveAppletKindForRecord(rec).kind);
   }
 
   /** Active snippet language for the playground API panel — flips between curl/fetch. */
-  let playgroundApiSnippetLang = "curl";
+  let playgroundApiSnippetLang = "node";
 
   /**
-   * Build a paste-ready API call for the active applet — either a curl invocation
-   * or a JS fetch() snippet — using the saved `rec.inputs` (not the bindings DOM,
-   * which the playground doesn't have visible). Mirrors the same param-key
-   * resolver and placeholder values the bindings editor's API readout uses, so
-   * what you copy from the playground matches what you'd see in the editor.
+   * Build a paste-ready snippet for the active applet.
+   *
+   * URL applets (kind === "derive"):
+   *   - "node"   → Cloudinary Node SDK using the named transformation
+   *   - "python" → Cloudinary Python SDK using the named transformation
+   *   - "curl"   → wrapper API POST (fallback / server-side promotion)
+   *
+   * API applets (kind === "create"):
+   *   - "curl"   → wrapper API POST with `store` block
+   *   - "js"     → fetch() equivalent
    */
   function buildPlaygroundApiSnippet(rec, lang) {
     const slug = (rec && rec.slug) ? String(rec.slug) : currentAppletSlug || "<slug>";
@@ -10734,12 +11142,65 @@
     } catch (e) {
       keyMap = new Map();
     }
+
+    const kindForSnippet = effectiveAppletKindForRecord(rec).kind;
+    const isUrl = kindForSnippet === "derive";
+
+    /* ── URL applet: Cloudinary SDK snippets ─────────────────────────── */
+    if (isUrl) {
+      const txSlug = slugifyForCloudinaryNamedTransformation(slug);
+      const outKind = rec && rec.output && rec.output.kind === "image" ? "image" : "video";
+      /* Find the primary base input (image or video kind) for the public_id placeholder. */
+      const baseInput = inputs.find((inp) => inp.kind === "image" || inp.kind === "video");
+      const baseKey = baseInput ? (keyMap.get(baseInput.nodeId) || apiParamKeyForInput(baseInput)) : null;
+      const basePlaceholder = baseKey ? "<" + baseKey + ">" : "<public_id>";
+
+      /* Text variable inputs (besides the base) become Cloudinary user-defined vars. */
+      const textInputs = inputs.filter((inp) => inp.kind === "text");
+
+      if (lang === "node") {
+        const varPrefix = textInputs.map((inp) => {
+          const k = keyMap.get(inp.nodeId) || apiParamKeyForInput(inp);
+          return '  "$' + k + '": "<' + k + '>",';
+        }).join("\n");
+        const txOpts = varPrefix
+          ? '{\n' + varPrefix + '\n  transformation: ["' + txSlug + '"]\n}'
+          : '{ transformation: ["' + txSlug + '"] }';
+        return (
+          "const cloudinary = require('cloudinary').v2;\n\n" +
+          "cloudinary." + outKind + '("' + basePlaceholder + '", ' + txOpts + ")"
+        );
+      }
+
+      if (lang === "python") {
+        const varParts = textInputs.map((inp) => {
+          const k = keyMap.get(inp.nodeId) || apiParamKeyForInput(inp);
+          return '"$' + k + '": "<' + k + '>"';
+        });
+        const txArg = 'transformation=["' + txSlug + '"]';
+        const varArg = varParts.length ? varParts.join(", ") + ", " : "";
+        const cls = outKind === "image" ? "CloudinaryImage" : "CloudinaryVideo";
+        return (
+          "from cloudinary import " + cls + "\n\n" +
+          cls + '("' + basePlaceholder + '").' + outKind + "(" + varArg + txArg + ")"
+        );
+      }
+
+      return "";
+    }
+
+    /* ── API applet: wrapper POST snippets ───────────────────────────── */
     const params = {};
     for (const inp of inputs) {
       const key = keyMap.get(inp.nodeId) || apiParamKeyForInput(inp) || inp.nodeId;
       params[key] = placeholderMockValueForKind(inp.kind);
     }
-    const body = { params };
+    const body = { params, store: {
+      folder: "app/" + slug,
+      public_id: null,
+      overwrite: false,
+      tags: [],
+    }};
     const bodyText = JSON.stringify(body, null, 2);
     const endpoint = "https://api.videofactory.app/applets/" + encodeURIComponent(slug) + "/run";
     if (lang === "js") {
@@ -10756,7 +11217,6 @@
         '});'
       );
     }
-    /* curl — single-quoted body, indented for readability. */
     return (
       "curl -X POST '" + endpoint + "' \\\n" +
       "  -H 'Content-Type: application/json' \\\n" +
@@ -10765,23 +11225,41 @@
     );
   }
 
-  /** Render the current snippet language into the playground API panel. */
+  /** Render the current snippet language into the playground API panel.
+   *  Also shows/hides the tabs that are relevant to the applet's kind. */
   function renderPlaygroundApiSnippet(rec) {
     const el = document.getElementById("playground-api-snippet");
     if (!el) return;
-    /* Cache the rec on the panel so the tab toggle can re-render without
-     * re-resolving the applet store. */
     if (rec) el.__rec = rec;
     const target = rec || el.__rec;
-    if (!target) {
-      el.textContent = "";
-      return;
-    }
-    el.textContent = buildPlaygroundApiSnippet(target, playgroundApiSnippetLang);
-    /* Reflect active state on tabs. */
+    if (!target) { el.textContent = ""; return; }
+
+    const isUrl = effectiveAppletKindForRecord(target).kind === "derive";
+
+    /* Show URL-only tabs (Node, Python) for URL applets; show API-only tab
+     * (fetch) for API applets; curl is always visible. Snap the active lang to
+     * the best default for this kind if the current selection doesn't apply. */
     const tabs = document.querySelectorAll(".playground-api-tab");
     tabs.forEach((t) => {
-      const on = t.getAttribute("data-snippet") === playgroundApiSnippetLang;
+      const tabKind = t.getAttribute("data-snippet-kind");
+      /* data-snippet-kind="url" → URL applets only
+       * data-snippet-kind="api" → API applets only
+       * no attribute           → always visible */
+      const visible = !tabKind || (isUrl ? tabKind === "url" : tabKind === "api");
+      t.hidden = !visible;
+    });
+
+    /* If the active language isn't visible for this kind, reset to the default. */
+    const urlLangs = new Set(["node", "python"]);
+    const apiLangs = new Set(["curl", "js"]);
+    const allowed = isUrl ? urlLangs : apiLangs;
+    if (!allowed.has(playgroundApiSnippetLang)) {
+      playgroundApiSnippetLang = isUrl ? "node" : "curl";
+    }
+
+    el.textContent = buildPlaygroundApiSnippet(target, playgroundApiSnippetLang);
+    tabs.forEach((t) => {
+      const on = !t.hidden && t.getAttribute("data-snippet") === playgroundApiSnippetLang;
       t.classList.toggle("is-active", on);
       t.setAttribute("aria-selected", on ? "true" : "false");
     });
@@ -10843,7 +11321,7 @@
      * applet starts fresh, and reset the snippet tab back to the default. */
     const snippetEl = document.getElementById("playground-api-snippet");
     if (snippetEl) snippetEl.__rec = null;
-    playgroundApiSnippetLang = "curl";
+    playgroundApiSnippetLang = "node";
     syncAppModeChrome();
     syncLibraryChrome();
     renderLibrary(document.getElementById("palette-search").value);
@@ -11160,10 +11638,11 @@
     openInputAssetPicker(nid);
   });
 
-  /* API snippet panel: tab clicks swap curl ↔ fetch; copy button writes the
+  /* API snippet panel: tab clicks swap languages; copy button writes the
    * current snippet to the clipboard with a brief visual confirmation. */
   document.querySelectorAll(".playground-api-tab").forEach((tab) => {
     tab.addEventListener("click", () => {
+      if (tab.hidden) return;
       const lang = tab.getAttribute("data-snippet");
       if (!lang || lang === playgroundApiSnippetLang) return;
       playgroundApiSnippetLang = lang;
@@ -11215,6 +11694,26 @@
 
   document.getElementById("applet-edit-save").addEventListener("click", () => {
     void saveAppletFromForm();
+  });
+
+  /* Convert Derive ⇄ Create. The button's `data-target-kind` is set fresh on
+   * every badge render so this handler just trusts the latest value. We re-run
+   * the full method readout so the example response, store-block hint, and
+   * snippet panels follow the new default kind immediately. */
+  document.getElementById("applet-edit-kind-convert").addEventListener("click", (e) => {
+    const btn = e.currentTarget;
+    if (!btn || btn.disabled) return;
+    const target = String(btn.getAttribute("data-target-kind") || "").trim();
+    if (target !== "derive" && target !== "create") return;
+    /* Reuse the canvas-derived structural ability — coerceDefaultKind protects
+     * us from selecting "derive" against a graph that can't support it (which
+     * also happens to be when the button is disabled, but safe is safe). */
+    let cls;
+    try { cls = classifyAppletKind(collectAppletInputsFromBindings()); }
+    catch (err) { cls = { urlFormAvailable: false }; }
+    appletEditorDefaultKind = coerceDefaultKind(target, cls.urlFormAvailable);
+    updateAppletApiMethodReadout();
+    updateAppletEditorDirtyUi();
   });
 
   document.getElementById("applet-bindings-refresh").addEventListener("click", () => {
