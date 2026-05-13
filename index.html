@@ -2724,6 +2724,43 @@
       display: none;
     }
 
+    /* Mild "why no URL form" disclosure in the playground for API applets.
+     * No amber/warning colour — just muted text so it reads as context, not alarm. */
+    .pg-why-api-lead {
+      margin: 0 0 8px;
+      font-size: 11px;
+      color: var(--text-faint);
+      line-height: 1.5;
+    }
+
+    .pg-why-api-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .pg-why-api-item {
+      font-size: 11px;
+      color: var(--text-soft);
+      line-height: 1.5;
+      padding: 5px 8px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-muted);
+      border: 1px solid var(--border-hair);
+    }
+
+    .pg-why-api-title {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .pg-why-api-reason {
+      color: var(--text-soft);
+    }
+
     /* Smaller variant for dense surfaces (sidebar applets list). Same palette,
      * tighter padding and font so it fits the 11px row name without dominating it. */
     .applet-kind-badge.is-sm {
@@ -3650,10 +3687,6 @@
               <div class="playground-panel-title">About</div>
               <p class="playground-description" id="playground-description"></p>
             </div>
-            <div class="playground-panel" id="playground-named-tx-panel" hidden>
-              <div class="playground-panel-title">Named transformation · URL</div>
-              <div id="playground-named-tx-readout"></div>
-            </div>
             <div class="playground-panel" id="playground-api-panel">
               <div class="playground-panel-title-row">
                 <div class="playground-panel-title">API snippet</div>
@@ -3722,6 +3755,10 @@
                 </button>
                 <button type="button" class="btn" id="playground-reset" title="Reset inputs to applet defaults">Reset</button>
               </div>
+            </div>
+            <div class="playground-panel" id="playground-named-tx-panel" hidden>
+              <div class="playground-panel-title" id="playground-named-tx-title">Named transformation · URL</div>
+              <div id="playground-named-tx-readout"></div>
             </div>
           </div>
           <div class="playground-col">
@@ -3795,12 +3832,20 @@
             aria-live="polite"
           ></div>
         </div>
+        <details class="applet-api-details">
+          <summary class="applet-api-summary">API — run method</summary>
+          <pre id="applet-api-method-readout" class="applet-api-readout" aria-live="polite"></pre>
+        </details>
+        <details class="applet-api-details">
+          <summary class="applet-api-summary">Example response body</summary>
+          <pre id="applet-example-response-readout" class="applet-api-readout" aria-live="polite"></pre>
+        </details>
         <div
           id="applet-named-transformation-section"
           class="applet-inputs-wrap applet-named-tx-wrap"
         >
           <div class="applet-inputs-head">
-            <span>Named transformation</span>
+            <span id="applet-named-tx-section-title">Named transformation · URL</span>
             <span id="applet-named-tx-pill" class="applet-named-tx-pill"></span>
           </div>
           <div
@@ -3810,14 +3855,6 @@
             aria-live="polite"
           ></div>
         </div>
-        <details class="applet-api-details">
-          <summary class="applet-api-summary">API — run method</summary>
-          <pre id="applet-api-method-readout" class="applet-api-readout" aria-live="polite"></pre>
-        </details>
-        <details class="applet-api-details">
-          <summary class="applet-api-summary">Example response body</summary>
-          <pre id="applet-example-response-readout" class="applet-api-readout" aria-live="polite"></pre>
-        </details>
         <div class="graph-dialog-actions">
           <button type="button" class="btn" id="applet-edit-back">Close</button>
           <button type="button" class="btn-run" id="applet-edit-save">Save applet</button>
@@ -7452,6 +7489,12 @@
     syncLibraryChrome();
     syncChatUi();
     renderLibrary("");
+    const paletteListEl = document.getElementById("palette-list");
+    if (paletteListEl) {
+      paletteListEl.scrollTop = 0;
+      const firstRow = paletteListEl.querySelector(".library-row");
+      if (firstRow) firstRow.click();
+    }
   }
 
   /** Dispatcher: re-renders the sidebar list based on the active tab. */
@@ -10323,9 +10366,10 @@
     if (apiMethodDetails) apiMethodDetails.hidden = isDerive;
     if (exampleResponseDetails) exampleResponseDetails.hidden = isDerive;
 
-    /* Hide the Named transformation section when kind is API (create). */
+    /* Section is always visible — the readout flips between URL template (URL
+     * applets) and a mild "Why no URL transformation?" blocker list (API applets). */
     const namedTxSection = document.getElementById("applet-named-transformation-section");
-    if (namedTxSection) namedTxSection.hidden = !isDerive;
+    if (namedTxSection) namedTxSection.hidden = false;
 
     updateAppletExampleResponseReadout();
     updateAppletNamedTransformationReadout();
@@ -10366,17 +10410,17 @@
   function appletKindBadgeCopy(kind) {
     if (kind === "derive") {
       return {
-        label: "URL",
+        label: "DERIVED",
         title:
-          "URL — pure transformation. Output is a delivery URL of the input asset; nothing new is materialised. " +
+          "DERIVED — pure transformation. Output is a delivery URL of the input asset; nothing new is materialised. " +
           "Also publishable as a Cloudinary named transformation (t_<slug>). " +
-          "Pass `store` params at call time to promote to an API / Create call.",
+          "Pass `store` params at call time to promote to a CREATE call.",
       };
     }
     return {
-      label: "API",
+      label: "CREATE",
       title:
-        "API — materialises a new resource (or sidecar) on the cloud account. Returns a producedPublicId. " +
+        "CREATE — materialises a new resource (or sidecar) on the cloud account. Returns a producedPublicId. " +
         "No stateless URL form; always requires a server-side call.",
     };
   }
@@ -10422,14 +10466,14 @@
       const target = appletEditorDefaultKind === "derive" ? "create" : "derive";
       convertEl.setAttribute("data-target-kind", target);
       convertEl.textContent =
-        target === "derive" ? "Convert to URL" : "Convert to API";
+        target === "derive" ? "Convert to DERIVED" : "Convert to CREATE";
       const canConvert = !!cls.urlFormAvailable;
       convertEl.disabled = !canConvert;
       convertEl.hidden = false;
       convertEl.title = canConvert
         ? (target === "derive"
-            ? "Convert to URL — switch this applet's default contract to URL form. Callers receive a delivery URL of the input asset; nothing is stored."
-            : "Convert to API — switch this applet's default contract to API/Create. Every call materialises a new resource on the cloud account (public_id required).")
+            ? "Convert to DERIVED — switch this applet's default contract to URL form. Callers receive a delivery URL of the input asset; nothing is stored."
+            : "Convert to CREATE — switch this applet's default contract to CREATE. Every call materialises a new resource on the cloud account (public_id required).")
         : "Convert unavailable — this graph contains a materialising step (image→video, transcription, AI sidecar, …) that has no URL form.";
     }
   }
@@ -10476,64 +10520,45 @@
       appletEditorDefaultKind,
       !!(preview && preview.ok)
     );
+    const titleEl = document.getElementById("applet-named-tx-section-title");
     if (!preview || !preview.ok) {
       if (pill) {
-        pill.textContent = "API";
+        pill.textContent = "CREATE";
         pill.className = "applet-named-tx-pill applet-named-tx-pill-off";
       }
+      if (titleEl) titleEl.textContent = "Why no URL transformation?";
       const blockers = (preview && preview.blockers) || [];
       const reasons = (preview && preview.reasons) || [];
-      const hasAny = blockers.length || reasons.length;
-      const blockersHtml = blockers.length
-        ? '<ul class="applet-named-tx-blocker-list">' +
-          blockers
-            .map(
-              (b) =>
-                '<li class="applet-named-tx-blocker">' +
-                '<div class="applet-named-tx-blocker-head">' +
-                "<code>" + escapeHtml(b.nodeId) + "</code>" +
-                ' <span class="applet-named-tx-blocker-title">' +
-                escapeHtml(b.blockTitle) +
-                "</span>" +
-                "</div>" +
-                '<p class="applet-named-tx-blocker-reason">' +
-                escapeHtml(b.reason) +
-                "</p>" +
-                "</li>"
-            )
-            .join("") +
-          "</ul>"
-        : "";
-      const reasonsHtml = reasons.length
-        ? '<ul class="applet-named-tx-banner-list">' +
-          reasons.map((r) => "<li>" + escapeHtml(r) + "</li>").join("") +
-          "</ul>"
-        : "";
-      const fallbackHtml = hasAny
-        ? ""
-        : '<p class="applet-named-tx-meta">This Graph can\'t be expressed as a single Cloudinary URL transformation.</p>';
+      if (!blockers.length && !reasons.length) {
+        el.innerHTML =
+          '<p class="pg-why-api-lead">This graph requires async execution and creates a new asset.</p>';
+        return;
+      }
+      const blockersHtml = blockers
+        .map(
+          (b) =>
+            '<li class="pg-why-api-item">' +
+            '<span class="pg-why-api-title">' + escapeHtml(b.blockTitle) + "</span>" +
+            " — " +
+            '<span class="pg-why-api-reason">' + escapeHtml(b.reason) + "</span>" +
+            "</li>"
+        )
+        .join("");
+      const reasonsHtml = reasons
+        .map((r) => '<li class="pg-why-api-item pg-why-api-reason">' + escapeHtml(r) + "</li>")
+        .join("");
       el.innerHTML =
-        '<div class="applet-named-tx-banner">' +
-        '<p class="applet-named-tx-banner-title">API applet — materialises a new resource on the cloud account; no stateless URL form.</p>' +
-        (blockers.length
-          ? '<p class="applet-named-tx-banner-sub">' +
-            blockers.length +
-            " block" +
-            (blockers.length > 1 ? "s force" : " forces") +
-            " server-side execution:</p>"
-          : "") +
-        blockersHtml +
-        reasonsHtml +
-        fallbackHtml +
-        "</div>";
+        '<p class="pg-why-api-lead">This graph requires async execution and creates a new asset:</p>' +
+        '<ul class="pg-why-api-list">' + blockersHtml + reasonsHtml + "</ul>";
       return;
     }
 
     if (pill) {
       pill.textContent =
-        effectiveKind === "create" ? "API · URL form available" : "URL form";
+        effectiveKind === "create" ? "CREATE · URL form available" : "DERIVED";
       pill.className = "applet-named-tx-pill applet-named-tx-pill-on";
     }
+    if (titleEl) titleEl.textContent = "Named transformation · URL";
 
     const templateHtml = highlightNamedTransformationCode(escapeHtml(preview.urlTemplate));
     /* When the user has pinned this URL-eligible applet to Create, the URL
@@ -10543,7 +10568,7 @@
       effectiveKind === "create"
         ? '<p class="applet-named-tx-meta" style="margin-top:8px;">' +
           'URL form is structurally available, but this applet\'s default ' +
-          'contract is API. Use <b>Convert to URL</b> above to switch back.' +
+          'contract is CREATE. Use <b>Convert to DERIVED</b> above to switch back.' +
           "</p>"
         : "";
     el.innerHTML =
@@ -11001,19 +11026,15 @@
     }
   }
 
-  /** Render (or hide) the named-transformation URL panel in the playground.
-   *  Reuses `buildNamedTransformationPreview` which operates on the live canvas,
-   *  so it is only called after `enterAppletPlayground` has loaded the snapshot. */
+  /** Render the named-transformation panel in the playground.
+   *  - URL applets: shows the URL template + live example link.
+   *  - API applets: shows a mild "why no URL form" note listing the blocking steps,
+   *    without alarming colour — just enough context for the author. */
   function renderPlaygroundNamedTxPanel(rec) {
     const panel = document.getElementById("playground-named-tx-panel");
     const readout = document.getElementById("playground-named-tx-readout");
     if (!panel || !readout) return;
     const isUrl = effectiveAppletKindForRecord(rec).kind === "derive";
-    if (!isUrl) {
-      panel.hidden = true;
-      readout.innerHTML = "";
-      return;
-    }
     const name = (rec && rec.name) || "";
     const inputs = normalizeAppletInputs((rec && rec.inputs) || []);
     let preview;
@@ -11022,14 +11043,41 @@
     } catch (e) {
       preview = null;
     }
-    if (!preview || !preview.ok) {
-      panel.hidden = true;
-      readout.innerHTML = "";
+
+    const titleEl = document.getElementById("playground-named-tx-title");
+    if (!isUrl || !preview || !preview.ok) {
+      /* API applet — show a mild blocker note if we have one, otherwise hide. */
+      const blockers = (preview && preview.blockers) || [];
+      const reasons = (preview && preview.reasons) || [];
+      if (!blockers.length && !reasons.length) {
+        panel.hidden = true;
+        readout.innerHTML = "";
+        return;
+      }
+      panel.hidden = false;
+      if (titleEl) titleEl.textContent = "Why no URL transformation?";
+      const blockersHtml = blockers
+        .map(
+          (b) =>
+            '<li class="pg-why-api-item">' +
+            '<span class="pg-why-api-title">' + escapeHtml(b.blockTitle) + "</span>" +
+            " — " +
+            '<span class="pg-why-api-reason">' + escapeHtml(b.reason) + "</span>" +
+            "</li>"
+        )
+        .join("");
+      const reasonsHtml = reasons
+        .map((r) => '<li class="pg-why-api-item pg-why-api-reason">' + escapeHtml(r) + "</li>")
+        .join("");
+      readout.innerHTML =
+        '<p class="pg-why-api-lead">This graph requires async execution and creates a new asset:</p>' +
+        '<ul class="pg-why-api-list">' + blockersHtml + reasonsHtml + "</ul>";
       return;
     }
+
+    /* URL applet — show template + live example. */
     panel.hidden = false;
-    /* Show the URL template with placeholder highlighting, then the concrete
-     * example URL below it (same two-line pattern as the bindings editor). */
+    if (titleEl) titleEl.textContent = "Named transformation · URL";
     const templateHtml = highlightNamedTransformationCode(escapeHtml(preview.urlTemplate));
     const exampleHtml = escapeHtml(preview.exampleUrl);
     readout.innerHTML =
