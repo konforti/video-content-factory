@@ -1233,6 +1233,7 @@
       width: 100%;
       height: 100%;
       overflow: visible;
+      pointer-events: none;
     }
 
     /* Wide invisible stroke for hit-testing only — no fill, zero-opacity stroke so nothing composites as a second line */
@@ -1919,8 +1920,12 @@
       background: #fff;
       border: 1.5px solid var(--dot-color, #d4d4d8);
       cursor: crosshair;
-      transition: transform 0.12s, box-shadow 0.12s;
+      transition: transform 0.12s, box-shadow 0.12s, background 0.12s;
       flex-shrink: 0;
+    }
+
+    .dot.is-connected {
+      background: var(--dot-color, #d4d4d8);
     }
 
     .dot:hover {
@@ -3556,11 +3561,11 @@
 
     <div class="main-wrap">
       <div id="canvas-bg" tabindex="0">
+        <div id="nodes-layer"></div>
         <svg id="edges-svg" xmlns="http://www.w3.org/2000/svg">
           <g id="edges-layer"></g>
           <path id="wire-preview" class="wire-preview" style="display: none" />
         </svg>
-        <div id="nodes-layer"></div>
       </div>
 
       <!-- Floating block rail — primary "+" opens the full palette; category shortcuts
@@ -6738,6 +6743,17 @@
         renderNodes();
       });
     });
+    syncConnectedDots();
+  }
+
+  function syncConnectedDots() {
+    nodesLayer.querySelectorAll(".dot").forEach((d) => d.classList.remove("is-connected"));
+    for (const e of edges) {
+      const fromEl = nodesLayer.querySelector(`.node[data-node-id="${e.fromNode}"] .out-dot[data-port="${e.fromPort}"]`);
+      const toEl   = nodesLayer.querySelector(`.node[data-node-id="${e.toNode}"] .in-dot[data-port="${e.toPort}"]`);
+      if (fromEl) fromEl.classList.add("is-connected");
+      if (toEl)   toEl.classList.add("is-connected");
+    }
   }
 
   /** All arguments in #canvas-bg pixel space (same as SVG). */
@@ -6782,7 +6798,7 @@
       const def = node.def;
       const { w, h } = nodeElBounds(node);
       const sel = node.id === selectedNodeId ? " selected" : "";
-      const dotStyle = `border-color:${def.dotColor}`;
+      const dotStyle = `--dot-color:${def.dotColor}`;
       const inPorts = nodeInPorts(node)
         .map((p) => {
           const tip = p.multiple
@@ -6858,6 +6874,7 @@
     updateEdges();
     requestAnimationFrame(() => {
       updateEdges();
+      syncConnectedDots();
     });
     notifyAppletEditorGraphMaybeDirty();
   }
