@@ -201,6 +201,23 @@ publishes a new revision.
 
 ---
 
+## Vocabulary
+
+| Term | What it is |
+|---|---|
+| **Factory** | The product — Video Content Factory. The service that hosts canvases, runs graphs, and executes applets at scale. |
+| **Canvas** | The drawing surface. The open space where you place blocks and draw lines between them. |
+| **Graph** | The structure you build on a canvas — blocks connected by lines. The graph is both the spec and the thing that runs. |
+| **Block** | A single processing unit on the canvas. Takes typed inputs, produces a typed output. Could be a transformation, a generative AI step, an input source, or a terminal output. |
+| **Dot** | The small circle on the edge of a block — the physical connection point you drag from or drop onto. Each dot belongs to one port (input or output). |
+| **Line** | The drawn connection between two dots. Lines carry a media kind (video, image, text) and define the flow of data through the graph. |
+| **Bindings** | The configuration layer of an applet — the named parameters, their kinds (image / video / text), and their required / optional / ignored status. Bindings are what turn a raw graph into a typed API contract. |
+| **Applet** | A graph promoted to a contract. Once saved, an applet has a stable slug, a versioned snapshot of its graph, and a callable `POST /applets/<slug>/run` endpoint. |
+
+**Internal code naming** (for contributors): `block = node`, `dot = port`, `line = edge or wire`. The customer-facing names above are used in the UI and docs; the code-level names follow graph-theory and DOM conventions.
+
+---
+
 ## What's in the box
 
 The studio ships with the building blocks below. They're combinable in
